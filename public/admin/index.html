@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Auto Seedance — Content Manager</title>
+    <link rel="icon" href="/favicon.ico" />
+  </head>
+  <body>
+    <!--
+      Decap CMS (formerly Netlify CMS) — Git-based WYSIWYG admin.
+
+      Setup steps (one-time):
+      1. Push this project to GitHub (already done).
+      2. Create a GitHub OAuth App (Settings → Developer settings → OAuth Apps).
+         Authorization callback URL: https://api.netlify.com/auth/done
+         (Netlify offers a free OAuth proxy for non-Netlify hosts.)
+      3. In Netlify, link your repo and enable Identity + Git Gateway,
+         OR use the simpler OAuth flow by configuring backend below.
+      4. Edit /public/admin/config.yml — set `repo:` to your GitHub user/repo.
+
+      Then visit /admin on your deployed site and log in with GitHub.
+      Saving a post commits a new .md file to /content/posts/, Vercel
+      auto-deploys, and the post is live within ~30 seconds.
+    -->
+    <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+  </body>
+</html>
