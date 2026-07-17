@@ -1,8 +1,10 @@
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
 
 const SITE_URL = "https://autoseedance.site";
+const SANITY_PROJECT_ID = "n58pco6y";
+const SANITY_DATASET = "production";
+const SANITY_API_VERSION = "2024-01-01";
 
 const STATIC_PAGES = [
   { path: "/", priority: 1.0, changefreq: "weekly" },
@@ -15,45 +17,9 @@ const STATIC_PAGES = [
   { path: "/terms", priority: 0.3, changefreq: "yearly" },
 ];
 
-interface BlogPost {
+interface SanityPost {
   slug: string;
-  date: string;
-}
-
-function parseFrontmatter(raw: string): BlogPost | null {
-  try {
-    const match = raw.match(/^---\s*\n([\s\S]*?)\n---\s*\n?([\s\S]*)$/);
-    if (!match) return null;
-    const [, fmBlock] = match;
-    const data: Record<string, string> = {};
-    const lines = fmBlock.split("\n");
-    for (const line of lines) {
-      const kv = line.match(/^([A-Za-z_]+):\s*(.*)$/);
-      if (kv) {
-        const [, key, val] = kv;
-        data[key] = val.replace(/^["']|["']$/g, "").trim();
-      }
-    }
-    return { slug: "", date: data.date || new Date().toISOString().split("T")[0] };
-  } catch {
-    return null;
-  }
-}
-
-function getBlogPosts(): Array<{ slug: string; date: string }> {
-  const postsDir = path.join(process.cwd(), "content/posts");
-  if (!fs.existsSync(postsDir)) return [];
-
-  const files = fs.readdirSync(postsDir).filter((f) => f.endsWith(".md"));
-  return files
-    .map((file) => {
-      const slug = file.replace(/\.md$/, "");
-      const filePath = path.join(postsDir, file);
-      const raw = fs.readFileSync(filePath, "utf-8");
-      const parsed = parseFrontmatter(raw);
-      return { slug, date: parsed?.date || new Date().toISOString().split("T")[0] };
-    })
-    .sort((a, b) => b.date.localeCompare(a.date));
+  publishedAt: string;
 }
 
 function escapeXml(str: string): string {
@@ -65,66 +31,92 @@ function escapeXml(str: string): string {
     .replace(/'/g, "&apos;");
 }
 
-function generateSitemap(): string {
-  const posts = getBlogPosts();
-  const today = new Date().toISOString().split("T")[0];
-  const urls: Array<{
-    loc: string;
-    lastmod: string;
-    changefreq: string;
-    priority: number;
-  }> = [];
-
-  for (const page of STATIC_PAGES) {
-    urls.push({
-      loc: `${SITE_URL}${page.path}`,
-      lastmod: today,
-      changefreq: page.changefreq,
-      priority: page.priority,
-    });
+async function fetchSanityPosts(): Promise<SanityPost[]> {
+  const query = encodeURIComponent(
+    `*[_type == "post" && defined(slug.current) && !(_id in path("drafts.**"))]{"slug": slug.current, publishedAt}`,
+  );
+  const url = `https://${SANITY_PROJECT_ID}.apicdn.sanity.io/v${SANITY_API_VERSION}/data/query/${SANITY_DATASET}?query=${query}`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Sanity fetch failed: ${res.status}`);
+    const json = (await res.json()) as { result: SanityPost[] };
+    return json.result || [];
+  } catch (err) {
+    console.warn("⚠ Failed to fetch Sanity posts for sitemap:", (err as Error).message);
+    return [];
   }
+}
 
-  for (const post of posts) {
-    urls.push({
-      loc: `${SITE_URL}/blog/${escapeXml(post.slug)}`,
-      lastmod: post.date,
-      changefreq: "monthly",
-      priority: 0.7,
-    });
-  }
-
-  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+function buildUrlset(urls: Array<{ loc: string; lastmod: string; changefreq: string; priority: number }>) {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls
   .map(
-    (url) => `  <url>
-    <loc>${url.loc}</loc>
-    <lastmod>${url.lastmod}</lastmod>
-    <changefreq>${url.changefreq}</changefreq>
-    <priority>${url.priority}</priority>
-  </url>`
+    (u) => `  <url>
+    <loc>${u.loc}</loc>
+    <lastmod>${u.lastmod}</lastmod>
+    <changefreq>${u.changefreq}</changefreq>
+    <priority>${u.priority}</priority>
+  </url>`,
   )
   .join("\n")}
 </urlset>
 `;
-
-  return sitemap;
 }
 
-function main() {
-  const sitemap = generateSitemap();
+async function main() {
+  const today = new Date().toISOString().split("T")[0];
+  const posts = await fetchSanityPosts();
+
+  // Main sitemap (static pages)
+  const mainUrls = STATIC_PAGES.map((p) => ({
+    loc: `${SITE_URL}${p.path}`,
+    lastmod: today,
+    changefreq: p.changefreq,
+    priority: p.priority,
+  }));
+  const mainSitemap = buildUrlset(mainUrls);
+
+  // Blog sitemap (Sanity posts)
+  const blogUrls = posts.map((p) => ({
+    loc: `${SITE_URL}/blog/${escapeXml(p.slug)}`,
+    lastmod: (p.publishedAt || today).split("T")[0],
+    changefreq: "monthly",
+    priority: 0.7,
+  }));
+  const blogSitemap = buildUrlset(blogUrls);
+
+  // Combined sitemap.xml (for backward compatibility)
+  const combined = buildUrlset([...mainUrls, ...blogUrls]);
+
+  // Sitemap index pointing at the two child sitemaps
+  const sitemapIndex = `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>${SITE_URL}/sitemap-main.xml</loc>
+    <lastmod>${today}</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>${SITE_URL}/sitemap-blog.xml</loc>
+    <lastmod>${today}</lastmod>
+  </sitemap>
+</sitemapindex>
+`;
+
   const publicDir = path.join(process.cwd(), "public");
-  if (!fs.existsSync(publicDir)) {
-    fs.mkdirSync(publicDir, { recursive: true });
-  }
-  fs.writeFileSync(path.join(publicDir, "sitemap.xml"), sitemap, "utf-8");
-  console.log("✓ sitemap.xml generated successfully");
+  if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir, { recursive: true });
 
-  const posts = getBlogPosts();
+  fs.writeFileSync(path.join(publicDir, "sitemap.xml"), combined, "utf-8");
+  fs.writeFileSync(path.join(publicDir, "sitemap-main.xml"), mainSitemap, "utf-8");
+  fs.writeFileSync(path.join(publicDir, "sitemap-blog.xml"), blogSitemap, "utf-8");
+  fs.writeFileSync(path.join(publicDir, "sitemap-index.xml"), sitemapIndex, "utf-8");
+
+  console.log("✓ sitemaps generated");
   console.log(`  - ${STATIC_PAGES.length} static pages`);
-  console.log(`  - ${posts.length} blog posts`);
-  console.log(`  - Total: ${STATIC_PAGES.length + posts.length} URLs`);
+  console.log(`  - ${posts.length} Sanity blog posts`);
 }
 
-main();
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

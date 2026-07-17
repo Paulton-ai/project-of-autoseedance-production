@@ -3,8 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, Image as ImageIcon, Video, LayoutDashboard, LogOut, ChevronDown, Coins } from "lucide-react";
 import { motion } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { signOut } from "@/lib/auth";
+import { fetchPostsCount } from "@/lib/sanity";
 import type { User } from "@supabase/supabase-js";
 import type { Tables } from "@/integrations/supabase/types";
 
