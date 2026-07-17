@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Coins, TrendingUp, TrendingDown, ArrowRight, Sparkles, ArrowUpRight, Wallet, Clock, Zap, Gift, ShoppingCart, Wand as Wand2, MessageSquare, ShieldCheck, Repeat, Ban, RotateCcw, Circle as HelpCircle, Video as LucideIcon } from "lucide-react";
+import { Coins, TrendingUp, TrendingDown, ArrowRight, Sparkles, ArrowUpRight, Wallet, Clock, Zap, Gift, ShoppingCart, Wand as Wand2, MessageSquare, ShieldCheck, Repeat, Ban, RotateCcw, Circle as HelpCircle } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 
 export const Route = createFileRoute("/dashboard/credits")({
@@ -20,8 +21,19 @@ export const Route = createFileRoute("/dashboard/credits")({
   }),
 });
 
-type Transaction = Tables<"credits_transactions">;
+type Transaction = {
+  id: string;
+  user_id: string;
+  amount: number;
+  balance_after: number;
+  reason: string;
+  transaction_type: string;
+  created_at: string;
+};
 type Wallet = Tables<"credit_wallets">;
+// credits_transactions is not yet in generated Supabase types; cast the client for that table only.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const sb = supabase as any;
 
 const CREDIT_COSTS = {
   text: 1,
@@ -97,7 +109,7 @@ function CreditsPage() {
 
     const [walletRes, txRes, adminRes] = await Promise.all([
       supabase.from("credit_wallets").select("*").eq("user_id", user.id).maybeSingle(),
-      supabase
+      sb
         .from("credits_transactions")
         .select("*")
         .eq("user_id", user.id)

@@ -293,7 +293,8 @@ function VideoToolPage() {
       try {
         if (!isAdmin) {
           const { data, error: creditError } = await supabase.rpc("consume_credits", { _tool: "video", _amount: CREDITS_PER_VIDEO });
-          if (creditError || !data?.success) throw new Error(data?.error || creditError?.message || "Failed to deduct credits");
+          const d = data as { success?: boolean; error?: string } | null;
+          if (creditError || !d?.success) throw new Error(d?.error || creditError?.message || "Failed to deduct credits");
         }
 
         updateQueueItem(itemId, { status: "generating", startTime: Date.now() });
