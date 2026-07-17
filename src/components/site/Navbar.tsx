@@ -113,7 +113,9 @@ export function Navbar() {
             <Link to="/tools/video" className="hover:text-foreground transition flex items-center gap-1.5">
               <Video className="size-3.5" /> Video Generation
             </Link>
-            <Link to="/blog" className="hover:text-foreground transition">Blog</Link>
+            {postsCount > 0 && (
+              <Link to="/blog" className="hover:text-foreground transition">Blog</Link>
+            )}
           </nav>
 
           <div className="flex items-center gap-2">
