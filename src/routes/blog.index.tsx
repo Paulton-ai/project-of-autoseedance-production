@@ -1,10 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
-import { BlogTicker } from "@/components/blog/BlogTicker";
 import { PostCard } from "@/components/blog/PostCard";
-import { getAllPosts, getTrendingPosts } from "@/lib/posts";
-import { AdSlot } from "@/components/blog/AdSlot";
+import { fetchAllPosts } from "@/lib/sanity";
+import { Sparkles } from "lucide-react";
 
 const SITE_URL = "https://autoseedance.site";
 
@@ -15,49 +15,16 @@ export const Route = createFileRoute("/blog/")({
       {
         name: "description",
         content:
-          "Learn AI image and video generation with tutorials, prompt guides, tool reviews, and case studies. Master Seedream AI, Veo 3, Meta AI, Grok AI, and more. Tips for creating stunning AI visuals.",
+          "Tutorials, prompt guides, and tool reviews for AI image and video generation.",
       },
-      { name: "keywords", content: "AI tutorials, AI prompt guides, Seedream tutorial, Veo 3 guide, AI generation tips, prompt engineering, AI image tips, AI video tips, Meta AI, Grok AI" },
       { name: "robots", content: "index, follow, max-image-preview:large" },
-      { property: "og:title", content: "Auto Seedance Blog — AI Image & Video Tutorials" },
-      { property: "og:description", content: "Tutorials, prompt guides, and tool reviews for AI image and video generation. Learn to create stunning visuals with AI." },
+      { property: "og:title", content: "Auto Seedance Blog" },
+      { property: "og:description", content: "Tutorials and guides for AI image and video generation." },
       { property: "og:url", content: `${SITE_URL}/blog` },
       { property: "og:type", content: "website" },
-      { property: "og:image", content: `${SITE_URL}/og-image.png` },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Auto Seedance Blog — AI Tutorials & Guides" },
-      { name: "twitter:description", content: "Tutorials, prompt guides, and tool reviews for AI generation." },
-      { name: "twitter:image", content: `${SITE_URL}/og-image.png` },
     ],
     links: [{ rel: "canonical", href: `${SITE_URL}/blog` }],
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Blog",
-          name: "Auto Seedance Blog",
-          description: "Tutorials, prompt guides, and case studies for AI image and video generation.",
-          url: `${SITE_URL}/blog`,
-          publisher: {
-            "@type": "Organization",
-            name: "Auto Seedance",
-            logo: { "@type": "ImageObject", url: `${SITE_URL}/android-chrome-512x512.png` },
-          },
-        }),
-      },
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "BreadcrumbList",
-          itemListElement: [
-            { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
-            { "@type": "ListItem", position: 2, name: "Blog", item: `${SITE_URL}/blog` },
-          ],
-        }),
-      },
-    ],
   }),
   component: BlogIndex,
 });
@@ -71,9 +38,11 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
 }
 
 function BlogIndex() {
-  const posts = getAllPosts();
-  const trending = getTrendingPosts(6);
-  const topRated = [...posts].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 3);
+  const { data: posts, isLoading, isError } = useQuery({
+    queryKey: ["sanity", "posts", "list"],
+    queryFn: fetchAllPosts,
+    staleTime: 60_000,
+  });
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -88,37 +57,42 @@ function BlogIndex() {
           </p>
         </section>
 
-        <BlogTicker posts={trending} />
+        <section className="mx-auto max-w-7xl px-4 mt-16 pb-24">
+          <SectionHeading>Latest Posts</SectionHeading>
 
-        <section className="mx-auto max-w-7xl px-4 mt-12">
-          <AdSlot format="leaderboard" />
-        </section>
-
-        {topRated.length > 0 && (
-          <section className="mx-auto max-w-7xl px-4 mt-16">
-            <SectionHeading>Top Rated</SectionHeading>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-stretch">
-              {topRated.map((post) => (
-                <PostCard key={post.slug} post={post} />
+          {isLoading && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+              {[0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="h-[420px] rounded-2xl border border-border bg-card animate-pulse"
+                />
               ))}
             </div>
-          </section>
-        )}
+          )}
 
-        <section className="mx-auto max-w-7xl px-4 mt-20 pb-24">
-          <SectionHeading>Latest Posts</SectionHeading>
-          {posts.length === 0 ? (
+          {isError && (
             <div className="text-center text-muted-foreground py-20">
-              No posts yet. Add markdown files to <code>/content/posts/</code> or use the{" "}
-              <Link to="/" className="text-primary underline">
-                CMS
-              </Link>
-              .
+              Unable to load posts right now. Please try again shortly.
             </div>
-          ) : (
+          )}
+
+          {!isLoading && !isError && (!posts || posts.length === 0) && (
+            <div className="mx-auto max-w-xl text-center py-20 rounded-2xl border border-dashed border-border bg-card/40">
+              <div className="mx-auto size-14 rounded-2xl btn-gradient grid place-items-center mb-5">
+                <Sparkles className="size-6 text-white" />
+              </div>
+              <h3 className="font-display text-2xl font-bold">Coming Soon</h3>
+              <p className="mt-3 text-muted-foreground">
+                We're crafting in-depth guides on AI image and video generation. Check back soon.
+              </p>
+            </div>
+          )}
+
+          {!isLoading && !isError && posts && posts.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-stretch">
               {posts.map((post) => (
-                <PostCard key={post.slug} post={post} />
+                <PostCard key={post._id} post={post} />
               ))}
             </div>
           )}
