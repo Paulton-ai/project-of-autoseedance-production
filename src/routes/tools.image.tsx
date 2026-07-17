@@ -314,7 +314,8 @@ function ImageToolPage() {
       try {
         if (!isAdmin) {
           const { data, error: creditError } = await supabase.rpc("consume_credits", { _tool: "image", _amount: CREDITS_PER_IMAGE });
-          if (creditError || !data?.success) throw new Error(data?.error || creditError?.message || "Failed to deduct credits");
+          const d = data as { success?: boolean; error?: string } | null;
+          if (creditError || !d?.success) throw new Error(d?.error || creditError?.message || "Failed to deduct credits");
         }
 
         updateQueueItem(itemId, { status: "generating", startTime: Date.now() });
@@ -591,7 +592,7 @@ function ImageToolPage() {
                       </div>
                     )}
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-1.5">
-                      <Button size="sm" variant="secondary" className="size-7 p-0" onClick={() => { setPrompt(gen.prompt); if (gen.settings?.style) setSelectedStyle(gen.settings.style as string); if (gen.settings?.image_size) setSelectedSize(gen.settings.image_size as string); toast.success("Prompt loaded"); }}>
+                      <Button size="sm" variant="secondary" className="size-7 p-0" onClick={() => { const s = (gen.settings ?? {}) as { style?: string; image_size?: string }; setPrompt(gen.prompt); if (s.style) setSelectedStyle(s.style); if (s.image_size) setSelectedSize(s.image_size); toast.success("Prompt loaded"); }}>
                         <Copy className="size-3.5" />
                       </Button>
                       {gen.result_url && (
@@ -616,7 +617,7 @@ function ImageToolPage() {
                   <div className="p-2">
                     <p className="text-xs line-clamp-1">{gen.prompt}</p>
                     <div className="mt-1 flex items-center gap-1 text-[10px] text-muted-foreground">
-                      <Badge variant="outline" className="text-[9px] px-1 py-0">{gen.settings?.style || "realistic"}</Badge>
+                      <Badge variant="outline" className="text-[9px] px-1 py-0">{((gen.settings ?? {}) as { style?: string }).style || "realistic"}</Badge>
                       <span className="ml-auto">{new Date(gen.created_at).toLocaleDateString()}</span>
                     </div>
                   </div>

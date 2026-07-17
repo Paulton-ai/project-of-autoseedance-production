@@ -226,8 +226,8 @@ function Admin() {
   }
 
   async function loadSettings() {
-    const [res] = await Promise.allSettled([supabase.from("site_settings").select("*").eq("id", 1).maybeSingle()]);
-    if (res.status === "fulfilled" && res.value.data) setSettings(res.value.data as SiteSettings);
+    const [res] = await Promise.allSettled([(supabase as any).from("site_settings").select("*").eq("id", 1).maybeSingle()]);
+    if (res.status === "fulfilled" && res.value.data) setSettings(res.value.data as unknown as SiteSettings);
   }
 
   // ── Credit actions ────────────────────────────────────────────────────────
@@ -339,7 +339,7 @@ function Admin() {
   async function saveSettings() {
     setSavingSettings(true);
     const [res] = await Promise.allSettled([
-      supabase.from("site_settings").update({ ...settings, updated_at: new Date().toISOString() }).eq("id", 1),
+      (supabase as any).from("site_settings").update({ ...settings, updated_at: new Date().toISOString() }).eq("id", 1),
     ]);
     setSavingSettings(false);
     if (res.status === "rejected") { toast.error("Failed to save settings"); return; }
