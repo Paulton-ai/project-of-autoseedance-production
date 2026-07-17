@@ -22,6 +22,12 @@ export function Navbar() {
     setWallet(data as Tables<"credit_wallets"> | null);
   }, []);
 
+  const { data: postsCount = 0 } = useQuery({
+    queryKey: ["sanity", "posts", "count"],
+    queryFn: fetchPostsCount,
+    staleTime: 5 * 60 * 1000,
+  });
+
   useEffect(() => {
     let channel: ReturnType<typeof supabase.channel> | null = null;
     let currentUid: string | null = null;
