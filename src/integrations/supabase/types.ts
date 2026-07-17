@@ -14,252 +14,135 @@ export type Database = {
   }
   public: {
     Tables: {
-      generations: {
+      ai_providers: {
         Row: {
+          config: Json
+          created_at: string
+          display_name: string
           id: string
-          user_id: string
-          tool_type: string
-          prompt: string
-          settings: Json
-          result_url: string | null
-          thumbnail_url: string | null
-          status: string
-          credits_used: number
-          is_favorite: boolean
-          error: string | null
-          external_id: string | null
-          created_at: string
+          is_enabled: boolean
+          name: string
+          supported_tools: string[]
           updated_at: string
         }
         Insert: {
-          id?: string
-          user_id: string
-          tool_type: string
-          prompt: string
-          settings?: Json
-          result_url?: string | null
-          thumbnail_url?: string | null
-          status?: string
-          credits_used?: number
-          is_favorite?: boolean
-          error?: string | null
-          external_id?: string | null
+          config?: Json
           created_at?: string
+          display_name: string
+          id?: string
+          is_enabled?: boolean
+          name: string
+          supported_tools?: string[]
           updated_at?: string
         }
         Update: {
+          config?: Json
+          created_at?: string
+          display_name?: string
           id?: string
-          user_id?: string
-          tool_type?: string
-          prompt?: string
-          settings?: Json
-          result_url?: string | null
-          thumbnail_url?: string | null
-          status?: string
-          credits_used?: number
-          is_favorite?: boolean
-          error?: string | null
-          external_id?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      credit_wallets: {
-        Row: {
-          user_id: string
-          balance: number
-          monthly_grant: number
-          period_end: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          user_id: string
-          balance?: number
-          monthly_grant?: number
-          period_end?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          user_id?: string
-          balance?: number
-          monthly_grant?: number
-          period_end?: string | null
-          created_at?: string
+          is_enabled?: boolean
+          name?: string
+          supported_tools?: string[]
           updated_at?: string
         }
         Relationships: []
       }
       credit_ledger: {
         Row: {
-          id: string
-          user_id: string
           amount: number
+          balance_after: number
+          created_at: string
+          generation_id: string | null
+          id: string
           reason: string
           tool: string | null
-          generation_id: string | null
-          created_at: string
+          user_id: string
         }
         Insert: {
-          id?: string
-          user_id: string
           amount: number
+          balance_after: number
+          created_at?: string
+          generation_id?: string | null
+          id?: string
           reason: string
           tool?: string | null
-          generation_id?: string | null
-          created_at?: string
+          user_id: string
         }
         Update: {
-          id?: string
-          user_id?: string
           amount?: number
-          reason?: string
-          tool?: string | null
-          generation_id?: string | null
-          created_at?: string
-        }
-        Relationships: []
-      }
-      credits_transactions: {
-        Row: {
-          id: string
-          user_id: string
-          transaction_type: string
-          reason: string
-          amount: number
-          balance_before: number
-          balance_after: number
-          reference_id: string | null
-          metadata: Json | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          transaction_type: string
-          reason: string
-          amount: number
-          balance_before: number
-          balance_after: number
-          reference_id?: string | null
-          metadata?: Json | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          transaction_type?: string
-          reason?: string
-          amount?: number
-          balance_before?: number
           balance_after?: number
-          reference_id?: string | null
-          metadata?: Json | null
           created_at?: string
+          generation_id?: string | null
+          id?: string
+          reason?: string
+          tool?: string | null
+          user_id?: string
         }
         Relationships: []
       }
-      plans: {
+      credit_wallets: {
         Row: {
+          balance: number
+          created_at: string
           id: string
-          name: string
-          display_name: string | null
-          monthly_credits: number
-          price_monthly: number | null
-          price_yearly: number | null
-          features: string[]
-          is_active: boolean
-          sort_order: number | null
+          monthly_grant: number
+          period_end: string | null
+          updated_at: string
+          user_id: string
         }
         Insert: {
-          id: string
-          name: string
-          display_name?: string | null
-          monthly_credits: number
-          price_monthly?: number | null
-          price_yearly?: number | null
-          features?: string[]
-          is_active?: boolean
-          sort_order?: number | null
+          balance?: number
+          created_at?: string
+          id?: string
+          monthly_grant?: number
+          period_end?: string | null
+          updated_at?: string
+          user_id: string
         }
         Update: {
+          balance?: number
+          created_at?: string
           id?: string
-          name?: string
-          display_name?: string | null
-          monthly_credits?: number
-          price_monthly?: number | null
-          price_yearly?: number | null
-          features?: string[]
-          is_active?: boolean
-          sort_order?: number | null
+          monthly_grant?: number
+          period_end?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
       email_campaigns: {
         Row: {
+          body_html: string
+          created_at: string | null
           id: string
-          subject: string
-          body_html: string
+          recipient_count: number | null
+          recipient_emails: string[] | null
           recipient_type: string
-          recipient_count: number
           sent_by: string | null
-          status: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
+          status: string | null
           subject: string
-          body_html: string
-          recipient_type: string
-          recipient_count?: number
-          sent_by?: string | null
-          status?: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          subject?: string
-          body_html?: string
-          recipient_type?: string
-          recipient_count?: number
-          sent_by?: string | null
-          status?: string
-          created_at?: string
-        }
-        Relationships: []
-      }
-      site_settings: {
-        Row: {
-          id: number
-          site_name: string
-          support_email: string
-          free_signup_credits: number
-          max_images_per_day: number
-          max_videos_per_day: number
-          maintenance_mode: boolean
-          updated_at: string
         }
         Insert: {
-          id?: number
-          site_name?: string
-          support_email?: string
-          free_signup_credits?: number
-          max_images_per_day?: number
-          max_videos_per_day?: number
-          maintenance_mode?: boolean
-          updated_at?: string
+          body_html: string
+          created_at?: string | null
+          id?: string
+          recipient_count?: number | null
+          recipient_emails?: string[] | null
+          recipient_type: string
+          sent_by?: string | null
+          status?: string | null
+          subject: string
         }
         Update: {
-          id?: number
-          site_name?: string
-          support_email?: string
-          free_signup_credits?: number
-          max_images_per_day?: number
-          max_videos_per_day?: number
-          maintenance_mode?: boolean
-          updated_at?: string
+          body_html?: string
+          created_at?: string | null
+          id?: string
+          recipient_count?: number | null
+          recipient_emails?: string[] | null
+          recipient_type?: string
+          sent_by?: string | null
+          status?: string | null
+          subject?: string
         }
         Relationships: []
       }
@@ -307,40 +190,137 @@ export type Database = {
           },
         ]
       }
-      job_logs: {
+      generations: {
         Row: {
           created_at: string
+          credits_used: number
+          error: string | null
           id: string
-          job_id: string
-          level: string
-          message: string
+          is_favorite: boolean
+          prompt: string
+          provider: string | null
+          result_url: string | null
+          settings: Json
+          status: string
+          thumbnail_url: string | null
+          tool_type: string
+          updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          credits_used?: number
+          error?: string | null
           id?: string
-          job_id: string
-          level?: string
-          message: string
+          is_favorite?: boolean
+          prompt: string
+          provider?: string | null
+          result_url?: string | null
+          settings?: Json
+          status?: string
+          thumbnail_url?: string | null
+          tool_type: string
+          updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
+          credits_used?: number
+          error?: string | null
           id?: string
-          job_id?: string
-          level?: string
-          message?: string
+          is_favorite?: boolean
+          prompt?: string
+          provider?: string | null
+          result_url?: string | null
+          settings?: Json
+          status?: string
+          thumbnail_url?: string | null
+          tool_type?: string
+          updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "job_logs_job_id_fkey"
-            columns: ["job_id"]
-            isOneToOne: false
-            referencedRelation: "queue_jobs"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          credits_granted: number
+          currency: string
+          id: string
+          paypal_order_id: string | null
+          paypal_subscription_id: string | null
+          plan_name: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          credits_granted?: number
+          currency?: string
+          id?: string
+          paypal_order_id?: string | null
+          paypal_subscription_id?: string | null
+          plan_name?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          credits_granted?: number
+          currency?: string
+          id?: string
+          paypal_order_id?: string | null
+          paypal_subscription_id?: string | null
+          plan_name?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      plans: {
+        Row: {
+          created_at: string
+          display_name: string
+          features: Json
+          id: string
+          is_active: boolean
+          monthly_credits: number
+          name: string
+          price_monthly: number
+          price_yearly: number
+          sort_order: number | null
+        }
+        Insert: {
+          created_at?: string
+          display_name: string
+          features?: Json
+          id?: string
+          is_active?: boolean
+          monthly_credits?: number
+          name: string
+          price_monthly?: number
+          price_yearly?: number
+          sort_order?: number | null
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          features?: Json
+          id?: string
+          is_active?: boolean
+          monthly_credits?: number
+          name?: string
+          price_monthly?: number
+          price_yearly?: number
+          sort_order?: number | null
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -456,15 +436,33 @@ export type Database = {
         }
         Relationships: []
       }
+      site_settings: {
+        Row: {
+          key: string
+          updated_at: string | null
+          value: string
+        }
+        Insert: {
+          key: string
+          updated_at?: string | null
+          value: string
+        }
+        Update: {
+          key?: string
+          updated_at?: string | null
+          value?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           created_at: string
           current_period_end: string | null
           id: string
+          paypal_customer_id: string | null
+          paypal_subscription_id: string | null
           plan: Database["public"]["Enums"]["plan_tier"]
           status: string
-          stripe_customer_id: string | null
-          stripe_subscription_id: string | null
           updated_at: string
           user_id: string
         }
@@ -472,10 +470,10 @@ export type Database = {
           created_at?: string
           current_period_end?: string | null
           id?: string
+          paypal_customer_id?: string | null
+          paypal_subscription_id?: string | null
           plan?: Database["public"]["Enums"]["plan_tier"]
           status?: string
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -483,10 +481,10 @@ export type Database = {
           created_at?: string
           current_period_end?: string | null
           id?: string
+          paypal_customer_id?: string | null
+          paypal_subscription_id?: string | null
           plan?: Database["public"]["Enums"]["plan_tier"]
           status?: string
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -572,6 +570,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_credits: {
+        Args: { _amount: number; _reason: string; _user_id: string }
+        Returns: Json
+      }
+      consume_credits: {
+        Args: { _amount: number; _generation_id?: string; _tool: string }
+        Returns: Json
+      }
+      ensure_user_bootstrap: { Args: never; Returns: undefined }
+      ensure_user_records:
+        | { Args: { _email?: string; _user_id: string }; Returns: undefined }
+        | {
+            Args: { _email?: string; _raw_meta?: Json; _user_id: string }
+            Returns: undefined
+          }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -579,46 +592,12 @@ export type Database = {
         }
         Returns: boolean
       }
-      consume_credits: {
-        Args: {
-          _tool: string
-          _amount: number
-        }
-        Returns: Json
-      }
-      grant_credits: {
-        Args: {
-          _user_id: string
-          _amount: number
-          _reason: string
-        }
-        Returns: Json
-      }
-      add_credits: {
-        Args: {
-          _user_id: string
-          _amount: number
-          _reason: string
-          _reference_id?: string | null
-          _metadata?: Json | null
-        }
-        Returns: Json
-      }
-      deduct_credits: {
-        Args: {
-          _user_id: string
-          _amount: number
-          _reason: string
-          _reference_id?: string | null
-          _metadata?: Json | null
-        }
-        Returns: Json
-      }
+      is_admin_user: { Args: { user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "user"
       job_status: "pending" | "running" | "done" | "failed" | "cancelled"
-      plan_tier: "free" | "basic" | "premium"
+      plan_tier: "free" | "starter" | "pro" | "business"
       platform: "seedance" | "dreamina" | "jimeng"
     }
     CompositeTypes: {
@@ -749,7 +728,7 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "user"],
       job_status: ["pending", "running", "done", "failed", "cancelled"],
-      plan_tier: ["free", "basic", "premium"],
+      plan_tier: ["free", "starter", "pro", "business"],
       platform: ["seedance", "dreamina", "jimeng"],
     },
   },
