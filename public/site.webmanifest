@@ -1,0 +1,14 @@
+{
+  "name": "Auto Seedance",
+  "short_name": "Auto Seedance",
+  "description": "Bulk AI Images & Videos Generator Automation for Dreamina and Seedance AI workflows.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0a0a14",
+  "theme_color": "#0a0a14",
+  "icons": [
+    { "src": "/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

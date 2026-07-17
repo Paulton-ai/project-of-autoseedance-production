@@ -1,0 +1,57 @@
+# Decap CMS configuration for Auto Seedance blog.
+# IMPORTANT: replace `repo` with your GitHub user/repo before deploying.
+
+backend:
+  name: github
+  repo: YOUR_GITHUB_USER/YOUR_REPO   # e.g. smartthinking/auto-seedance
+  branch: main
+  base_url: https://api.netlify.com  # free Netlify OAuth proxy
+  auth_endpoint: auth
+
+# Where uploaded images are saved
+media_folder: "public/images/posts"
+public_folder: "/images/posts"
+
+# Show a live preview pane next to the editor
+show_preview_links: true
+
+collections:
+  - name: "posts"
+    label: "Blog Posts"
+    folder: "content/posts"
+    create: true
+    slug: "{{slug}}"
+    extension: "md"
+    format: "frontmatter"
+    editor:
+      preview: true
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Date", name: "date", widget: "datetime", default: "" }
+      - label: "Category"
+        name: "category"
+        widget: "select"
+        options:
+          - "AI Tutorial"
+          - "Prompt Guide"
+          - "Tool Review"
+          - "Tips and Tricks"
+          - "Case Study"
+      - { label: "Cover Image", name: "coverImage", widget: "image" }
+      - { label: "Excerpt (max 160 chars)", name: "excerpt", widget: "text", pattern: ['^.{1,160}$', "Max 160 characters"] }
+      - { label: "Tags", name: "tags", widget: "list", default: [] }
+      - label: "Author"
+        name: "author"
+        widget: "object"
+        fields:
+          - { label: "Name", name: "name", widget: "string", default: "Admin" }
+          - { label: "Avatar", name: "avatar", widget: "image" }
+          - { label: "Bio (max 100 chars)", name: "bio", widget: "string", pattern: ['^.{1,100}$', "Max 100 characters"] }
+      - { label: "Views", name: "views", widget: "number", default: 0, required: false }
+      - { label: "Featured", name: "featured", widget: "boolean", default: false }
+      - { label: "Trending", name: "trending", widget: "boolean", default: false }
+      - label: "Body"
+        name: "body"
+        widget: "markdown"
+        buttons: [bold, italic, code, link, heading-one, heading-two, heading-three, quote, bulleted-list, numbered-list]
+        editor_components: [image, code-block]
