@@ -2,7 +2,7 @@ import { createClient, type SanityClient } from "@sanity/client";
 import imageUrlBuilder from "@sanity/image-url";
 import type { PortableTextBlock } from "@portabletext/react";
 
-export const SANITY_PROJECT_ID = "n58pco6y";
+export const SANITY_PROJECT_ID = "wazk28tf";
 export const SANITY_DATASET = "production";
 export const SANITY_API_VERSION = "2024-01-01";
 
