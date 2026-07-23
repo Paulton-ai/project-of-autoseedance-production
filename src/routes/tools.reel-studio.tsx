@@ -494,3 +494,115 @@ function ReelStudioPage() {
     </div>
   );
 }
+
+function ScriptReview({
+  scenes,
+  editingId,
+  setEditingId,
+  updateScene,
+  onBack,
+  onApprove,
+  totalLength,
+  totalCredits,
+}: {
+  scenes: { id: number; duration: number; visual: string; voiceover: string }[];
+  editingId: number | null;
+  setEditingId: (id: number | null) => void;
+  updateScene: (id: number, patch: Partial<{ id: number; duration: number; visual: string; voiceover: string }>) => void;
+  onBack: () => void;
+  onApprove: () => void;
+  totalLength: number;
+  totalCredits: number;
+}) {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" onClick={onBack} className="gap-2">
+          <ArrowLeft className="size-4" /> Back to inputs
+        </Button>
+        <div className="text-sm text-muted-foreground">
+          {scenes.length} scenes · {totalLength}s total
+        </div>
+      </div>
+
+      <Card className="p-6">
+        <div className="mb-4">
+          <h2 className="text-xl font-display font-bold">Review your script</h2>
+          <p className="text-sm text-muted-foreground">
+            Edit any scene before we render the video. Voiceover is what viewers will hear;
+            visual describes what will be generated on screen.
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          {scenes.map((s) => {
+            const isEditing = editingId === s.id;
+            return (
+              <div key={s.id} className="rounded-lg border border-border p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="size-7 rounded-md bg-primary/10 text-primary text-xs font-semibold grid place-items-center">
+                      {s.id}
+                    </span>
+                    <span className="text-sm font-medium">Scene {s.id}</span>
+                    <Badge variant="secondary">{s.duration}s</Badge>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setEditingId(isEditing ? null : s.id)}
+                    className="gap-1"
+                  >
+                    {isEditing ? (<><Check className="size-3" /> Done</>) : (<><Pencil className="size-3" /> Edit</>)}
+                  </Button>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs uppercase tracking-wide text-muted-foreground">Visual</Label>
+                    {isEditing ? (
+                      <Textarea
+                        value={s.visual}
+                        onChange={(e) => updateScene(s.id, { visual: e.target.value })}
+                        rows={3}
+                        className="mt-1"
+                      />
+                    ) : (
+                      <p className="text-sm mt-1 text-foreground/80">{s.visual}</p>
+                    )}
+                  </div>
+                  <div>
+                    <Label className="text-xs uppercase tracking-wide text-muted-foreground">Voiceover</Label>
+                    {isEditing ? (
+                      <Textarea
+                        value={s.voiceover}
+                        onChange={(e) => updateScene(s.id, { voiceover: e.target.value })}
+                        rows={3}
+                        className="mt-1"
+                      />
+                    ) : (
+                      <p className="text-sm mt-1 text-foreground/80">{s.voiceover}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+
+      <Card className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <div className="text-sm text-muted-foreground">Total cost to render</div>
+          <div className="text-2xl font-bold gradient-text">{totalCredits} credits</div>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={onBack}>Edit inputs</Button>
+          <Button onClick={onApprove} className="btn-gradient text-white gap-2">
+            <Wand2 className="size-4" /> Approve & Generate Video
+          </Button>
+        </div>
+      </Card>
+    </div>
+  );
+}
