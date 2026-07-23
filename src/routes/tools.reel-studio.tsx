@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Breadcrumb } from "@/components/seo/Breadcrumb";
 import { useSession } from "@/lib/auth";
 import { toast } from "sonner";
-import { Film, Sparkles, Upload, X, Coins, Wand2 } from "lucide-react";
+import { Film, Sparkles, Upload, X, Coins, Wand2, ArrowLeft, Loader2, Pencil, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/tools/reel-studio")({
