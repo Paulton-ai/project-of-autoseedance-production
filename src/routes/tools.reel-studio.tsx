@@ -87,9 +87,14 @@ function ReelStudioPage() {
   const [captions, setCaptions] = useState(true);
   const [captionStyle, setCaptionStyle] = useState<string>("karaoke");
 
+  type Scene = { id: number; duration: number; visual: string; voiceover: string };
+  const [view, setView] = useState<"input" | "script">("input");
+  const [generatingScript, setGeneratingScript] = useState(false);
+  const [scenes, setScenes] = useState<Scene[]>([]);
+  const [editingId, setEditingId] = useState<number | null>(null);
+
   const costEstimate = useMemo(() => {
     const base = quality === "premium" ? 80 : 40;
-    // Length + voiceover already baked into base per spec; keep transparent view
     return { base, total: base };
   }, [quality]);
 
@@ -105,7 +110,25 @@ function ReelStudioPage() {
 
   const canGenerate = topic.trim().length > 10;
 
-  const handleGenerate = () => {
+  const buildMockScript = (): Scene[] => {
+    // Placeholder script generator until Milestone 3 wires the edge function
+    const sceneCount = videoLength === 30 ? 4 : videoLength === 60 ? 6 : 8;
+    const perScene = Math.round(videoLength / sceneCount);
+    const seed = topic.trim().replace(/\s+/g, " ");
+    return Array.from({ length: sceneCount }).map((_, i) => ({
+      id: i + 1,
+      duration: perScene,
+      visual: `Scene ${i + 1} — ${style} shot illustrating: "${seed.slice(0, 90)}${seed.length > 90 ? "…" : ""}" (${niche} niche).`,
+      voiceover:
+        i === 0
+          ? `Hook: What if ${seed.split(".")[0].toLowerCase()}?`
+          : i === sceneCount - 1
+            ? `Call-to-action: Follow for more on ${niche.toLowerCase()}.`
+            : `Beat ${i}: expand on the idea with a concrete, visual moment.`,
+    }));
+  };
+
+  const handleGenerate = async () => {
     if (!user) {
       toast.error("Please sign in to generate reels");
       return;
@@ -114,7 +137,20 @@ function ReelStudioPage() {
       toast.error("Describe your video idea (at least a sentence)");
       return;
     }
-    toast.info("Backend pipeline coming in the next build step");
+    setGeneratingScript(true);
+    // Simulate script generation — real Anthropic call lands in Milestone 3
+    await new Promise((r) => setTimeout(r, 900));
+    setScenes(buildMockScript());
+    setGeneratingScript(false);
+    setView("script");
+  };
+
+  const updateScene = (id: number, patch: Partial<Scene>) => {
+    setScenes((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
+  };
+
+  const handleApproveScript = () => {
+    toast.info("Video pipeline coming in Milestone 3");
   };
 
   return (
