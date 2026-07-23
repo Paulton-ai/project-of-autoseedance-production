@@ -122,7 +122,7 @@ function ReelStudioPage() {
       <ToolNavbar title="AI Reel Studio" />
       <main className="pt-20 pb-16">
         <div className="mx-auto max-w-6xl px-4">
-          <Breadcrumb items={[{ name: "Tools", href: "/dashboard" }, { name: "Reel Studio" }]} />
+          <Breadcrumb items={[{ name: "Tools", url: "/dashboard" }, { name: "Reel Studio", url: "/tools/reel-studio" }]} />
 
           <div className="mb-8 flex items-start justify-between gap-4">
             <div>
