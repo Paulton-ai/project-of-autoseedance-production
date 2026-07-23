@@ -484,7 +484,9 @@ function ReelStudioPage() {
               </Card>
             </aside>
           </div>
+          )}
         </div>
+
       </main>
     </div>
   );
