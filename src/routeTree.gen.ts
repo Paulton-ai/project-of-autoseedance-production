@@ -24,6 +24,7 @@ import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as AuthIndexRouteImport } from './routes/auth.index'
 import { Route as ToolsVideoRouteImport } from './routes/tools.video'
+import { Route as ToolsReelStudioRouteImport } from './routes/tools.reel-studio'
 import { Route as ToolsImageRouteImport } from './routes/tools.image'
 import { Route as PaymentSuccessRouteImport } from './routes/payment.success'
 import { Route as PaymentCancelRouteImport } from './routes/payment.cancel'
@@ -111,6 +112,11 @@ const ToolsVideoRoute = ToolsVideoRouteImport.update({
   path: '/tools/video',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ToolsReelStudioRoute = ToolsReelStudioRouteImport.update({
+  id: '/tools/reel-studio',
+  path: '/tools/reel-studio',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ToolsImageRoute = ToolsImageRouteImport.update({
   id: '/tools/image',
   path: '/tools/image',
@@ -190,6 +196,7 @@ export interface FileRoutesByFullPath {
   '/payment/cancel': typeof PaymentCancelRoute
   '/payment/success': typeof PaymentSuccessRoute
   '/tools/image': typeof ToolsImageRoute
+  '/tools/reel-studio': typeof ToolsReelStudioRoute
   '/tools/video': typeof ToolsVideoRoute
   '/auth/': typeof AuthIndexRoute
   '/blog/': typeof BlogIndexRoute
@@ -216,6 +223,7 @@ export interface FileRoutesByTo {
   '/payment/cancel': typeof PaymentCancelRoute
   '/payment/success': typeof PaymentSuccessRoute
   '/tools/image': typeof ToolsImageRoute
+  '/tools/reel-studio': typeof ToolsReelStudioRoute
   '/tools/video': typeof ToolsVideoRoute
   '/auth': typeof AuthIndexRoute
   '/blog': typeof BlogIndexRoute
@@ -245,6 +253,7 @@ export interface FileRoutesById {
   '/payment/cancel': typeof PaymentCancelRoute
   '/payment/success': typeof PaymentSuccessRoute
   '/tools/image': typeof ToolsImageRoute
+  '/tools/reel-studio': typeof ToolsReelStudioRoute
   '/tools/video': typeof ToolsVideoRoute
   '/auth/': typeof AuthIndexRoute
   '/blog/': typeof BlogIndexRoute
@@ -275,6 +284,7 @@ export interface FileRouteTypes {
     | '/payment/cancel'
     | '/payment/success'
     | '/tools/image'
+    | '/tools/reel-studio'
     | '/tools/video'
     | '/auth/'
     | '/blog/'
@@ -301,6 +311,7 @@ export interface FileRouteTypes {
     | '/payment/cancel'
     | '/payment/success'
     | '/tools/image'
+    | '/tools/reel-studio'
     | '/tools/video'
     | '/auth'
     | '/blog'
@@ -329,6 +340,7 @@ export interface FileRouteTypes {
     | '/payment/cancel'
     | '/payment/success'
     | '/tools/image'
+    | '/tools/reel-studio'
     | '/tools/video'
     | '/auth/'
     | '/blog/'
@@ -351,6 +363,7 @@ export interface RootRouteChildren {
   PaymentCancelRoute: typeof PaymentCancelRoute
   PaymentSuccessRoute: typeof PaymentSuccessRoute
   ToolsImageRoute: typeof ToolsImageRoute
+  ToolsReelStudioRoute: typeof ToolsReelStudioRoute
   ToolsVideoRoute: typeof ToolsVideoRoute
   BlogIndexRoute: typeof BlogIndexRoute
 }
@@ -460,6 +473,13 @@ declare module '@tanstack/react-router' {
       path: '/tools/video'
       fullPath: '/tools/video'
       preLoaderRoute: typeof ToolsVideoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tools/reel-studio': {
+      id: '/tools/reel-studio'
+      path: '/tools/reel-studio'
+      fullPath: '/tools/reel-studio'
+      preLoaderRoute: typeof ToolsReelStudioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tools/image': {
@@ -594,6 +614,7 @@ const rootRouteChildren: RootRouteChildren = {
   PaymentCancelRoute: PaymentCancelRoute,
   PaymentSuccessRoute: PaymentSuccessRoute,
   ToolsImageRoute: ToolsImageRoute,
+  ToolsReelStudioRoute: ToolsReelStudioRoute,
   ToolsVideoRoute: ToolsVideoRoute,
   BlogIndexRoute: BlogIndexRoute,
 }
