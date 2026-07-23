@@ -462,12 +462,15 @@ function ReelStudioPage() {
 
                 <Button
                   onClick={handleGenerate}
-                  disabled={!canGenerate}
+                  disabled={!canGenerate || generatingScript}
                   className="w-full mt-5 btn-gradient text-white"
                   size="lg"
                 >
-                  <Wand2 className="size-4 mr-2" />
-                  Generate Reel
+                  {generatingScript ? (
+                    <><Loader2 className="size-4 mr-2 animate-spin" /> Writing script…</>
+                  ) : (
+                    <><Wand2 className="size-4 mr-2" /> Generate Script</>
+                  )}
                 </Button>
                 {!user && (
                   <p className="text-xs text-center text-muted-foreground mt-2">
