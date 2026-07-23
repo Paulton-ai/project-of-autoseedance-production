@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Breadcrumb } from "@/components/seo/Breadcrumb";
 import { useSession } from "@/lib/auth";
 import { toast } from "sonner";
-import { Film, Sparkles, Upload, X, Coins, Wand2 } from "lucide-react";
+import { Film, Sparkles, Upload, X, Coins, Wand2, ArrowLeft, Loader2, Pencil, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/tools/reel-studio")({
@@ -87,9 +87,14 @@ function ReelStudioPage() {
   const [captions, setCaptions] = useState(true);
   const [captionStyle, setCaptionStyle] = useState<string>("karaoke");
 
+  type Scene = { id: number; duration: number; visual: string; voiceover: string };
+  const [view, setView] = useState<"input" | "script">("input");
+  const [generatingScript, setGeneratingScript] = useState(false);
+  const [scenes, setScenes] = useState<Scene[]>([]);
+  const [editingId, setEditingId] = useState<number | null>(null);
+
   const costEstimate = useMemo(() => {
     const base = quality === "premium" ? 80 : 40;
-    // Length + voiceover already baked into base per spec; keep transparent view
     return { base, total: base };
   }, [quality]);
 
@@ -105,7 +110,25 @@ function ReelStudioPage() {
 
   const canGenerate = topic.trim().length > 10;
 
-  const handleGenerate = () => {
+  const buildMockScript = (): Scene[] => {
+    // Placeholder script generator until Milestone 3 wires the edge function
+    const sceneCount = videoLength === 30 ? 4 : videoLength === 60 ? 6 : 8;
+    const perScene = Math.round(videoLength / sceneCount);
+    const seed = topic.trim().replace(/\s+/g, " ");
+    return Array.from({ length: sceneCount }).map((_, i) => ({
+      id: i + 1,
+      duration: perScene,
+      visual: `Scene ${i + 1} — ${style} shot illustrating: "${seed.slice(0, 90)}${seed.length > 90 ? "…" : ""}" (${niche} niche).`,
+      voiceover:
+        i === 0
+          ? `Hook: What if ${seed.split(".")[0].toLowerCase()}?`
+          : i === sceneCount - 1
+            ? `Call-to-action: Follow for more on ${niche.toLowerCase()}.`
+            : `Beat ${i}: expand on the idea with a concrete, visual moment.`,
+    }));
+  };
+
+  const handleGenerate = async () => {
     if (!user) {
       toast.error("Please sign in to generate reels");
       return;
@@ -114,7 +137,20 @@ function ReelStudioPage() {
       toast.error("Describe your video idea (at least a sentence)");
       return;
     }
-    toast.info("Backend pipeline coming in the next build step");
+    setGeneratingScript(true);
+    // Simulate script generation — real Anthropic call lands in Milestone 3
+    await new Promise((r) => setTimeout(r, 900));
+    setScenes(buildMockScript());
+    setGeneratingScript(false);
+    setView("script");
+  };
+
+  const updateScene = (id: number, patch: Partial<Scene>) => {
+    setScenes((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
+  };
+
+  const handleApproveScript = () => {
+    toast.info("Video pipeline coming in Milestone 3");
   };
 
   return (
@@ -140,7 +176,20 @@ function ReelStudioPage() {
             </div>
           </div>
 
+          {view === "script" ? (
+            <ScriptReview
+              scenes={scenes}
+              editingId={editingId}
+              setEditingId={setEditingId}
+              updateScene={updateScene}
+              onBack={() => setView("input")}
+              onApprove={handleApproveScript}
+              totalLength={videoLength}
+              totalCredits={costEstimate.total}
+            />
+          ) : (
           <div className="grid lg:grid-cols-[1fr_320px] gap-6">
+
             <div className="space-y-6">
               {/* Section A — Core Idea */}
               <Card className="p-6">
@@ -413,12 +462,15 @@ function ReelStudioPage() {
 
                 <Button
                   onClick={handleGenerate}
-                  disabled={!canGenerate}
+                  disabled={!canGenerate || generatingScript}
                   className="w-full mt-5 btn-gradient text-white"
                   size="lg"
                 >
-                  <Wand2 className="size-4 mr-2" />
-                  Generate Reel
+                  {generatingScript ? (
+                    <><Loader2 className="size-4 mr-2 animate-spin" /> Writing script…</>
+                  ) : (
+                    <><Wand2 className="size-4 mr-2" /> Generate Script</>
+                  )}
                 </Button>
                 {!user && (
                   <p className="text-xs text-center text-muted-foreground mt-2">
@@ -435,8 +487,122 @@ function ReelStudioPage() {
               </Card>
             </aside>
           </div>
+          )}
         </div>
+
       </main>
+    </div>
+  );
+}
+
+function ScriptReview({
+  scenes,
+  editingId,
+  setEditingId,
+  updateScene,
+  onBack,
+  onApprove,
+  totalLength,
+  totalCredits,
+}: {
+  scenes: { id: number; duration: number; visual: string; voiceover: string }[];
+  editingId: number | null;
+  setEditingId: (id: number | null) => void;
+  updateScene: (id: number, patch: Partial<{ id: number; duration: number; visual: string; voiceover: string }>) => void;
+  onBack: () => void;
+  onApprove: () => void;
+  totalLength: number;
+  totalCredits: number;
+}) {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" onClick={onBack} className="gap-2">
+          <ArrowLeft className="size-4" /> Back to inputs
+        </Button>
+        <div className="text-sm text-muted-foreground">
+          {scenes.length} scenes · {totalLength}s total
+        </div>
+      </div>
+
+      <Card className="p-6">
+        <div className="mb-4">
+          <h2 className="text-xl font-display font-bold">Review your script</h2>
+          <p className="text-sm text-muted-foreground">
+            Edit any scene before we render the video. Voiceover is what viewers will hear;
+            visual describes what will be generated on screen.
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          {scenes.map((s) => {
+            const isEditing = editingId === s.id;
+            return (
+              <div key={s.id} className="rounded-lg border border-border p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="size-7 rounded-md bg-primary/10 text-primary text-xs font-semibold grid place-items-center">
+                      {s.id}
+                    </span>
+                    <span className="text-sm font-medium">Scene {s.id}</span>
+                    <Badge variant="secondary">{s.duration}s</Badge>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setEditingId(isEditing ? null : s.id)}
+                    className="gap-1"
+                  >
+                    {isEditing ? (<><Check className="size-3" /> Done</>) : (<><Pencil className="size-3" /> Edit</>)}
+                  </Button>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs uppercase tracking-wide text-muted-foreground">Visual</Label>
+                    {isEditing ? (
+                      <Textarea
+                        value={s.visual}
+                        onChange={(e) => updateScene(s.id, { visual: e.target.value })}
+                        rows={3}
+                        className="mt-1"
+                      />
+                    ) : (
+                      <p className="text-sm mt-1 text-foreground/80">{s.visual}</p>
+                    )}
+                  </div>
+                  <div>
+                    <Label className="text-xs uppercase tracking-wide text-muted-foreground">Voiceover</Label>
+                    {isEditing ? (
+                      <Textarea
+                        value={s.voiceover}
+                        onChange={(e) => updateScene(s.id, { voiceover: e.target.value })}
+                        rows={3}
+                        className="mt-1"
+                      />
+                    ) : (
+                      <p className="text-sm mt-1 text-foreground/80">{s.voiceover}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+
+      <Card className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <div className="text-sm text-muted-foreground">Total cost to render</div>
+          <div className="text-2xl font-bold gradient-text">{totalCredits} credits</div>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={onBack}>Edit inputs</Button>
+          <Button onClick={onApprove} className="btn-gradient text-white gap-2">
+            <Wand2 className="size-4" /> Approve & Generate Video
+          </Button>
+        </div>
+      </Card>
     </div>
   );
 }
