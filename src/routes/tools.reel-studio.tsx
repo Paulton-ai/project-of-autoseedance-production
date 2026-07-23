@@ -176,7 +176,20 @@ function ReelStudioPage() {
             </div>
           </div>
 
+          {view === "script" ? (
+            <ScriptReview
+              scenes={scenes}
+              editingId={editingId}
+              setEditingId={setEditingId}
+              updateScene={updateScene}
+              onBack={() => setView("input")}
+              onApprove={handleApproveScript}
+              totalLength={videoLength}
+              totalCredits={costEstimate.total}
+            />
+          ) : (
           <div className="grid lg:grid-cols-[1fr_320px] gap-6">
+
             <div className="space-y-6">
               {/* Section A — Core Idea */}
               <Card className="p-6">
