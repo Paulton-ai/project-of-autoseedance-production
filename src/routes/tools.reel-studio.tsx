@@ -674,10 +674,11 @@ function ScriptReview({
           <div className="text-2xl font-bold gradient-text">{totalCredits} credits</div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={onBack}>Edit inputs</Button>
-          <Button onClick={onApprove} className="btn-gradient text-white gap-2">
-            <Wand2 className="size-4" /> Approve & Generate Video
+          <Button variant="outline" onClick={onBack} disabled={approving}>Edit inputs</Button>
+          <Button onClick={onApprove} disabled={approving} className="btn-gradient text-white gap-2">
+            {approving ? (<><Loader2 className="size-4 animate-spin" /> Submitting…</>) : (<><Wand2 className="size-4" /> Approve & Generate Video</>)}
           </Button>
+
         </div>
       </Card>
     </div>
