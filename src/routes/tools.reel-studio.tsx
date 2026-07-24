@@ -167,9 +167,56 @@ function ReelStudioPage() {
     setScenes((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
   };
 
-  const handleApproveScript = () => {
-    toast.info(`Video pipeline coming in Milestone 4 (reel ${reelId?.slice(0, 8) ?? "draft"})`);
+  const handleApproveScript = async () => {
+    if (!reelId) {
+      toast.error("Missing reel id — regenerate the script");
+      return;
+    }
+    setSubmittingClips(true);
+    setClipsStatus("Submitting scene clips to Fal.ai…");
+    try {
+      const { supabase } = await import("@/integrations/supabase/client");
+      // Persist any edits the user made to scenes into the reel before rendering
+      const { data: submitData, error: submitErr } = await supabase.functions.invoke("generate-reel-clips", {
+        body: { reel_id: reelId, scenes },
+      });
+      if (submitErr) throw submitErr;
+      if (!submitData?.success) throw new Error(submitData?.error || "Failed to submit scene clips");
+      setClips(submitData.scenes as SceneClip[]);
+      setView("clips");
+      setClipsStatus(`Rendering ${submitData.scenes.length} scene clips with ${submitData.endpoint}…`);
+
+      // Poll until done
+      const poll = async (): Promise<void> => {
+        const { data: pd, error: pe } = await supabase.functions.invoke("poll-reel-clips", {
+          body: { reel_id: reelId },
+        });
+        if (pe) throw pe;
+        if (!pd?.success) throw new Error(pd?.error || "Poll failed");
+        setClips(pd.scenes as SceneClip[]);
+        const { total, completed, failed, processing } = pd.progress;
+        setClipsStatus(`Rendering: ${completed}/${total} completed · ${processing} processing · ${failed} failed`);
+        if (pd.status === "clips_ready") {
+          setClipsStatus(`All ${total} scene clips ready. Voiceover/merge coming in Milestone 5.`);
+          toast.success("All scene clips generated");
+          return;
+        }
+        if (pd.status === "clips_partial_failed" && processing === 0) {
+          toast.error(`${failed} scene(s) failed`);
+          return;
+        }
+        await new Promise((r) => setTimeout(r, 5000));
+        return poll();
+      };
+      await poll();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      toast.error(`Video generation failed: ${msg}`);
+    } finally {
+      setSubmittingClips(false);
+    }
   };
+
 
   return (
     <div className="min-h-screen bg-background">
