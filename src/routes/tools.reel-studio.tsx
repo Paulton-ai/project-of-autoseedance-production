@@ -91,6 +91,7 @@ function ReelStudioPage() {
   const [view, setView] = useState<"input" | "script">("input");
   const [generatingScript, setGeneratingScript] = useState(false);
   const [scenes, setScenes] = useState<Scene[]>([]);
+  const [reelId, setReelId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
 
   const costEstimate = useMemo(() => {
@@ -110,24 +111,6 @@ function ReelStudioPage() {
 
   const canGenerate = topic.trim().length > 10;
 
-  const buildMockScript = (): Scene[] => {
-    // Placeholder script generator until Milestone 3 wires the edge function
-    const sceneCount = videoLength === 30 ? 4 : videoLength === 60 ? 6 : 8;
-    const perScene = Math.round(videoLength / sceneCount);
-    const seed = topic.trim().replace(/\s+/g, " ");
-    return Array.from({ length: sceneCount }).map((_, i) => ({
-      id: i + 1,
-      duration: perScene,
-      visual: `Scene ${i + 1} — ${style} shot illustrating: "${seed.slice(0, 90)}${seed.length > 90 ? "…" : ""}" (${niche} niche).`,
-      voiceover:
-        i === 0
-          ? `Hook: What if ${seed.split(".")[0].toLowerCase()}?`
-          : i === sceneCount - 1
-            ? `Call-to-action: Follow for more on ${niche.toLowerCase()}.`
-            : `Beat ${i}: expand on the idea with a concrete, visual moment.`,
-    }));
-  };
-
   const handleGenerate = async () => {
     if (!user) {
       toast.error("Please sign in to generate reels");
@@ -138,11 +121,36 @@ function ReelStudioPage() {
       return;
     }
     setGeneratingScript(true);
-    // Simulate script generation — real Anthropic call lands in Milestone 3
-    await new Promise((r) => setTimeout(r, 900));
-    setScenes(buildMockScript());
-    setGeneratingScript(false);
-    setView("script");
+    try {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { data, error } = await supabase.functions.invoke("generate-reel-script", {
+        body: {
+          topic,
+          niche,
+          video_length: videoLength,
+          style,
+          aspect,
+          model,
+          quality,
+          voiceover,
+          voice,
+          music,
+          music_mood: musicMood,
+          captions,
+          caption_style: captionStyle,
+        },
+      });
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || "Script generation failed");
+      setScenes(data.scenes as Scene[]);
+      setReelId(data.reel_id as string);
+      setView("script");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      toast.error(`Failed to generate script: ${msg}`);
+    } finally {
+      setGeneratingScript(false);
+    }
   };
 
   const updateScene = (id: number, patch: Partial<Scene>) => {
@@ -150,7 +158,7 @@ function ReelStudioPage() {
   };
 
   const handleApproveScript = () => {
-    toast.info("Video pipeline coming in Milestone 3");
+    toast.info(`Video pipeline coming in Milestone 4 (reel ${reelId?.slice(0, 8) ?? "draft"})`);
   };
 
   return (
