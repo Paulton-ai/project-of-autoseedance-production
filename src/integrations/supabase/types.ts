@@ -436,6 +436,93 @@ export type Database = {
         }
         Relationships: []
       }
+      reel_generations: {
+        Row: {
+          aspect: string
+          caption_style: string | null
+          captions: boolean
+          created_at: string
+          credits_used: number
+          error: string | null
+          final_video_url: string | null
+          id: string
+          model: string | null
+          music: boolean
+          music_mood: string | null
+          music_url: string | null
+          niche: string | null
+          quality: string
+          reference_image_url: string | null
+          scene_assets: Json | null
+          script: Json | null
+          status: string
+          style: string | null
+          topic: string
+          updated_at: string
+          user_id: string
+          video_length: number
+          voice: string | null
+          voiceover: boolean
+          voiceover_url: string | null
+        }
+        Insert: {
+          aspect?: string
+          caption_style?: string | null
+          captions?: boolean
+          created_at?: string
+          credits_used?: number
+          error?: string | null
+          final_video_url?: string | null
+          id?: string
+          model?: string | null
+          music?: boolean
+          music_mood?: string | null
+          music_url?: string | null
+          niche?: string | null
+          quality?: string
+          reference_image_url?: string | null
+          scene_assets?: Json | null
+          script?: Json | null
+          status?: string
+          style?: string | null
+          topic: string
+          updated_at?: string
+          user_id: string
+          video_length?: number
+          voice?: string | null
+          voiceover?: boolean
+          voiceover_url?: string | null
+        }
+        Update: {
+          aspect?: string
+          caption_style?: string | null
+          captions?: boolean
+          created_at?: string
+          credits_used?: number
+          error?: string | null
+          final_video_url?: string | null
+          id?: string
+          model?: string | null
+          music?: boolean
+          music_mood?: string | null
+          music_url?: string | null
+          niche?: string | null
+          quality?: string
+          reference_image_url?: string | null
+          scene_assets?: Json | null
+          script?: Json | null
+          status?: string
+          style?: string | null
+          topic?: string
+          updated_at?: string
+          user_id?: string
+          video_length?: number
+          voice?: string | null
+          voiceover?: boolean
+          voiceover_url?: string | null
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           key: string
