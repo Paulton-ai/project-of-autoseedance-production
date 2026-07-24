@@ -576,6 +576,7 @@ function ScriptReview({
   updateScene,
   onBack,
   onApprove,
+  approving,
   totalLength,
   totalCredits,
 }: {
@@ -585,9 +586,11 @@ function ScriptReview({
   updateScene: (id: number, patch: Partial<{ id: number; duration: number; visual: string; voiceover: string }>) => void;
   onBack: () => void;
   onApprove: () => void;
+  approving?: boolean;
   totalLength: number;
   totalCredits: number;
 }) {
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
