@@ -241,7 +241,14 @@ function ReelStudioPage() {
             </div>
           </div>
 
-          {view === "script" ? (
+          {view === "clips" ? (
+            <ClipsProgress
+              clips={clips}
+              statusLine={clipsStatus}
+              submitting={submittingClips}
+              onBack={() => setView("script")}
+            />
+          ) : view === "script" ? (
             <ScriptReview
               scenes={scenes}
               editingId={editingId}
@@ -249,10 +256,12 @@ function ReelStudioPage() {
               updateScene={updateScene}
               onBack={() => setView("input")}
               onApprove={handleApproveScript}
+              approving={submittingClips}
               totalLength={videoLength}
               totalCredits={costEstimate.total}
             />
           ) : (
+
           <div className="grid lg:grid-cols-[1fr_320px] gap-6">
 
             <div className="space-y-6">
