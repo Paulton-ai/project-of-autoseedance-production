@@ -111,24 +111,6 @@ function ReelStudioPage() {
 
   const canGenerate = topic.trim().length > 10;
 
-  const buildMockScript = (): Scene[] => {
-    // Placeholder script generator until Milestone 3 wires the edge function
-    const sceneCount = videoLength === 30 ? 4 : videoLength === 60 ? 6 : 8;
-    const perScene = Math.round(videoLength / sceneCount);
-    const seed = topic.trim().replace(/\s+/g, " ");
-    return Array.from({ length: sceneCount }).map((_, i) => ({
-      id: i + 1,
-      duration: perScene,
-      visual: `Scene ${i + 1} — ${style} shot illustrating: "${seed.slice(0, 90)}${seed.length > 90 ? "…" : ""}" (${niche} niche).`,
-      voiceover:
-        i === 0
-          ? `Hook: What if ${seed.split(".")[0].toLowerCase()}?`
-          : i === sceneCount - 1
-            ? `Call-to-action: Follow for more on ${niche.toLowerCase()}.`
-            : `Beat ${i}: expand on the idea with a concrete, visual moment.`,
-    }));
-  };
-
   const handleGenerate = async () => {
     if (!user) {
       toast.error("Please sign in to generate reels");
