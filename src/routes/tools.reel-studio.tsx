@@ -684,3 +684,89 @@ function ScriptReview({
     </div>
   );
 }
+
+function ClipsProgress({
+  clips,
+  statusLine,
+  submitting,
+  onBack,
+}: {
+  clips: {
+    id: number;
+    duration: number;
+    visual: string;
+    voiceover: string;
+    status: "processing" | "completed" | "failed";
+    video_url?: string;
+    error?: string;
+    model_id?: string;
+  }[];
+  statusLine: string;
+  submitting: boolean;
+  onBack: () => void;
+}) {
+  const total = clips.length;
+  const completed = clips.filter((c) => c.status === "completed").length;
+  const failed = clips.filter((c) => c.status === "failed").length;
+  const processing = total - completed - failed;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" onClick={onBack} className="gap-2" disabled={submitting}>
+          <ArrowLeft className="size-4" /> Back to script
+        </Button>
+        <div className="text-sm text-muted-foreground">
+          {completed}/{total} clips · {processing} rendering · {failed} failed
+        </div>
+      </div>
+
+      <Card className="p-6">
+        <h2 className="text-xl font-display font-bold mb-1">Rendering scene clips</h2>
+        <p className="text-sm text-muted-foreground mb-4">{statusLine}</p>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {clips.map((c) => (
+            <div key={c.id} className="rounded-lg border border-border overflow-hidden">
+              <div className="aspect-[9/16] bg-muted grid place-items-center relative">
+                {c.status === "completed" && c.video_url ? (
+                  <video
+                    src={c.video_url}
+                    controls
+                    muted
+                    playsInline
+                    className="w-full h-full object-cover"
+                  />
+                ) : c.status === "failed" ? (
+                  <div className="text-center p-3 text-xs text-destructive">
+                    <X className="size-6 mx-auto mb-1" />
+                    Failed
+                  </div>
+                ) : (
+                  <Loader2 className="size-6 animate-spin text-muted-foreground" />
+                )}
+                <Badge
+                  variant="secondary"
+                  className={cn(
+                    "absolute top-2 left-2",
+                    c.status === "completed" && "bg-emerald-500/20 text-emerald-600",
+                    c.status === "failed" && "bg-destructive/20 text-destructive",
+                  )}
+                >
+                  Scene {c.id} · {c.duration}s
+                </Badge>
+              </div>
+              <div className="p-3">
+                <p className="text-xs text-muted-foreground line-clamp-2">{c.visual}</p>
+                {c.error && (
+                  <p className="text-xs text-destructive mt-1 line-clamp-2">{c.error}</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+}
+
