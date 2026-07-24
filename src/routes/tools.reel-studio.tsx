@@ -91,6 +91,7 @@ function ReelStudioPage() {
   const [view, setView] = useState<"input" | "script">("input");
   const [generatingScript, setGeneratingScript] = useState(false);
   const [scenes, setScenes] = useState<Scene[]>([]);
+  const [reelId, setReelId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
 
   const costEstimate = useMemo(() => {
