@@ -139,11 +139,36 @@ function ReelStudioPage() {
       return;
     }
     setGeneratingScript(true);
-    // Simulate script generation — real Anthropic call lands in Milestone 3
-    await new Promise((r) => setTimeout(r, 900));
-    setScenes(buildMockScript());
-    setGeneratingScript(false);
-    setView("script");
+    try {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { data, error } = await supabase.functions.invoke("generate-reel-script", {
+        body: {
+          topic,
+          niche,
+          video_length: videoLength,
+          style,
+          aspect,
+          model,
+          quality,
+          voiceover,
+          voice,
+          music,
+          music_mood: musicMood,
+          captions,
+          caption_style: captionStyle,
+        },
+      });
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || "Script generation failed");
+      setScenes(data.scenes as Scene[]);
+      setReelId(data.reel_id as string);
+      setView("script");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      toast.error(`Failed to generate script: ${msg}`);
+    } finally {
+      setGeneratingScript(false);
+    }
   };
 
   const updateScene = (id: number, patch: Partial<Scene>) => {
