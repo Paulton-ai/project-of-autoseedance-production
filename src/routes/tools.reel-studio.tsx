@@ -158,7 +158,7 @@ function ReelStudioPage() {
   };
 
   const handleApproveScript = () => {
-    toast.info("Video pipeline coming in Milestone 3");
+    toast.info(`Video pipeline coming in Milestone 4 (reel ${reelId?.slice(0, 8) ?? "draft"})`);
   };
 
   return (
