@@ -88,11 +88,21 @@ function ReelStudioPage() {
   const [captionStyle, setCaptionStyle] = useState<string>("karaoke");
 
   type Scene = { id: number; duration: number; visual: string; voiceover: string };
-  const [view, setView] = useState<"input" | "script">("input");
+  type SceneClip = Scene & {
+    status: "processing" | "completed" | "failed";
+    video_url?: string;
+    error?: string;
+    model_id?: string;
+  };
+  const [view, setView] = useState<"input" | "script" | "clips">("input");
   const [generatingScript, setGeneratingScript] = useState(false);
   const [scenes, setScenes] = useState<Scene[]>([]);
   const [reelId, setReelId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [clips, setClips] = useState<SceneClip[]>([]);
+  const [clipsStatus, setClipsStatus] = useState<string>("");
+  const [submittingClips, setSubmittingClips] = useState(false);
+
 
   const costEstimate = useMemo(() => {
     const base = quality === "premium" ? 80 : 40;
@@ -157,9 +167,56 @@ function ReelStudioPage() {
     setScenes((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
   };
 
-  const handleApproveScript = () => {
-    toast.info(`Video pipeline coming in Milestone 4 (reel ${reelId?.slice(0, 8) ?? "draft"})`);
+  const handleApproveScript = async () => {
+    if (!reelId) {
+      toast.error("Missing reel id — regenerate the script");
+      return;
+    }
+    setSubmittingClips(true);
+    setClipsStatus("Submitting scene clips to Fal.ai…");
+    try {
+      const { supabase } = await import("@/integrations/supabase/client");
+      // Persist any edits the user made to scenes into the reel before rendering
+      const { data: submitData, error: submitErr } = await supabase.functions.invoke("generate-reel-clips", {
+        body: { reel_id: reelId, scenes },
+      });
+      if (submitErr) throw submitErr;
+      if (!submitData?.success) throw new Error(submitData?.error || "Failed to submit scene clips");
+      setClips(submitData.scenes as SceneClip[]);
+      setView("clips");
+      setClipsStatus(`Rendering ${submitData.scenes.length} scene clips with ${submitData.endpoint}…`);
+
+      // Poll until done
+      const poll = async (): Promise<void> => {
+        const { data: pd, error: pe } = await supabase.functions.invoke("poll-reel-clips", {
+          body: { reel_id: reelId },
+        });
+        if (pe) throw pe;
+        if (!pd?.success) throw new Error(pd?.error || "Poll failed");
+        setClips(pd.scenes as SceneClip[]);
+        const { total, completed, failed, processing } = pd.progress;
+        setClipsStatus(`Rendering: ${completed}/${total} completed · ${processing} processing · ${failed} failed`);
+        if (pd.status === "clips_ready") {
+          setClipsStatus(`All ${total} scene clips ready. Voiceover/merge coming in Milestone 5.`);
+          toast.success("All scene clips generated");
+          return;
+        }
+        if (pd.status === "clips_partial_failed" && processing === 0) {
+          toast.error(`${failed} scene(s) failed`);
+          return;
+        }
+        await new Promise((r) => setTimeout(r, 5000));
+        return poll();
+      };
+      await poll();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      toast.error(`Video generation failed: ${msg}`);
+    } finally {
+      setSubmittingClips(false);
+    }
   };
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -184,7 +241,14 @@ function ReelStudioPage() {
             </div>
           </div>
 
-          {view === "script" ? (
+          {view === "clips" ? (
+            <ClipsProgress
+              clips={clips}
+              statusLine={clipsStatus}
+              submitting={submittingClips}
+              onBack={() => setView("script")}
+            />
+          ) : view === "script" ? (
             <ScriptReview
               scenes={scenes}
               editingId={editingId}
@@ -192,10 +256,12 @@ function ReelStudioPage() {
               updateScene={updateScene}
               onBack={() => setView("input")}
               onApprove={handleApproveScript}
+              approving={submittingClips}
               totalLength={videoLength}
               totalCredits={costEstimate.total}
             />
           ) : (
+
           <div className="grid lg:grid-cols-[1fr_320px] gap-6">
 
             <div className="space-y-6">
@@ -510,6 +576,7 @@ function ScriptReview({
   updateScene,
   onBack,
   onApprove,
+  approving,
   totalLength,
   totalCredits,
 }: {
@@ -519,9 +586,11 @@ function ScriptReview({
   updateScene: (id: number, patch: Partial<{ id: number; duration: number; visual: string; voiceover: string }>) => void;
   onBack: () => void;
   onApprove: () => void;
+  approving?: boolean;
   totalLength: number;
   totalCredits: number;
 }) {
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -605,12 +674,99 @@ function ScriptReview({
           <div className="text-2xl font-bold gradient-text">{totalCredits} credits</div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={onBack}>Edit inputs</Button>
-          <Button onClick={onApprove} className="btn-gradient text-white gap-2">
-            <Wand2 className="size-4" /> Approve & Generate Video
+          <Button variant="outline" onClick={onBack} disabled={approving}>Edit inputs</Button>
+          <Button onClick={onApprove} disabled={approving} className="btn-gradient text-white gap-2">
+            {approving ? (<><Loader2 className="size-4 animate-spin" /> Submitting…</>) : (<><Wand2 className="size-4" /> Approve & Generate Video</>)}
           </Button>
+
         </div>
       </Card>
     </div>
   );
 }
+
+function ClipsProgress({
+  clips,
+  statusLine,
+  submitting,
+  onBack,
+}: {
+  clips: {
+    id: number;
+    duration: number;
+    visual: string;
+    voiceover: string;
+    status: "processing" | "completed" | "failed";
+    video_url?: string;
+    error?: string;
+    model_id?: string;
+  }[];
+  statusLine: string;
+  submitting: boolean;
+  onBack: () => void;
+}) {
+  const total = clips.length;
+  const completed = clips.filter((c) => c.status === "completed").length;
+  const failed = clips.filter((c) => c.status === "failed").length;
+  const processing = total - completed - failed;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" onClick={onBack} className="gap-2" disabled={submitting}>
+          <ArrowLeft className="size-4" /> Back to script
+        </Button>
+        <div className="text-sm text-muted-foreground">
+          {completed}/{total} clips · {processing} rendering · {failed} failed
+        </div>
+      </div>
+
+      <Card className="p-6">
+        <h2 className="text-xl font-display font-bold mb-1">Rendering scene clips</h2>
+        <p className="text-sm text-muted-foreground mb-4">{statusLine}</p>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {clips.map((c) => (
+            <div key={c.id} className="rounded-lg border border-border overflow-hidden">
+              <div className="aspect-[9/16] bg-muted grid place-items-center relative">
+                {c.status === "completed" && c.video_url ? (
+                  <video
+                    src={c.video_url}
+                    controls
+                    muted
+                    playsInline
+                    className="w-full h-full object-cover"
+                  />
+                ) : c.status === "failed" ? (
+                  <div className="text-center p-3 text-xs text-destructive">
+                    <X className="size-6 mx-auto mb-1" />
+                    Failed
+                  </div>
+                ) : (
+                  <Loader2 className="size-6 animate-spin text-muted-foreground" />
+                )}
+                <Badge
+                  variant="secondary"
+                  className={cn(
+                    "absolute top-2 left-2",
+                    c.status === "completed" && "bg-emerald-500/20 text-emerald-600",
+                    c.status === "failed" && "bg-destructive/20 text-destructive",
+                  )}
+                >
+                  Scene {c.id} · {c.duration}s
+                </Badge>
+              </div>
+              <div className="p-3">
+                <p className="text-xs text-muted-foreground line-clamp-2">{c.visual}</p>
+                {c.error && (
+                  <p className="text-xs text-destructive mt-1 line-clamp-2">{c.error}</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+}
+
