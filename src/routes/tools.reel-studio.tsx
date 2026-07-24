@@ -88,11 +88,21 @@ function ReelStudioPage() {
   const [captionStyle, setCaptionStyle] = useState<string>("karaoke");
 
   type Scene = { id: number; duration: number; visual: string; voiceover: string };
-  const [view, setView] = useState<"input" | "script">("input");
+  type SceneClip = Scene & {
+    status: "processing" | "completed" | "failed";
+    video_url?: string;
+    error?: string;
+    model_id?: string;
+  };
+  const [view, setView] = useState<"input" | "script" | "clips">("input");
   const [generatingScript, setGeneratingScript] = useState(false);
   const [scenes, setScenes] = useState<Scene[]>([]);
   const [reelId, setReelId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [clips, setClips] = useState<SceneClip[]>([]);
+  const [clipsStatus, setClipsStatus] = useState<string>("");
+  const [submittingClips, setSubmittingClips] = useState(false);
+
 
   const costEstimate = useMemo(() => {
     const base = quality === "premium" ? 80 : 40;
