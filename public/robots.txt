@@ -1,49 +1,15 @@
 User-agent: *
-Allow: /
-Allow: /tools
-Allow: /tools/
-Allow: /tools/image
-Allow: /tools/video
-Allow: /blog
-Allow: /blog/
-Allow: /pricing
-Allow: /contact
-Allow: /privacy
-Allow: /terms
 
-Disallow: /dashboard
+# Block private/auth pages
 Disallow: /dashboard/
-Disallow: /auth
 Disallow: /auth/
 Disallow: /login
 Disallow: /signup
 Disallow: /forgot-password
 Disallow: /reset-password
-Disallow: /payment
-Disallow: /workspace
-Disallow: /admin
+Disallow: /payment/
+Disallow: /workspace/
+Disallow: /admin/
 
-User-agent: Googlebot
-Allow: /
-Crawl-delay: 1
-
-User-agent: Bingbot
-Allow: /
-Crawl-delay: 1
-
-User-agent: Slurp
-Allow: /
-Crawl-delay: 2
-
-User-agent: DuckDuckBot
-Allow: /
-
-User-agent: Baiduspider
-Allow: /
-Crawl-delay: 2
-
-User-agent: YandexBot
-Allow: /
-Crawl-delay: 2
-
+# Sitemap
 Sitemap: https://autoseedance.site/sitemap.xml
