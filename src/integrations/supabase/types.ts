@@ -446,6 +446,7 @@ export type Database = {
           error: string | null
           final_video_url: string | null
           id: string
+          merge_request_id: string | null
           model: string | null
           music: boolean
           music_mood: string | null
@@ -474,6 +475,7 @@ export type Database = {
           error?: string | null
           final_video_url?: string | null
           id?: string
+          merge_request_id?: string | null
           model?: string | null
           music?: boolean
           music_mood?: string | null
@@ -502,6 +504,7 @@ export type Database = {
           error?: string | null
           final_video_url?: string | null
           id?: string
+          merge_request_id?: string | null
           model?: string | null
           music?: boolean
           music_mood?: string | null
