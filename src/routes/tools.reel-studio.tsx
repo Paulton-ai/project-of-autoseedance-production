@@ -168,6 +168,47 @@ function ReelStudioPage() {
     setScenes((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
   };
 
+  const finalizeReel = async () => {
+    if (!reelId) return;
+    const { supabase } = await import("@/integrations/supabase/client");
+
+    if (voiceover) {
+      setClipsStatus("Generating voiceover narration…");
+      const { data: vo, error: voErr } = await supabase.functions.invoke("generate-reel-voiceover", {
+        body: { reel_id: reelId },
+      });
+      if (voErr) throw voErr;
+      if (!vo?.success) throw new Error(vo?.error || "Voiceover generation failed");
+      if (vo.failed) toast.error(`${vo.failed} scene narration(s) failed — merging without them`);
+    }
+
+    setClipsStatus("Merging scenes into the final video…");
+    const { data: submit, error: submitErr } = await supabase.functions.invoke("merge-reel-video", {
+      body: { reel_id: reelId, action: "submit" },
+    });
+    if (submitErr) throw submitErr;
+    if (!submit?.success) throw new Error(submit?.error || "Merge failed to start");
+
+    const pollMerge = async (): Promise<void> => {
+      await new Promise((r) => setTimeout(r, 5000));
+      const { data: pd, error: pe } = await supabase.functions.invoke("merge-reel-video", {
+        body: { reel_id: reelId, action: "poll" },
+      });
+      if (pe) throw pe;
+      if (!pd?.success) throw new Error(pd?.error || "Merge poll failed");
+      if (pd.status === "completed") {
+        setFinalUrl(pd.final_video_url as string);
+        setView("final");
+        toast.success("Your reel is ready");
+        return;
+      }
+      if (pd.status === "failed") throw new Error(pd.error || "Merge failed");
+      return pollMerge();
+    };
+    await pollMerge();
+  };
+
+
   const handleApproveScript = async () => {
     if (!reelId) {
       toast.error("Missing reel id — regenerate the script");
