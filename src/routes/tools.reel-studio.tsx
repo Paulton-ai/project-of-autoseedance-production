@@ -103,6 +103,7 @@ function ReelStudioPage() {
   const [clipsStatus, setClipsStatus] = useState<string>("");
   const [submittingClips, setSubmittingClips] = useState(false);
   const [finalUrl, setFinalUrl] = useState<string | null>(null);
+  const [captioning, setCaptioning] = useState(false);
 
 
   const costEstimate = useMemo(() => {
@@ -200,12 +201,50 @@ function ReelStudioPage() {
         setFinalUrl(pd.final_video_url as string);
         setView("final");
         toast.success("Your reel is ready");
+        if (captions && captionStyle !== "none") await burnCaptions();
         return;
       }
       if (pd.status === "failed") throw new Error(pd.error || "Merge failed");
       return pollMerge();
     };
     await pollMerge();
+  };
+
+  const burnCaptions = async () => {
+    if (!reelId) return;
+    const { supabase } = await import("@/integrations/supabase/client");
+    try {
+      setCaptioning(true);
+      const { data: submit, error: subErr } = await supabase.functions.invoke("caption-reel-video", {
+        body: { reel_id: reelId, action: "submit" },
+      });
+      if (subErr) throw subErr;
+      if (!submit?.success) throw new Error(submit?.error || "Captioning failed to start");
+      if (submit.status === "skipped") return;
+      const requestId = submit.request_id as string;
+
+      const pollCaptions = async (): Promise<void> => {
+        await new Promise((r) => setTimeout(r, 5000));
+        const { data: pd, error: pe } = await supabase.functions.invoke("caption-reel-video", {
+          body: { reel_id: reelId, action: "poll", request_id: requestId },
+        });
+        if (pe) throw pe;
+        if (!pd?.success) throw new Error(pd?.error || "Caption poll failed");
+        if (pd.status === "completed") {
+          setFinalUrl(pd.final_video_url as string);
+          toast.success("Captions added");
+          return;
+        }
+        if (pd.status === "failed") throw new Error(pd.error || "Captioning failed");
+        return pollCaptions();
+      };
+      await pollCaptions();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      toast.error(`Captions skipped: ${msg}`);
+    } finally {
+      setCaptioning(false);
+    }
   };
 
 
@@ -292,6 +331,7 @@ function ReelStudioPage() {
                 setView("input");
               }}
               onBackToClips={() => setView("clips")}
+              captioning={captioning}
             />
           ) : view === "clips" ? (
             <ClipsProgress
@@ -828,11 +868,13 @@ function FinalResult({
   aspect,
   onNew,
   onBackToClips,
+  captioning = false,
 }: {
   url: string;
   aspect: "portrait" | "landscape";
   onNew: () => void;
   onBackToClips: () => void;
+  captioning?: boolean;
 }) {
   const copyLink = async () => {
     await navigator.clipboard.writeText(url);
@@ -845,13 +887,21 @@ function FinalResult({
         <Button variant="ghost" onClick={onBackToClips} className="gap-2">
           <ArrowLeft className="size-4" /> Back to scenes
         </Button>
-        <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-600">Completed</Badge>
+        {captioning ? (
+          <Badge variant="secondary" className="gap-2">
+            <Loader2 className="size-3 animate-spin" /> Burning captions…
+          </Badge>
+        ) : (
+          <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-600">Completed</Badge>
+        )}
       </div>
 
       <Card className="p-6">
         <h2 className="text-xl font-display font-bold mb-1">Your reel is ready</h2>
         <p className="text-sm text-muted-foreground mb-4">
-          Scenes merged with narration. Download it or copy the link to share.
+          {captioning
+            ? "Playing the merged cut — captions are being burned in and will swap in automatically."
+            : "Scenes merged with narration and captions. Download it or copy the link to share."}
         </p>
 
         <div className="flex justify-center">
