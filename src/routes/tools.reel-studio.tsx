@@ -200,12 +200,50 @@ function ReelStudioPage() {
         setFinalUrl(pd.final_video_url as string);
         setView("final");
         toast.success("Your reel is ready");
+        if (captions && captionStyle !== "none") await burnCaptions();
         return;
       }
       if (pd.status === "failed") throw new Error(pd.error || "Merge failed");
       return pollMerge();
     };
     await pollMerge();
+  };
+
+  const burnCaptions = async () => {
+    if (!reelId) return;
+    const { supabase } = await import("@/integrations/supabase/client");
+    try {
+      setCaptioning(true);
+      const { data: submit, error: subErr } = await supabase.functions.invoke("caption-reel-video", {
+        body: { reel_id: reelId, action: "submit" },
+      });
+      if (subErr) throw subErr;
+      if (!submit?.success) throw new Error(submit?.error || "Captioning failed to start");
+      if (submit.status === "skipped") return;
+      const requestId = submit.request_id as string;
+
+      const pollCaptions = async (): Promise<void> => {
+        await new Promise((r) => setTimeout(r, 5000));
+        const { data: pd, error: pe } = await supabase.functions.invoke("caption-reel-video", {
+          body: { reel_id: reelId, action: "poll", request_id: requestId },
+        });
+        if (pe) throw pe;
+        if (!pd?.success) throw new Error(pd?.error || "Caption poll failed");
+        if (pd.status === "completed") {
+          setFinalUrl(pd.final_video_url as string);
+          toast.success("Captions added");
+          return;
+        }
+        if (pd.status === "failed") throw new Error(pd.error || "Captioning failed");
+        return pollCaptions();
+      };
+      await pollCaptions();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      toast.error(`Captions skipped: ${msg}`);
+    } finally {
+      setCaptioning(false);
+    }
   };
 
 
