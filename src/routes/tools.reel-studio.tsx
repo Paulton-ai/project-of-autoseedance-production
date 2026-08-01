@@ -331,6 +331,7 @@ function ReelStudioPage() {
                 setView("input");
               }}
               onBackToClips={() => setView("clips")}
+              captioning={captioning}
             />
           ) : view === "clips" ? (
             <ClipsProgress
