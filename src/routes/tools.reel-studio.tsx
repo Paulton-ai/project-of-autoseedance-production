@@ -868,11 +868,13 @@ function FinalResult({
   aspect,
   onNew,
   onBackToClips,
+  captioning = false,
 }: {
   url: string;
   aspect: "portrait" | "landscape";
   onNew: () => void;
   onBackToClips: () => void;
+  captioning?: boolean;
 }) {
   const copyLink = async () => {
     await navigator.clipboard.writeText(url);
@@ -885,13 +887,21 @@ function FinalResult({
         <Button variant="ghost" onClick={onBackToClips} className="gap-2">
           <ArrowLeft className="size-4" /> Back to scenes
         </Button>
-        <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-600">Completed</Badge>
+        {captioning ? (
+          <Badge variant="secondary" className="gap-2">
+            <Loader2 className="size-3 animate-spin" /> Burning captions…
+          </Badge>
+        ) : (
+          <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-600">Completed</Badge>
+        )}
       </div>
 
       <Card className="p-6">
         <h2 className="text-xl font-display font-bold mb-1">Your reel is ready</h2>
         <p className="text-sm text-muted-foreground mb-4">
-          Scenes merged with narration. Download it or copy the link to share.
+          {captioning
+            ? "Playing the merged cut — captions are being burned in and will swap in automatically."
+            : "Scenes merged with narration and captions. Download it or copy the link to share."}
         </p>
 
         <div className="flex justify-center">
