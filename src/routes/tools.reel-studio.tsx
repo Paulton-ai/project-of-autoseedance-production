@@ -197,13 +197,10 @@ function ReelStudioPage() {
         setClips(pd.scenes as SceneClip[]);
         const { total, completed, failed, processing } = pd.progress;
         setClipsStatus(`Rendering: ${completed}/${total} completed · ${processing} processing · ${failed} failed`);
-        if (pd.status === "clips_ready") {
-          setClipsStatus(`All ${total} scene clips ready. Voiceover/merge coming in Milestone 5.`);
-          toast.success("All scene clips generated");
-          return;
-        }
-        if (pd.status === "clips_partial_failed" && processing === 0) {
-          toast.error(`${failed} scene(s) failed`);
+        if (pd.status === "clips_ready" || (pd.status === "clips_partial_failed" && processing === 0)) {
+          if (failed > 0) toast.error(`${failed} scene(s) failed — continuing with ${completed}`);
+          else toast.success("All scene clips generated");
+          if (completed > 0) await finalizeReel();
           return;
         }
         await new Promise((r) => setTimeout(r, 5000));
