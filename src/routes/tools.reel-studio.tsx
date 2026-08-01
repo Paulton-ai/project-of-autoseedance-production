@@ -280,7 +280,20 @@ function ReelStudioPage() {
             </div>
           </div>
 
-          {view === "clips" ? (
+          {view === "final" && finalUrl ? (
+            <FinalResult
+              url={finalUrl}
+              aspect={aspect}
+              onNew={() => {
+                setFinalUrl(null);
+                setClips([]);
+                setScenes([]);
+                setReelId(null);
+                setView("input");
+              }}
+              onBackToClips={() => setView("clips")}
+            />
+          ) : view === "clips" ? (
             <ClipsProgress
               clips={clips}
               statusLine={clipsStatus}
