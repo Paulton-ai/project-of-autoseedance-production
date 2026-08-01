@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Breadcrumb } from "@/components/seo/Breadcrumb";
 import { useSession } from "@/lib/auth";
 import { toast } from "sonner";
-import { Film, Sparkles, Upload, X, Coins, Wand2, ArrowLeft, Loader2, Pencil, Check } from "lucide-react";
+import { Film, Sparkles, Upload, X, Coins, Wand2, ArrowLeft, Loader2, Pencil, Check, Download, Link as LinkIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/tools/reel-studio")({
@@ -822,3 +822,64 @@ function ClipsProgress({
   );
 }
 
+
+function FinalResult({
+  url,
+  aspect,
+  onNew,
+  onBackToClips,
+}: {
+  url: string;
+  aspect: "portrait" | "landscape";
+  onNew: () => void;
+  onBackToClips: () => void;
+}) {
+  const copyLink = async () => {
+    await navigator.clipboard.writeText(url);
+    toast.success("Video link copied");
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" onClick={onBackToClips} className="gap-2">
+          <ArrowLeft className="size-4" /> Back to scenes
+        </Button>
+        <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-600">Completed</Badge>
+      </div>
+
+      <Card className="p-6">
+        <h2 className="text-xl font-display font-bold mb-1">Your reel is ready</h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          Scenes merged with narration. Download it or copy the link to share.
+        </p>
+
+        <div className="flex justify-center">
+          <video
+            src={url}
+            controls
+            playsInline
+            className={cn(
+              "rounded-xl border border-border bg-black w-full",
+              aspect === "portrait" ? "max-w-[360px] aspect-[9/16]" : "max-w-[720px] aspect-video",
+            )}
+          />
+        </div>
+
+        <div className="mt-6 flex flex-wrap gap-2 justify-center">
+          <Button asChild className="btn-gradient text-white gap-2">
+            <a href={url} download target="_blank" rel="noreferrer">
+              <Download className="size-4" /> Download video
+            </a>
+          </Button>
+          <Button variant="outline" onClick={copyLink} className="gap-2">
+            <LinkIcon className="size-4" /> Copy link
+          </Button>
+          <Button variant="outline" onClick={onNew} className="gap-2">
+            <Wand2 className="size-4" /> Create another reel
+          </Button>
+        </div>
+      </Card>
+    </div>
+  );
+}
