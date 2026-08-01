@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Breadcrumb } from "@/components/seo/Breadcrumb";
 import { useSession } from "@/lib/auth";
 import { toast } from "sonner";
-import { Film, Sparkles, Upload, X, Coins, Wand2, ArrowLeft, Loader2, Pencil, Check } from "lucide-react";
+import { Film, Sparkles, Upload, X, Coins, Wand2, ArrowLeft, Loader2, Pencil, Check, Download, Link as LinkIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/tools/reel-studio")({
@@ -94,7 +94,7 @@ function ReelStudioPage() {
     error?: string;
     model_id?: string;
   };
-  const [view, setView] = useState<"input" | "script" | "clips">("input");
+  const [view, setView] = useState<"input" | "script" | "clips" | "final">("input");
   const [generatingScript, setGeneratingScript] = useState(false);
   const [scenes, setScenes] = useState<Scene[]>([]);
   const [reelId, setReelId] = useState<string | null>(null);
@@ -102,6 +102,7 @@ function ReelStudioPage() {
   const [clips, setClips] = useState<SceneClip[]>([]);
   const [clipsStatus, setClipsStatus] = useState<string>("");
   const [submittingClips, setSubmittingClips] = useState(false);
+  const [finalUrl, setFinalUrl] = useState<string | null>(null);
 
 
   const costEstimate = useMemo(() => {
@@ -167,6 +168,47 @@ function ReelStudioPage() {
     setScenes((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
   };
 
+  const finalizeReel = async () => {
+    if (!reelId) return;
+    const { supabase } = await import("@/integrations/supabase/client");
+
+    if (voiceover) {
+      setClipsStatus("Generating voiceover narration…");
+      const { data: vo, error: voErr } = await supabase.functions.invoke("generate-reel-voiceover", {
+        body: { reel_id: reelId },
+      });
+      if (voErr) throw voErr;
+      if (!vo?.success) throw new Error(vo?.error || "Voiceover generation failed");
+      if (vo.failed) toast.error(`${vo.failed} scene narration(s) failed — merging without them`);
+    }
+
+    setClipsStatus("Merging scenes into the final video…");
+    const { data: submit, error: submitErr } = await supabase.functions.invoke("merge-reel-video", {
+      body: { reel_id: reelId, action: "submit" },
+    });
+    if (submitErr) throw submitErr;
+    if (!submit?.success) throw new Error(submit?.error || "Merge failed to start");
+
+    const pollMerge = async (): Promise<void> => {
+      await new Promise((r) => setTimeout(r, 5000));
+      const { data: pd, error: pe } = await supabase.functions.invoke("merge-reel-video", {
+        body: { reel_id: reelId, action: "poll" },
+      });
+      if (pe) throw pe;
+      if (!pd?.success) throw new Error(pd?.error || "Merge poll failed");
+      if (pd.status === "completed") {
+        setFinalUrl(pd.final_video_url as string);
+        setView("final");
+        toast.success("Your reel is ready");
+        return;
+      }
+      if (pd.status === "failed") throw new Error(pd.error || "Merge failed");
+      return pollMerge();
+    };
+    await pollMerge();
+  };
+
+
   const handleApproveScript = async () => {
     if (!reelId) {
       toast.error("Missing reel id — regenerate the script");
@@ -196,13 +238,10 @@ function ReelStudioPage() {
         setClips(pd.scenes as SceneClip[]);
         const { total, completed, failed, processing } = pd.progress;
         setClipsStatus(`Rendering: ${completed}/${total} completed · ${processing} processing · ${failed} failed`);
-        if (pd.status === "clips_ready") {
-          setClipsStatus(`All ${total} scene clips ready. Voiceover/merge coming in Milestone 5.`);
-          toast.success("All scene clips generated");
-          return;
-        }
-        if (pd.status === "clips_partial_failed" && processing === 0) {
-          toast.error(`${failed} scene(s) failed`);
+        if (pd.status === "clips_ready" || (pd.status === "clips_partial_failed" && processing === 0)) {
+          if (failed > 0) toast.error(`${failed} scene(s) failed — continuing with ${completed}`);
+          else toast.success("All scene clips generated");
+          if (completed > 0) await finalizeReel();
           return;
         }
         await new Promise((r) => setTimeout(r, 5000));
@@ -241,7 +280,20 @@ function ReelStudioPage() {
             </div>
           </div>
 
-          {view === "clips" ? (
+          {view === "final" && finalUrl ? (
+            <FinalResult
+              url={finalUrl}
+              aspect={aspect}
+              onNew={() => {
+                setFinalUrl(null);
+                setClips([]);
+                setScenes([]);
+                setReelId(null);
+                setView("input");
+              }}
+              onBackToClips={() => setView("clips")}
+            />
+          ) : view === "clips" ? (
             <ClipsProgress
               clips={clips}
               statusLine={clipsStatus}
@@ -770,3 +822,64 @@ function ClipsProgress({
   );
 }
 
+
+function FinalResult({
+  url,
+  aspect,
+  onNew,
+  onBackToClips,
+}: {
+  url: string;
+  aspect: "portrait" | "landscape";
+  onNew: () => void;
+  onBackToClips: () => void;
+}) {
+  const copyLink = async () => {
+    await navigator.clipboard.writeText(url);
+    toast.success("Video link copied");
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" onClick={onBackToClips} className="gap-2">
+          <ArrowLeft className="size-4" /> Back to scenes
+        </Button>
+        <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-600">Completed</Badge>
+      </div>
+
+      <Card className="p-6">
+        <h2 className="text-xl font-display font-bold mb-1">Your reel is ready</h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          Scenes merged with narration. Download it or copy the link to share.
+        </p>
+
+        <div className="flex justify-center">
+          <video
+            src={url}
+            controls
+            playsInline
+            className={cn(
+              "rounded-xl border border-border bg-black w-full",
+              aspect === "portrait" ? "max-w-[360px] aspect-[9/16]" : "max-w-[720px] aspect-video",
+            )}
+          />
+        </div>
+
+        <div className="mt-6 flex flex-wrap gap-2 justify-center">
+          <Button asChild className="btn-gradient text-white gap-2">
+            <a href={url} download target="_blank" rel="noreferrer">
+              <Download className="size-4" /> Download video
+            </a>
+          </Button>
+          <Button variant="outline" onClick={copyLink} className="gap-2">
+            <LinkIcon className="size-4" /> Copy link
+          </Button>
+          <Button variant="outline" onClick={onNew} className="gap-2">
+            <Wand2 className="size-4" /> Create another reel
+          </Button>
+        </div>
+      </Card>
+    </div>
+  );
+}

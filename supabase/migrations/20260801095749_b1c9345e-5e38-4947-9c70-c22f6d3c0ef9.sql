@@ -1,0 +1,1 @@
+ALTER TABLE public.reel_generations ADD COLUMN IF NOT EXISTS merge_request_id TEXT;
