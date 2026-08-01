@@ -103,6 +103,7 @@ function ReelStudioPage() {
   const [clipsStatus, setClipsStatus] = useState<string>("");
   const [submittingClips, setSubmittingClips] = useState(false);
   const [finalUrl, setFinalUrl] = useState<string | null>(null);
+  const [captioning, setCaptioning] = useState(false);
 
 
   const costEstimate = useMemo(() => {
