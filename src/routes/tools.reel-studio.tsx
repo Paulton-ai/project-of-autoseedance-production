@@ -94,7 +94,7 @@ function ReelStudioPage() {
     error?: string;
     model_id?: string;
   };
-  const [view, setView] = useState<"input" | "script" | "clips">("input");
+  const [view, setView] = useState<"input" | "script" | "clips" | "final">("input");
   const [generatingScript, setGeneratingScript] = useState(false);
   const [scenes, setScenes] = useState<Scene[]>([]);
   const [reelId, setReelId] = useState<string | null>(null);
@@ -102,6 +102,7 @@ function ReelStudioPage() {
   const [clips, setClips] = useState<SceneClip[]>([]);
   const [clipsStatus, setClipsStatus] = useState<string>("");
   const [submittingClips, setSubmittingClips] = useState(false);
+  const [finalUrl, setFinalUrl] = useState<string | null>(null);
 
 
   const costEstimate = useMemo(() => {
