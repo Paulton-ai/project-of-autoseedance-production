@@ -248,45 +248,76 @@ function ReelStudioPage() {
   };
 
 
-  const handleApproveScript = async () => {
+  // Submits (or re-submits) scene clips. Completed scenes are never resubmitted
+  // or re-charged — the edge function filters them out server-side.
+  const runClips = async (sceneIds?: number[]) => {
     if (!reelId) {
       toast.error("Missing reel id — regenerate the script");
       return;
     }
     setSubmittingClips(true);
-    setClipsStatus("Submitting scene clips to Fal.ai…");
+    setBlockedScenes([]);
+    setClipsStatus(
+      sceneIds?.length
+        ? `Retrying scene ${sceneIds.join(", ")}…`
+        : "Submitting scene clips to Fal.ai…",
+    );
     try {
       const { supabase } = await import("@/integrations/supabase/client");
-      // Persist any edits the user made to scenes into the reel before rendering
       const { data: submitData, error: submitErr } = await supabase.functions.invoke("generate-reel-clips", {
-        body: { reel_id: reelId, scenes },
+        body: { reel_id: reelId, scenes, ...(sceneIds?.length ? { scene_ids: sceneIds } : {}) },
       });
       if (submitErr) throw submitErr;
       if (!submitData?.success) throw new Error(submitData?.error || "Failed to submit scene clips");
       setClips(submitData.scenes as SceneClip[]);
       setView("clips");
-      setClipsStatus(`Rendering ${submitData.scenes.length} scene clips with ${submitData.endpoint}…`);
 
-      // Poll until done
-      const poll = async (): Promise<void> => {
+      // Poll until nothing is processing anymore
+      const poll = async (): Promise<SceneClip[]> => {
         const { data: pd, error: pe } = await supabase.functions.invoke("poll-reel-clips", {
           body: { reel_id: reelId },
         });
         if (pe) throw pe;
         if (!pd?.success) throw new Error(pd?.error || "Poll failed");
-        setClips(pd.scenes as SceneClip[]);
+        const list = pd.scenes as SceneClip[];
+        setClips(list);
         const { total, completed, failed, processing } = pd.progress;
         setClipsStatus(`Rendering: ${completed}/${total} completed · ${processing} processing · ${failed} failed`);
-        if (pd.status === "clips_ready" || (pd.status === "clips_partial_failed" && processing === 0)) {
-          if (failed > 0) toast.error(`${failed} scene(s) failed — continuing with ${completed}`);
-          else toast.success("All scene clips generated");
-          if (completed > 0) await finalizeReel();
-          return;
-        }
+        if (processing === 0) return list;
         await new Promise((r) => setTimeout(r, 5000));
         return poll();
       };
-      await poll();
+
+      let list = await poll();
+
+      // Automatic single retry for any failed scene
+      let failedIds = list.filter((c) => c.status === "failed").map((c) => c.id);
+      const toAutoRetry = failedIds.filter((id) => !autoRetried.current.has(id));
+      if (toAutoRetry.length) {
+        toAutoRetry.forEach((id) => autoRetried.current.add(id));
+        setClipsStatus(`Retrying failed scene${toAutoRetry.length > 1 ? "s" : ""} ${toAutoRetry.join(", ")}…`);
+        const { data: rd, error: re } = await supabase.functions.invoke("generate-reel-clips", {
+          body: { reel_id: reelId, scenes, scene_ids: toAutoRetry },
+        });
+        if (re) throw re;
+        if (!rd?.success) throw new Error(rd?.error || "Retry failed");
+        setClips(rd.scenes as SceneClip[]);
+        list = await poll();
+        failedIds = list.filter((c) => c.status === "failed").map((c) => c.id);
+      }
+
+      // Hard gate: never merge unless every scene completed
+      if (failedIds.length) {
+        setBlockedScenes(failedIds);
+        setClipsStatus(
+          `Scene ${failedIds.join(", ")} failed to generate. Retry ${failedIds.length > 1 ? "them" : "it"} to continue — completed scenes are saved and won't be charged again.`,
+        );
+        toast.error(`Scene ${failedIds.join(", ")} failed to generate`);
+        return;
+      }
+
+      toast.success("All scene clips generated");
+      await finalizeReel();
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       toast.error(`Video generation failed: ${msg}`);
@@ -294,6 +325,9 @@ function ReelStudioPage() {
       setSubmittingClips(false);
     }
   };
+
+  const handleApproveScript = () => runClips();
+
 
 
   return (
