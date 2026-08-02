@@ -870,6 +870,10 @@ function ClipsProgress({
   clips,
   statusLine,
   submitting,
+  aspect,
+  blockedScenes,
+  onRetryScene,
+  onRetryAll,
   onBack,
 }: {
   clips: {
@@ -877,13 +881,17 @@ function ClipsProgress({
     duration: number;
     visual: string;
     voiceover: string;
-    status: "processing" | "completed" | "failed";
+    status: "processing" | "completed" | "failed" | "pending";
     video_url?: string;
     error?: string;
     model_id?: string;
   }[];
   statusLine: string;
   submitting: boolean;
+  aspect: "portrait" | "landscape";
+  blockedScenes: number[];
+  onRetryScene: (id: number) => void;
+  onRetryAll: () => void;
   onBack: () => void;
 }) {
   const total = clips.length;
@@ -891,8 +899,14 @@ function ClipsProgress({
   const failed = clips.filter((c) => c.status === "failed").length;
   const processing = total - completed - failed;
 
+  // Compact photo-grid: everything fits one screen for 4, 6 or 8 scenes
+  const rows = total <= 4 ? 1 : 2;
+  const cols = Math.max(1, Math.ceil(total / rows));
+  const ratio = aspect === "portrait" ? "9 / 16" : "16 / 9";
+  const tileMaxHeight = `calc((100vh - 24rem) / ${rows})`;
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <Button variant="ghost" onClick={onBack} className="gap-2" disabled={submitting}>
           <ArrowLeft className="size-4" /> Back to script
@@ -902,52 +916,75 @@ function ClipsProgress({
         </div>
       </div>
 
-      <Card className="p-6">
-        <h2 className="text-xl font-display font-bold mb-1">Rendering scene clips</h2>
-        <p className="text-sm text-muted-foreground mb-4">{statusLine}</p>
+      <Card className="p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+          <div>
+            <h2 className="text-lg font-display font-bold leading-tight">Rendering scene clips</h2>
+            <p className="text-xs text-muted-foreground">{statusLine}</p>
+          </div>
+          {blockedScenes.length > 0 && (
+            <Button onClick={onRetryAll} disabled={submitting} className="btn-gradient text-white gap-2" size="sm">
+              {submitting ? <Loader2 className="size-4 animate-spin" /> : <Wand2 className="size-4" />}
+              Retry failed scene{blockedScenes.length > 1 ? "s" : ""}
+            </Button>
+          )}
+        </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div
+          className="grid gap-2 justify-center"
+          style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+        >
           {clips.map((c) => (
-            <div key={c.id} className="rounded-lg border border-border overflow-hidden">
-              <div className="aspect-[9/16] bg-muted grid place-items-center relative">
-                {c.status === "completed" && c.video_url ? (
-                  <video
-                    src={c.video_url}
-                    controls
-                    muted
-                    playsInline
-                    className="w-full h-full object-cover"
-                  />
-                ) : c.status === "failed" ? (
-                  <div className="text-center p-3 text-xs text-destructive">
-                    <X className="size-6 mx-auto mb-1" />
+            <div
+              key={c.id}
+              className="relative rounded-lg border border-border overflow-hidden bg-muted mx-auto w-full"
+              style={{ aspectRatio: ratio, maxHeight: tileMaxHeight }}
+            >
+              {c.status === "completed" && c.video_url ? (
+                <video src={c.video_url} controls muted playsInline className="w-full h-full object-cover" />
+              ) : c.status === "failed" ? (
+                <div className="w-full h-full grid place-items-center text-center p-2 text-[11px] text-destructive">
+                  <div>
+                    <X className="size-5 mx-auto mb-1" />
                     Failed
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={submitting}
+                      onClick={() => onRetryScene(c.id)}
+                      className="mt-2 h-7 px-2 text-[11px]"
+                    >
+                      Retry this scene
+                    </Button>
                   </div>
-                ) : (
-                  <Loader2 className="size-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : (
+                <div className="w-full h-full grid place-items-center">
+                  <Loader2 className="size-5 animate-spin text-muted-foreground" />
+                </div>
+              )}
+              <span
+                className={cn(
+                  "absolute top-1 left-1 rounded px-1.5 py-0.5 text-[10px] font-medium bg-background/80 backdrop-blur",
+                  c.status === "completed" && "text-emerald-600",
+                  c.status === "failed" && "text-destructive",
                 )}
-                <Badge
-                  variant="secondary"
-                  className={cn(
-                    "absolute top-2 left-2",
-                    c.status === "completed" && "bg-emerald-500/20 text-emerald-600",
-                    c.status === "failed" && "bg-destructive/20 text-destructive",
-                  )}
-                >
-                  Scene {c.id} · {c.duration}s
-                </Badge>
-              </div>
-              <div className="p-3">
-                <p className="text-xs text-muted-foreground line-clamp-2">{c.visual}</p>
-                {c.error && (
-                  <p className="text-xs text-destructive mt-1 line-clamp-2">{c.error}</p>
-                )}
-              </div>
+              >
+                {c.id} · {c.duration}s
+              </span>
             </div>
           ))}
         </div>
+
+        {blockedScenes.length > 0 && (
+          <p className="mt-3 text-xs text-destructive">
+            Scene {blockedScenes.join(", ")} failed to generate. Merging is paused until every scene
+            completes — already-rendered scenes are saved and won't be charged again.
+          </p>
+        )}
       </Card>
     </div>
+
   );
 }
 
