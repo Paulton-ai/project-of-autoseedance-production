@@ -104,6 +104,56 @@ function ReelStudioPage() {
   const [submittingClips, setSubmittingClips] = useState(false);
   const [finalUrl, setFinalUrl] = useState<string | null>(null);
   const [captioning, setCaptioning] = useState(false);
+  const [blockedScenes, setBlockedScenes] = useState<number[]>([]);
+  const autoRetried = useRef<Set<number>>(new Set());
+  const resumed = useRef(false);
+
+  // Resume an in-progress reel when the user comes back to this page.
+  useEffect(() => {
+    if (!user || resumed.current) return;
+    resumed.current = true;
+    (async () => {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { data } = await supabase
+        .from("reel_generations")
+        .select("*")
+        .eq("user_id", user.id)
+        .not("status", "in", "(completed,draft)")
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      const reel = data as Record<string, any> | null;
+      if (!reel) return;
+      const savedScenes = (reel.script?.scenes ?? []) as Scene[];
+      if (!savedScenes.length) return;
+      setReelId(reel.id);
+      setScenes(savedScenes);
+      setTopic(reel.topic ?? "");
+      setNiche(reel.niche ?? "Educational");
+      setVideoLength((reel.video_length ?? 30) as 30 | 60 | 90);
+      setStyle(reel.style ?? "Cinematic Realistic");
+      setAspect((reel.aspect ?? "portrait") as "portrait" | "landscape");
+      setModel(reel.model ?? "seedance-2");
+      setQuality((reel.quality ?? "budget") as "budget" | "premium");
+      setVoiceover(!!reel.voiceover);
+      setCaptions(!!reel.captions);
+      setCaptionStyle(reel.caption_style ?? "karaoke");
+      const assets = (reel.scene_assets ?? []) as SceneClip[];
+      if (reel.final_video_url) {
+        setFinalUrl(reel.final_video_url);
+        setView("final");
+      } else if (assets.length) {
+        setClips(assets);
+        setBlockedScenes(assets.filter((a) => a.status === "failed").map((a) => a.id));
+        setClipsStatus("Resumed your in-progress reel — completed scenes were saved.");
+        setView("clips");
+      } else {
+        setView("script");
+      }
+      toast.info("Resumed your in-progress reel");
+    })();
+  }, [user]);
+
 
 
   const costEstimate = useMemo(() => {
