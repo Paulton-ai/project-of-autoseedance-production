@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ToolNavbar } from "@/components/tools/ToolNavbar";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
