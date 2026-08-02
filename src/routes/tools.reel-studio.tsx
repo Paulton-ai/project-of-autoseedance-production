@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ToolNavbar } from "@/components/tools/ToolNavbar";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -104,6 +104,56 @@ function ReelStudioPage() {
   const [submittingClips, setSubmittingClips] = useState(false);
   const [finalUrl, setFinalUrl] = useState<string | null>(null);
   const [captioning, setCaptioning] = useState(false);
+  const [blockedScenes, setBlockedScenes] = useState<number[]>([]);
+  const autoRetried = useRef<Set<number>>(new Set());
+  const resumed = useRef(false);
+
+  // Resume an in-progress reel when the user comes back to this page.
+  useEffect(() => {
+    if (!user || resumed.current) return;
+    resumed.current = true;
+    (async () => {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { data } = await supabase
+        .from("reel_generations")
+        .select("*")
+        .eq("user_id", user.id)
+        .not("status", "in", "(completed,draft)")
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      const reel = data as Record<string, any> | null;
+      if (!reel) return;
+      const savedScenes = (reel.script?.scenes ?? []) as Scene[];
+      if (!savedScenes.length) return;
+      setReelId(reel.id);
+      setScenes(savedScenes);
+      setTopic(reel.topic ?? "");
+      setNiche(reel.niche ?? "Educational");
+      setVideoLength((reel.video_length ?? 30) as 30 | 60 | 90);
+      setStyle(reel.style ?? "Cinematic Realistic");
+      setAspect((reel.aspect ?? "portrait") as "portrait" | "landscape");
+      setModel(reel.model ?? "seedance-2");
+      setQuality((reel.quality ?? "budget") as "budget" | "premium");
+      setVoiceover(!!reel.voiceover);
+      setCaptions(!!reel.captions);
+      setCaptionStyle(reel.caption_style ?? "karaoke");
+      const assets = (reel.scene_assets ?? []) as SceneClip[];
+      if (reel.final_video_url) {
+        setFinalUrl(reel.final_video_url);
+        setView("final");
+      } else if (assets.length) {
+        setClips(assets);
+        setBlockedScenes(assets.filter((a) => a.status === "failed").map((a) => a.id));
+        setClipsStatus("Resumed your in-progress reel — completed scenes were saved.");
+        setView("clips");
+      } else {
+        setView("script");
+      }
+      toast.info("Resumed your in-progress reel");
+    })();
+  }, [user]);
+
 
 
   const costEstimate = useMemo(() => {
@@ -248,45 +298,76 @@ function ReelStudioPage() {
   };
 
 
-  const handleApproveScript = async () => {
+  // Submits (or re-submits) scene clips. Completed scenes are never resubmitted
+  // or re-charged — the edge function filters them out server-side.
+  const runClips = async (sceneIds?: number[]) => {
     if (!reelId) {
       toast.error("Missing reel id — regenerate the script");
       return;
     }
     setSubmittingClips(true);
-    setClipsStatus("Submitting scene clips to Fal.ai…");
+    setBlockedScenes([]);
+    setClipsStatus(
+      sceneIds?.length
+        ? `Retrying scene ${sceneIds.join(", ")}…`
+        : "Submitting scene clips to Fal.ai…",
+    );
     try {
       const { supabase } = await import("@/integrations/supabase/client");
-      // Persist any edits the user made to scenes into the reel before rendering
       const { data: submitData, error: submitErr } = await supabase.functions.invoke("generate-reel-clips", {
-        body: { reel_id: reelId, scenes },
+        body: { reel_id: reelId, scenes, ...(sceneIds?.length ? { scene_ids: sceneIds } : {}) },
       });
       if (submitErr) throw submitErr;
       if (!submitData?.success) throw new Error(submitData?.error || "Failed to submit scene clips");
       setClips(submitData.scenes as SceneClip[]);
       setView("clips");
-      setClipsStatus(`Rendering ${submitData.scenes.length} scene clips with ${submitData.endpoint}…`);
 
-      // Poll until done
-      const poll = async (): Promise<void> => {
+      // Poll until nothing is processing anymore
+      const poll = async (): Promise<SceneClip[]> => {
         const { data: pd, error: pe } = await supabase.functions.invoke("poll-reel-clips", {
           body: { reel_id: reelId },
         });
         if (pe) throw pe;
         if (!pd?.success) throw new Error(pd?.error || "Poll failed");
-        setClips(pd.scenes as SceneClip[]);
+        const list = pd.scenes as SceneClip[];
+        setClips(list);
         const { total, completed, failed, processing } = pd.progress;
         setClipsStatus(`Rendering: ${completed}/${total} completed · ${processing} processing · ${failed} failed`);
-        if (pd.status === "clips_ready" || (pd.status === "clips_partial_failed" && processing === 0)) {
-          if (failed > 0) toast.error(`${failed} scene(s) failed — continuing with ${completed}`);
-          else toast.success("All scene clips generated");
-          if (completed > 0) await finalizeReel();
-          return;
-        }
+        if (processing === 0) return list;
         await new Promise((r) => setTimeout(r, 5000));
         return poll();
       };
-      await poll();
+
+      let list = await poll();
+
+      // Automatic single retry for any failed scene
+      let failedIds = list.filter((c) => c.status === "failed").map((c) => c.id);
+      const toAutoRetry = failedIds.filter((id) => !autoRetried.current.has(id));
+      if (toAutoRetry.length) {
+        toAutoRetry.forEach((id) => autoRetried.current.add(id));
+        setClipsStatus(`Retrying failed scene${toAutoRetry.length > 1 ? "s" : ""} ${toAutoRetry.join(", ")}…`);
+        const { data: rd, error: re } = await supabase.functions.invoke("generate-reel-clips", {
+          body: { reel_id: reelId, scenes, scene_ids: toAutoRetry },
+        });
+        if (re) throw re;
+        if (!rd?.success) throw new Error(rd?.error || "Retry failed");
+        setClips(rd.scenes as SceneClip[]);
+        list = await poll();
+        failedIds = list.filter((c) => c.status === "failed").map((c) => c.id);
+      }
+
+      // Hard gate: never merge unless every scene completed
+      if (failedIds.length) {
+        setBlockedScenes(failedIds);
+        setClipsStatus(
+          `Scene ${failedIds.join(", ")} failed to generate. Retry ${failedIds.length > 1 ? "them" : "it"} to continue — completed scenes are saved and won't be charged again.`,
+        );
+        toast.error(`Scene ${failedIds.join(", ")} failed to generate`);
+        return;
+      }
+
+      toast.success("All scene clips generated");
+      await finalizeReel();
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       toast.error(`Video generation failed: ${msg}`);
@@ -294,6 +375,9 @@ function ReelStudioPage() {
       setSubmittingClips(false);
     }
   };
+
+  const handleApproveScript = () => runClips();
+
 
 
   return (
@@ -338,8 +422,13 @@ function ReelStudioPage() {
               clips={clips}
               statusLine={clipsStatus}
               submitting={submittingClips}
+              aspect={aspect}
+              blockedScenes={blockedScenes}
+              onRetryScene={(id) => runClips([id])}
+              onRetryAll={() => runClips(blockedScenes)}
               onBack={() => setView("script")}
             />
+
           ) : view === "script" ? (
             <ScriptReview
               scenes={scenes}
@@ -781,6 +870,10 @@ function ClipsProgress({
   clips,
   statusLine,
   submitting,
+  aspect,
+  blockedScenes,
+  onRetryScene,
+  onRetryAll,
   onBack,
 }: {
   clips: {
@@ -788,13 +881,17 @@ function ClipsProgress({
     duration: number;
     visual: string;
     voiceover: string;
-    status: "processing" | "completed" | "failed";
+    status: "processing" | "completed" | "failed" | "pending";
     video_url?: string;
     error?: string;
     model_id?: string;
   }[];
   statusLine: string;
   submitting: boolean;
+  aspect: "portrait" | "landscape";
+  blockedScenes: number[];
+  onRetryScene: (id: number) => void;
+  onRetryAll: () => void;
   onBack: () => void;
 }) {
   const total = clips.length;
@@ -802,8 +899,14 @@ function ClipsProgress({
   const failed = clips.filter((c) => c.status === "failed").length;
   const processing = total - completed - failed;
 
+  // Compact photo-grid: everything fits one screen for 4, 6 or 8 scenes
+  const rows = total <= 4 ? 1 : 2;
+  const cols = Math.max(1, Math.ceil(total / rows));
+  const ratio = aspect === "portrait" ? "9 / 16" : "16 / 9";
+  const tileMaxHeight = `calc((100vh - 24rem) / ${rows})`;
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <Button variant="ghost" onClick={onBack} className="gap-2" disabled={submitting}>
           <ArrowLeft className="size-4" /> Back to script
@@ -813,52 +916,75 @@ function ClipsProgress({
         </div>
       </div>
 
-      <Card className="p-6">
-        <h2 className="text-xl font-display font-bold mb-1">Rendering scene clips</h2>
-        <p className="text-sm text-muted-foreground mb-4">{statusLine}</p>
+      <Card className="p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+          <div>
+            <h2 className="text-lg font-display font-bold leading-tight">Rendering scene clips</h2>
+            <p className="text-xs text-muted-foreground">{statusLine}</p>
+          </div>
+          {blockedScenes.length > 0 && (
+            <Button onClick={onRetryAll} disabled={submitting} className="btn-gradient text-white gap-2" size="sm">
+              {submitting ? <Loader2 className="size-4 animate-spin" /> : <Wand2 className="size-4" />}
+              Retry failed scene{blockedScenes.length > 1 ? "s" : ""}
+            </Button>
+          )}
+        </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div
+          className="grid gap-2 justify-center"
+          style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+        >
           {clips.map((c) => (
-            <div key={c.id} className="rounded-lg border border-border overflow-hidden">
-              <div className="aspect-[9/16] bg-muted grid place-items-center relative">
-                {c.status === "completed" && c.video_url ? (
-                  <video
-                    src={c.video_url}
-                    controls
-                    muted
-                    playsInline
-                    className="w-full h-full object-cover"
-                  />
-                ) : c.status === "failed" ? (
-                  <div className="text-center p-3 text-xs text-destructive">
-                    <X className="size-6 mx-auto mb-1" />
+            <div
+              key={c.id}
+              className="relative rounded-lg border border-border overflow-hidden bg-muted mx-auto w-full"
+              style={{ aspectRatio: ratio, maxHeight: tileMaxHeight }}
+            >
+              {c.status === "completed" && c.video_url ? (
+                <video src={c.video_url} controls muted playsInline className="w-full h-full object-cover" />
+              ) : c.status === "failed" ? (
+                <div className="w-full h-full grid place-items-center text-center p-2 text-[11px] text-destructive">
+                  <div>
+                    <X className="size-5 mx-auto mb-1" />
                     Failed
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={submitting}
+                      onClick={() => onRetryScene(c.id)}
+                      className="mt-2 h-7 px-2 text-[11px]"
+                    >
+                      Retry this scene
+                    </Button>
                   </div>
-                ) : (
-                  <Loader2 className="size-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : (
+                <div className="w-full h-full grid place-items-center">
+                  <Loader2 className="size-5 animate-spin text-muted-foreground" />
+                </div>
+              )}
+              <span
+                className={cn(
+                  "absolute top-1 left-1 rounded px-1.5 py-0.5 text-[10px] font-medium bg-background/80 backdrop-blur",
+                  c.status === "completed" && "text-emerald-600",
+                  c.status === "failed" && "text-destructive",
                 )}
-                <Badge
-                  variant="secondary"
-                  className={cn(
-                    "absolute top-2 left-2",
-                    c.status === "completed" && "bg-emerald-500/20 text-emerald-600",
-                    c.status === "failed" && "bg-destructive/20 text-destructive",
-                  )}
-                >
-                  Scene {c.id} · {c.duration}s
-                </Badge>
-              </div>
-              <div className="p-3">
-                <p className="text-xs text-muted-foreground line-clamp-2">{c.visual}</p>
-                {c.error && (
-                  <p className="text-xs text-destructive mt-1 line-clamp-2">{c.error}</p>
-                )}
-              </div>
+              >
+                {c.id} · {c.duration}s
+              </span>
             </div>
           ))}
         </div>
+
+        {blockedScenes.length > 0 && (
+          <p className="mt-3 text-xs text-destructive">
+            Scene {blockedScenes.join(", ")} failed to generate. Merging is paused until every scene
+            completes — already-rendered scenes are saved and won't be charged again.
+          </p>
+        )}
       </Card>
     </div>
+
   );
 }
 

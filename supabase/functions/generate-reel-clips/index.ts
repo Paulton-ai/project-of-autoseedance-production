@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
     if (userErr || !userData.user) throw new Error("Not authenticated");
     const user = userData.user;
 
-    const { reel_id, scenes: overrideScenes } = await req.json();
+    const { reel_id, scenes: overrideScenes, scene_ids } = await req.json();
     if (!reel_id) throw new Error("reel_id required");
 
     const admin = createClient(url, svc, { auth: { persistSession: false } });
@@ -78,15 +78,44 @@ Deno.serve(async (req) => {
     if (reelErr || !reel) throw new Error("Reel not found");
     if (reel.user_id !== user.id) throw new Error("Forbidden");
 
-    const scenes: Scene[] = overrideScenes ?? reel.script?.scenes ?? [];
-    if (!scenes.length) throw new Error("No scenes in script");
+    const existingAssets: Array<Record<string, unknown>> = Array.isArray(reel.scene_assets)
+      ? reel.scene_assets
+      : [];
+
+    const allScenes: Scene[] = overrideScenes ?? reel.script?.scenes ?? [];
+    if (!allScenes.length) throw new Error("No scenes in script");
+
+    // Retry mode: only (re)generate the requested scene ids.
+    // Scenes that already completed are NEVER resubmitted and NEVER re-charged.
+    const completedIds = new Set(
+      existingAssets.filter((a) => a.status === "completed" && a.video_url).map((a) => a.id),
+    );
+    const requestedIds: number[] | null = Array.isArray(scene_ids) && scene_ids.length
+      ? scene_ids.map((n: number) => Number(n))
+      : null;
+
+    const scenes: Scene[] = allScenes.filter((s) => {
+      if (completedIds.has(s.id)) return false;
+      if (requestedIds) return requestedIds.includes(s.id);
+      return true;
+    });
+
+    if (!scenes.length) {
+      return new Response(JSON.stringify({
+        success: true,
+        reel_id,
+        scenes: existingAssets,
+        credits_debited: 0,
+        note: "All requested scenes already completed",
+      }), { headers: { ...cors, "Content-Type": "application/json" } });
+    }
 
     // Check admin role for credit bypass
     const { data: roleRow } = await admin
       .from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle();
     const isAdmin = !!roleRow;
 
-    // Credit cost: base per scene by quality
+    // Credit cost: base per scene by quality — only for scenes actually submitted now
     const perScene = reel.quality === "premium" ? 15 : 8;
     const totalCredits = perScene * scenes.length;
 
@@ -106,7 +135,7 @@ Deno.serve(async (req) => {
     const resolution = qualityToResolution(reel.quality);
     const style = stylePrefix(reel.style);
 
-    // Submit ALL scene clips in parallel
+    // Submit scene clips in parallel
     const submissions = await Promise.all(scenes.map(async (scene) => {
       const body: Record<string, unknown> = {
         prompt: `${style}${scene.visual}`,
@@ -115,6 +144,7 @@ Deno.serve(async (req) => {
         duration: String(scene.duration),
         enable_safety_checker: true,
       };
+      console.log(`[generate-reel-clips] scene ${scene.id} prompt: ${body.prompt}`);
       try {
         const res = await fetch(`https://queue.fal.run/${endpoint}`, {
           method: "POST",
@@ -152,13 +182,30 @@ Deno.serve(async (req) => {
       }
     }));
 
-    const anyFailed = submissions.some((s) => s.status === "failed");
+    // Merge submissions into existing assets so completed scenes keep their state
+    const byId = new Map<number, Record<string, unknown>>();
+    for (const a of existingAssets) byId.set(Number(a.id), a);
+    for (const s of submissions) byId.set(s.id, s);
+    // Include scenes from the script that have no asset yet (e.g. targeted retry)
+    for (const s of allScenes) {
+      if (!byId.has(s.id)) {
+        byId.set(s.id, {
+          id: s.id, duration: s.duration, visual: s.visual, voiceover: s.voiceover,
+          model_id: endpoint, status: "pending",
+        });
+      }
+    }
+    const merged = Array.from(byId.values()).sort((a, b) => Number(a.id) - Number(b.id));
+
+    const anyFailed = merged.some((s) => s.status === "failed");
 
     await admin.from("reel_generations").update({
       status: anyFailed ? "clips_partial_failed" : "clips_generating",
-      scene_assets: submissions,
+      scene_assets: merged,
+      script: { scenes: allScenes },
       credits_used: (reel.credits_used ?? 0) + (isAdmin ? 0 : totalCredits),
     }).eq("id", reel_id);
+
 
     return new Response(JSON.stringify({
       success: true,
@@ -166,9 +213,11 @@ Deno.serve(async (req) => {
       endpoint,
       aspect_ratio,
       resolution,
-      scenes: submissions,
+      scenes: merged,
+      submitted_scene_ids: scenes.map((s) => s.id),
       credits_debited: isAdmin ? 0 : totalCredits,
     }), { headers: { ...cors, "Content-Type": "application/json" } });
+
   } catch (err) {
     console.error("[generate-reel-clips]", err);
     return new Response(JSON.stringify({ error: String(err instanceof Error ? err.message : err) }), {
