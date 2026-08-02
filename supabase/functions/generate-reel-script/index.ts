@@ -131,6 +131,14 @@ Deno.serve(async (req) => {
     const prompt = buildPrompt(body);
     const script = await callAnthropic(prompt);
 
+    // Log every scene's visual next to its own voiceover so pairing can be verified for any topic
+    for (const s of script.scenes) {
+      console.log(
+        `[generate-reel-script] SCENE ${s.id} (${s.duration}s)\n  VOICEOVER: ${s.voiceover}\n  VISUAL:    ${s.visual}`,
+      );
+    }
+
+
     // Persist as draft with service role (bypass RLS but stamp real user_id)
     const admin = createClient(url, svc, { auth: { persistSession: false } });
     const { data: row, error: insErr } = await admin
