@@ -59,7 +59,7 @@ async function callAnthropic(prompt: string): Promise<{ scenes: Scene[] }> {
     },
     body: JSON.stringify({
       model: "claude-sonnet-4-5-20250929",
-      max_tokens: 2000,
+      max_tokens: 4096,
       messages: [{ role: "user", content: prompt }],
     }),
   });
@@ -69,13 +69,22 @@ async function callAnthropic(prompt: string): Promise<{ scenes: Scene[] }> {
     throw new Error(`Anthropic ${res.status}: ${txt}`);
   }
   const data = await res.json();
-  const text: string = data?.content?.[0]?.text ?? "";
+  console.log("[generate-reel-script] FULL DATA:", JSON.stringify(data));
+  console.log("[generate-reel-script] stop_reason:", data?.stop_reason);
+  console.log("[generate-reel-script] content.length:", Array.isArray(data?.content) ? data.content.length : `not-array (${typeof data?.content})`);
+  console.log("[generate-reel-script] usage:", JSON.stringify(data?.usage));
+  const textBlock = Array.isArray(data?.content)
+    ? data.content.find((c: { type?: string; text?: string }) => c?.type === "text")
+    : null;
+  const text: string = textBlock?.text ?? data?.content?.[0]?.text ?? "";
+  console.log("[generate-reel-script] Raw Claude response:", text);
   // Extract JSON (strip fences if the model still adds them)
   const jsonStr = text.replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
   const match = jsonStr.match(/\{[\s\S]*\}/);
-  if (!match) throw new Error("Model did not return JSON");
+  if (!match) throw new Error(`Model did not return JSON. stop_reason=${data?.stop_reason}`);
   const parsed = JSON.parse(match[0]);
   if (!Array.isArray(parsed?.scenes)) throw new Error("Invalid script shape");
+
   return parsed as { scenes: Scene[] };
 }
 
