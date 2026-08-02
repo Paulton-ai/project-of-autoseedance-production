@@ -29,22 +29,31 @@ interface Body {
 function buildPrompt(b: Body) {
   const sceneCount = b.video_length === 30 ? 4 : b.video_length === 60 ? 6 : 8;
   const perScene = Math.round(b.video_length / sceneCount);
-  return `You are a short-form video scriptwriter. Write a ${b.video_length}-second vertical reel script for the ${b.niche ?? "general"} niche in a ${b.style ?? "cinematic"} visual style.
+  const style = b.style ?? "Cinematic Realistic";
+  return `You are a professional short-form video director and editor. Write a ${b.video_length}-second vertical reel script for the ${b.niche ?? "general"} niche.
 
-Topic / idea:
+Topic / idea (this is the ONLY subject matter of the video):
 """${b.topic}"""
 
 Return STRICT JSON only (no markdown, no commentary) matching:
 {"scenes":[{"id":1,"duration":${perScene},"visual":"...","voiceover":"..."}, ...]}
 
-Rules:
+STRUCTURE
 - Exactly ${sceneCount} scenes, each ~${perScene}s.
 - Scene 1 is a strong hook (<= 12 words voiceover).
 - Last scene ends with a clear call-to-action.
-- "visual" describes ONE concrete shot the video model should render (subject, action, camera, lighting). No brand names.
-- "voiceover" is spoken narration (natural, punchy). Keep to what fits in ${perScene}s (~${perScene * 2.5} words max).
-- Do not repeat imagery scene to scene.`;
+- "voiceover" is spoken narration (natural, punchy), ~${perScene * 2.5} words max, and must stay on the topic above.
+
+VISUAL RULES (critical — apply to EVERY topic, whatever it is)
+1. Write each scene's "voiceover" FIRST, then write that scene's "visual" as the B-roll shot a professional editor would cut to for exactly that narration line. The visual must literally depict the people, objects, places, actions, data or moments that the SAME scene's voiceover is talking about.
+2. Never use generic filler imagery (forests, oceans, sunsets, abstract particles, someone typing on a laptop, city timelapse) unless the voiceover of that specific scene is actually about that thing.
+3. Be concrete and self-contained: name the subject, the action, the camera framing/movement and the lighting in one shot description. No pronouns referring to earlier scenes, no text overlays, no brand names, no real public figures by name — describe them by role/appearance instead.
+4. One shot per scene. Do not repeat imagery from scene to scene; each visual should advance the narrative the voiceover is telling.
+5. STYLE = RENDERING TREATMENT ONLY. The chosen style is "${style}". Apply it strictly as aesthetic treatment (art style, lighting, color grading, texture, film look). It must NEVER change, replace or dilute the subject matter dictated by the voiceover. If the style is animated, render the same real subject in that animation style.
+
+SELF-CHECK before answering: for each scene, ask "if I mute the narration, would a viewer see exactly what this scene's narration describes?" If not, rewrite the visual.`;
 }
+
 
 async function callAnthropic(prompt: string): Promise<{ scenes: Scene[] }> {
   const key = Deno.env.get("ANTHROPIC_API_KEY");
