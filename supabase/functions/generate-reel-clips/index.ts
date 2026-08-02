@@ -202,8 +202,10 @@ Deno.serve(async (req) => {
     await admin.from("reel_generations").update({
       status: anyFailed ? "clips_partial_failed" : "clips_generating",
       scene_assets: merged,
+      script: { scenes: allScenes },
       credits_used: (reel.credits_used ?? 0) + (isAdmin ? 0 : totalCredits),
     }).eq("id", reel_id);
+
 
     return new Response(JSON.stringify({
       success: true,
