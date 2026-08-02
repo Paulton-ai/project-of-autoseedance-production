@@ -422,8 +422,13 @@ function ReelStudioPage() {
               clips={clips}
               statusLine={clipsStatus}
               submitting={submittingClips}
+              aspect={aspect}
+              blockedScenes={blockedScenes}
+              onRetryScene={(id) => runClips([id])}
+              onRetryAll={() => runClips(blockedScenes)}
               onBack={() => setView("script")}
             />
+
           ) : view === "script" ? (
             <ScriptReview
               scenes={scenes}
