@@ -118,21 +118,32 @@ Deno.serve(async (req) => {
     }
 
     // ---- SUBMIT ----
+    // Measure real media lengths in parallel so the timeline matches what ffmpeg renders.
+    const measured = await Promise.all(clips.map(async (clip) => ({
+      clip,
+      videoMs: await probeMediaMs(FAL_API_KEY, clip.video_url!),
+      audioMs: clip.audio_url ? await probeMediaMs(FAL_API_KEY, clip.audio_url) : null,
+    })));
+
     const videoKeyframes: Array<Record<string, unknown>> = [];
     const audioKeyframes: Array<Record<string, unknown>> = [];
     let cursorMs = 0;
-    for (const clip of clips) {
-      const clipMs = Math.max(1, Number(clip.duration) || 5) * 1000;
-      let segmentMs = clipMs;
-      if (clip.audio_url) {
-        const audioMs = await probeAudioMs(clip.audio_url);
-        // Never truncate narration: the scene lasts at least as long as its voiceover.
-        if (audioMs && audioMs > segmentMs) segmentMs = Math.ceil(audioMs);
-        audioKeyframes.push({ url: clip.audio_url, timestamp: cursorMs, duration: segmentMs });
-      }
+    for (const { clip, videoMs, audioMs } of measured) {
+      const fallbackMs = Math.max(1, Number(clip.duration) || 5) * 1000;
+      const realVideoMs = videoMs ?? fallbackMs;
+      // The scene lasts as long as its clip, and never cuts the narration short.
+      const segmentMs = Math.ceil(Math.max(realVideoMs, audioMs ?? 0));
       videoKeyframes.push({ url: clip.video_url, timestamp: cursorMs, duration: segmentMs });
+      if (clip.audio_url) {
+        audioKeyframes.push({
+          url: clip.audio_url,
+          timestamp: cursorMs,
+          duration: Math.ceil(audioMs ?? segmentMs),
+        });
+      }
       cursorMs += segmentMs;
     }
+
 
     if (reel.voiceover && !audioKeyframes.length) {
       throw new Error("Voiceover is enabled but no scene has audio — run voiceover generation before merging");
