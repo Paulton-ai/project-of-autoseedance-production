@@ -1,5 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.49.1";
+import { aspectToRatio, buildFalPayload, resolveModelEndpoint } from "../_shared/fal-models.ts";
+
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -9,36 +11,11 @@ const cors = {
 
 type Scene = { id: number; duration: number; visual: string; voiceover: string };
 
-// Map dashboard model + quality → Fal.ai endpoint
-function resolveModelEndpoint(model: string, quality: "budget" | "premium"): string {
-  const premium = quality === "premium";
-  switch (model) {
-    case "wan-2.6":
-      return "fal-ai/wan/v2.2-a14b/text-to-video";
-    case "kling-2.6":
-      return premium
-        ? "fal-ai/kling-video/v2.1/master/text-to-video"
-        : "fal-ai/kling-video/v2.1/standard/text-to-video";
-    case "veo-3":
-      return premium ? "fal-ai/veo3" : "fal-ai/veo3/fast";
-    case "seedance-2":
-    default:
-      return "bytedance/seedance-2.0/text-to-video";
-  }
-}
-
-function aspectToRatio(aspect: string): string {
-  return aspect === "landscape" ? "16:9" : "9:16";
-}
-
-function qualityToResolution(quality: "budget" | "premium"): string {
-  return quality === "premium" ? "1080p" : "720p";
-}
-
 function stylePrefix(style: string | null): string {
   if (!style) return "";
   return `${style} style. `;
 }
+
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
@@ -132,19 +109,20 @@ Deno.serve(async (req) => {
 
     const endpoint = resolveModelEndpoint(reel.model, reel.quality);
     const aspect_ratio = aspectToRatio(reel.aspect);
-    const resolution = qualityToResolution(reel.quality);
+    const resolution = reel.quality === "premium" ? "1080p" : "720p";
     const style = stylePrefix(reel.style);
 
     // Submit scene clips in parallel
     const submissions = await Promise.all(scenes.map(async (scene) => {
-      const body: Record<string, unknown> = {
+      const body = buildFalPayload({
+        model: reel.model,
+        quality: reel.quality,
+        aspect: reel.aspect,
         prompt: `${style}${scene.visual}`,
-        aspect_ratio,
-        resolution,
-        duration: String(scene.duration),
-        enable_safety_checker: true,
-      };
-      console.log(`[generate-reel-clips] scene ${scene.id} prompt: ${body.prompt}`);
+        duration: scene.duration,
+      });
+      console.log(`[generate-reel-clips] scene ${scene.id} -> ${endpoint} ${JSON.stringify(body)}`);
+
       try {
         const res = await fetch(`https://queue.fal.run/${endpoint}`, {
           method: "POST",
