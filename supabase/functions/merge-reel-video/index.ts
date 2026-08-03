@@ -96,12 +96,20 @@ Deno.serve(async (req) => {
     const audioKeyframes: Array<Record<string, unknown>> = [];
     let cursorMs = 0;
     for (const clip of clips) {
-      const durMs = Math.max(1, Number(clip.duration) || 5) * 1000;
-      videoKeyframes.push({ url: clip.video_url, timestamp: cursorMs, duration: durMs });
+      const clipMs = Math.max(1, Number(clip.duration) || 5) * 1000;
+      let segmentMs = clipMs;
       if (clip.audio_url) {
-        audioKeyframes.push({ url: clip.audio_url, timestamp: cursorMs, duration: durMs });
+        const audioMs = await probeAudioMs(clip.audio_url);
+        // Never truncate narration: the scene lasts at least as long as its voiceover.
+        if (audioMs && audioMs > segmentMs) segmentMs = Math.ceil(audioMs);
+        audioKeyframes.push({ url: clip.audio_url, timestamp: cursorMs, duration: segmentMs });
       }
-      cursorMs += durMs;
+      videoKeyframes.push({ url: clip.video_url, timestamp: cursorMs, duration: segmentMs });
+      cursorMs += segmentMs;
+    }
+
+    if (reel.voiceover && !audioKeyframes.length) {
+      throw new Error("Voiceover is enabled but no scene has audio — run voiceover generation before merging");
     }
 
     const tracks: Array<Record<string, unknown>> = [
@@ -110,6 +118,7 @@ Deno.serve(async (req) => {
     if (audioKeyframes.length) {
       tracks.push({ id: "voiceover", type: "audio", keyframes: audioKeyframes });
     }
+
 
     const submitRes = await fetch(`https://queue.fal.run/${COMPOSE}`, {
       method: "POST",
