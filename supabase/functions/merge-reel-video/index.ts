@@ -17,6 +17,29 @@ type SceneAsset = {
 
 const COMPOSE = "fal-ai/ffmpeg-api/compose";
 
+/**
+ * Best-effort duration (ms) of a remote audio file.
+ * Inworld TTS returns 48kHz WAV, whose length is derivable from the byte size.
+ * Returns null when it cannot be determined (caller falls back to scene duration).
+ */
+async function probeAudioMs(url: string): Promise<number | null> {
+  try {
+    const res = await fetch(url, { method: "HEAD" });
+    if (!res.ok) return null;
+    const len = Number(res.headers.get("content-length") || 0);
+    const type = (res.headers.get("content-type") || "").toLowerCase();
+    if (!len) return null;
+    if (type.includes("wav") || url.toLowerCase().endsWith(".wav")) {
+      // 48kHz, 16-bit, mono PCM => 96000 bytes per second (44-byte header ignored)
+      return ((len - 44) / 96000) * 1000;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
   try {
