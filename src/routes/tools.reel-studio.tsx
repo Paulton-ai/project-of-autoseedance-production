@@ -627,11 +627,20 @@ function ReelStudioPage() {
                     <div>
                       <Label>Voice</Label>
                       <Select value={voice} onValueChange={setVoice}>
-                        <SelectTrigger className="mt-2"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          {VOICES.map((v) => <SelectItem key={v.value} value={v.value}>{v.label}</SelectItem>)}
+                        <SelectTrigger className="mt-2"><SelectValue placeholder="Select a voice" /></SelectTrigger>
+                        <SelectContent className="max-h-72">
+                          {VOICE_GROUPS.map((g) => (
+                            <SelectGroup key={g.code}>
+                              <SelectLabel>{g.language}</SelectLabel>
+                              {g.names.map((n) => {
+                                const val = voiceValue(n, g.code);
+                                return <SelectItem key={val} value={val}>{n}</SelectItem>;
+                              })}
+                            </SelectGroup>
+                          ))}
                         </SelectContent>
                       </Select>
+
                     </div>
                   )}
                   <div className="flex items-center justify-between pt-2 border-t border-border">
