@@ -18,32 +18,25 @@ type SceneAsset = {
   audio_error?: string;
 };
 
-// Dashboard voice → PlayAI voice name
-function resolveVoice(voice: string | null): string {
-  switch (voice) {
-    case "male-us":
-      return "Dexter (English (US)/American)";
-    case "female-uk":
-      return "Charlotte (Advertising) (English (US)/American)";
-    case "male-uk":
-      return "Angelo (English (US)/American)";
-    case "female-us":
-    default:
-      return "Jennifer (English (US)/American)";
-  }
-}
+const INWORLD_TTS = "https://fal.run/fal-ai/inworld-tts";
+const SAMPLE_RATE_HERTZ = 48000;
+const DEFAULT_VOICE = "Sarah (en)";
 
-async function ttsOne(key: string, text: string, voice: string): Promise<{ url?: string; error?: string }> {
+async function ttsOne(
+  key: string,
+  text: string,
+  voice: string,
+): Promise<{ url?: string; error?: string }> {
   try {
-    const res = await fetch("https://fal.run/fal-ai/playai/tts/v3", {
+    const res = await fetch(INWORLD_TTS, {
       method: "POST",
       headers: { Authorization: `Key ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ input: text, voice, response_format: "url" }),
+      body: JSON.stringify({ text, voice, sample_rate_hertz: SAMPLE_RATE_HERTZ }),
     });
     const raw = await res.text();
-    if (!res.ok) return { error: `${res.status}: ${raw.slice(0, 200)}` };
+    if (!res.ok) return { error: `${res.status}: ${raw.slice(0, 300)}` };
     const data = JSON.parse(raw);
-    const url = data.audio?.url ?? data.audio_url?.url ?? data.url;
+    const url = data.audio?.url;
     if (!url) return { error: "No audio URL in TTS result" };
     return { url };
   } catch (e) {
@@ -88,14 +81,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    const voiceName = resolveVoice(reel.voice);
+    const voiceName: string = (reel.voice && String(reel.voice).trim()) || DEFAULT_VOICE;
 
     const narrated = await Promise.all(assets.map(async (a) => {
       if (a.audio_url) return a;
       const text = (a.voiceover || "").trim();
       if (!text) return a;
       const { url: audio_url, error } = await ttsOne(FAL_API_KEY, text, voiceName);
-      return audio_url ? { ...a, audio_url } : { ...a, audio_error: error };
+      return audio_url ? { ...a, audio_url, audio_error: undefined } : { ...a, audio_error: error };
     }));
 
     const failed = narrated.filter((a) => a.audio_error).length;
