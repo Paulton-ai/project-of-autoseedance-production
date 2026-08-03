@@ -17,27 +17,30 @@ type SceneAsset = {
 
 const COMPOSE = "fal-ai/ffmpeg-api/compose";
 
+const METADATA = "https://fal.run/fal-ai/ffmpeg-api/metadata";
+
 /**
- * Best-effort duration (ms) of a remote audio file.
- * Inworld TTS returns 48kHz WAV, whose length is derivable from the byte size.
- * Returns null when it cannot be determined (caller falls back to scene duration).
+ * Real duration (ms) of a remote media file, measured via Fal's ffmpeg metadata endpoint.
+ * The compose endpoint plays each keyframe's source in full, so the timeline must be
+ * built from actual media lengths — otherwise the audio track drifts out of sync with
+ * the video and the narration is inaudible/misplaced in the final render.
  */
-async function probeAudioMs(url: string): Promise<number | null> {
+async function probeMediaMs(key: string, url: string): Promise<number | null> {
   try {
-    const res = await fetch(url, { method: "HEAD" });
+    const res = await fetch(METADATA, {
+      method: "POST",
+      headers: { Authorization: `Key ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ media_url: url }),
+    });
     if (!res.ok) return null;
-    const len = Number(res.headers.get("content-length") || 0);
-    const type = (res.headers.get("content-type") || "").toLowerCase();
-    if (!len) return null;
-    if (type.includes("wav") || url.toLowerCase().endsWith(".wav")) {
-      // 48kHz, 16-bit, mono PCM => 96000 bytes per second (44-byte header ignored)
-      return ((len - 44) / 96000) * 1000;
-    }
-    return null;
+    const data = await res.json();
+    const seconds = Number(data?.media?.duration);
+    return Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : null;
   } catch {
     return null;
   }
 }
+
 
 
 Deno.serve(async (req) => {
