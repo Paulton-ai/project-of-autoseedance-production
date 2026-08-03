@@ -9,36 +9,11 @@ const cors = {
 
 type Scene = { id: number; duration: number; visual: string; voiceover: string };
 
-// Map dashboard model + quality → Fal.ai endpoint
-function resolveModelEndpoint(model: string, quality: "budget" | "premium"): string {
-  const premium = quality === "premium";
-  switch (model) {
-    case "wan-2.6":
-      return "fal-ai/wan/v2.2-a14b/text-to-video";
-    case "kling-2.6":
-      return premium
-        ? "fal-ai/kling-video/v2.1/master/text-to-video"
-        : "fal-ai/kling-video/v2.1/standard/text-to-video";
-    case "veo-3":
-      return premium ? "fal-ai/veo3" : "fal-ai/veo3/fast";
-    case "seedance-2":
-    default:
-      return "bytedance/seedance-2.0/text-to-video";
-  }
-}
-
-function aspectToRatio(aspect: string): string {
-  return aspect === "landscape" ? "16:9" : "9:16";
-}
-
-function qualityToResolution(quality: "budget" | "premium"): string {
-  return quality === "premium" ? "1080p" : "720p";
-}
-
 function stylePrefix(style: string | null): string {
   if (!style) return "";
   return `${style} style. `;
 }
+
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
