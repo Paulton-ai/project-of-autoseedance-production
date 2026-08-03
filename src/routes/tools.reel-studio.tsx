@@ -78,7 +78,7 @@ function ReelStudioPage() {
   const [refPreview, setRefPreview] = useState<string | null>(null);
 
   const [voiceover, setVoiceover] = useState(true);
-  const [voice, setVoice] = useState<string>("female-us");
+  const [voice, setVoice] = useState<string>(DEFAULT_VOICE);
   const [music, setMusic] = useState(false);
   const [musicMood, setMusicMood] = useState<string>("Cinematic");
   const [captions, setCaptions] = useState(true);
