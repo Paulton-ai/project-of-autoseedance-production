@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
 
   // Compose a merged clip using a sample silent video + both narrations back to back
   if (en.url && hi.url) {
-    const video = "https://storage.googleapis.com/falserverless/model_tests/video_models/robot.mp4";
+    const video = "https://v3b.fal.media/files/b/0aa4d358/rNBdkZnIWmz7DCxoOUXOm_output.mp4";
     const tracks = [
       { id: "video", type: "video", keyframes: [
         { url: video, timestamp: 0, duration: 5000 },
