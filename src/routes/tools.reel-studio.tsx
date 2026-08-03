@@ -52,12 +52,8 @@ const MODELS = [
   { value: "seedance-2", label: "Seedance 2.0" },
 ] as const;
 
-const VOICES = [
-  { value: "female-us", label: "Female — US English" },
-  { value: "male-us", label: "Male — US English" },
-  { value: "female-uk", label: "Female — UK English" },
-  { value: "male-uk", label: "Male — UK English" },
-] as const;
+
+
 
 const MUSIC_MOODS = ["Upbeat", "Calm", "Dramatic", "Cinematic"] as const;
 const CAPTION_STYLES = [
