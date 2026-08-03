@@ -107,19 +107,20 @@ Deno.serve(async (req) => {
 
     const endpoint = resolveModelEndpoint(reel.model, reel.quality);
     const aspect_ratio = aspectToRatio(reel.aspect);
-    const resolution = qualityToResolution(reel.quality);
+    const resolution = reel.quality === "premium" ? "1080p" : "720p";
     const style = stylePrefix(reel.style);
 
     // Submit scene clips in parallel
     const submissions = await Promise.all(scenes.map(async (scene) => {
-      const body: Record<string, unknown> = {
+      const body = buildFalPayload({
+        model: reel.model,
+        quality: reel.quality,
+        aspect: reel.aspect,
         prompt: `${style}${scene.visual}`,
-        aspect_ratio,
-        resolution,
-        duration: String(scene.duration),
-        enable_safety_checker: true,
-      };
-      console.log(`[generate-reel-clips] scene ${scene.id} prompt: ${body.prompt}`);
+        duration: scene.duration,
+      });
+      console.log(`[generate-reel-clips] scene ${scene.id} -> ${endpoint} ${JSON.stringify(body)}`);
+
       try {
         const res = await fetch(`https://queue.fal.run/${endpoint}`, {
           method: "POST",
