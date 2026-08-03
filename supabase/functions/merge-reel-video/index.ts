@@ -17,6 +17,32 @@ type SceneAsset = {
 
 const COMPOSE = "fal-ai/ffmpeg-api/compose";
 
+const METADATA = "https://fal.run/fal-ai/ffmpeg-api/metadata";
+
+/**
+ * Real duration (ms) of a remote media file, measured via Fal's ffmpeg metadata endpoint.
+ * The compose endpoint plays each keyframe's source in full, so the timeline must be
+ * built from actual media lengths — otherwise the audio track drifts out of sync with
+ * the video and the narration is inaudible/misplaced in the final render.
+ */
+async function probeMediaMs(key: string, url: string): Promise<number | null> {
+  try {
+    const res = await fetch(METADATA, {
+      method: "POST",
+      headers: { Authorization: `Key ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ media_url: url }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const seconds = Number(data?.media?.duration);
+    return Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : null;
+  } catch {
+    return null;
+  }
+}
+
+
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
   try {
@@ -92,16 +118,35 @@ Deno.serve(async (req) => {
     }
 
     // ---- SUBMIT ----
+    // Measure real media lengths in parallel so the timeline matches what ffmpeg renders.
+    const measured = await Promise.all(clips.map(async (clip) => ({
+      clip,
+      videoMs: await probeMediaMs(FAL_API_KEY, clip.video_url!),
+      audioMs: clip.audio_url ? await probeMediaMs(FAL_API_KEY, clip.audio_url) : null,
+    })));
+
     const videoKeyframes: Array<Record<string, unknown>> = [];
     const audioKeyframes: Array<Record<string, unknown>> = [];
     let cursorMs = 0;
-    for (const clip of clips) {
-      const durMs = Math.max(1, Number(clip.duration) || 5) * 1000;
-      videoKeyframes.push({ url: clip.video_url, timestamp: cursorMs, duration: durMs });
+    for (const { clip, videoMs, audioMs } of measured) {
+      const fallbackMs = Math.max(1, Number(clip.duration) || 5) * 1000;
+      const realVideoMs = videoMs ?? fallbackMs;
+      // The scene lasts as long as its clip, and never cuts the narration short.
+      const segmentMs = Math.ceil(Math.max(realVideoMs, audioMs ?? 0));
+      videoKeyframes.push({ url: clip.video_url, timestamp: cursorMs, duration: segmentMs });
       if (clip.audio_url) {
-        audioKeyframes.push({ url: clip.audio_url, timestamp: cursorMs, duration: durMs });
+        audioKeyframes.push({
+          url: clip.audio_url,
+          timestamp: cursorMs,
+          duration: Math.ceil(audioMs ?? segmentMs),
+        });
       }
-      cursorMs += durMs;
+      cursorMs += segmentMs;
+    }
+
+
+    if (reel.voiceover && !audioKeyframes.length) {
+      throw new Error("Voiceover is enabled but no scene has audio — run voiceover generation before merging");
     }
 
     const tracks: Array<Record<string, unknown>> = [
@@ -110,6 +155,7 @@ Deno.serve(async (req) => {
     if (audioKeyframes.length) {
       tracks.push({ id: "voiceover", type: "audio", keyframes: audioKeyframes });
     }
+
 
     const submitRes = await fetch(`https://queue.fal.run/${COMPOSE}`, {
       method: "POST",

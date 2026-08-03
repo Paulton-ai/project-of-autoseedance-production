@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { VOICE_GROUPS, voiceValue, DEFAULT_VOICE } from "@/lib/reel-voices";
 import { Breadcrumb } from "@/components/seo/Breadcrumb";
 import { useSession } from "@/lib/auth";
 import { toast } from "sonner";
@@ -51,12 +52,8 @@ const MODELS = [
   { value: "seedance-2", label: "Seedance 2.0" },
 ] as const;
 
-const VOICES = [
-  { value: "female-us", label: "Female — US English" },
-  { value: "male-us", label: "Male — US English" },
-  { value: "female-uk", label: "Female — UK English" },
-  { value: "male-uk", label: "Male — UK English" },
-] as const;
+
+
 
 const MUSIC_MOODS = ["Upbeat", "Calm", "Dramatic", "Cinematic"] as const;
 const CAPTION_STYLES = [
@@ -81,7 +78,7 @@ function ReelStudioPage() {
   const [refPreview, setRefPreview] = useState<string | null>(null);
 
   const [voiceover, setVoiceover] = useState(true);
-  const [voice, setVoice] = useState<string>("female-us");
+  const [voice, setVoice] = useState<string>(DEFAULT_VOICE);
   const [music, setMusic] = useState(false);
   const [musicMood, setMusicMood] = useState<string>("Cinematic");
   const [captions, setCaptions] = useState(true);
@@ -630,11 +627,20 @@ function ReelStudioPage() {
                     <div>
                       <Label>Voice</Label>
                       <Select value={voice} onValueChange={setVoice}>
-                        <SelectTrigger className="mt-2"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          {VOICES.map((v) => <SelectItem key={v.value} value={v.value}>{v.label}</SelectItem>)}
+                        <SelectTrigger className="mt-2"><SelectValue placeholder="Select a voice" /></SelectTrigger>
+                        <SelectContent className="max-h-72">
+                          {VOICE_GROUPS.map((g) => (
+                            <SelectGroup key={g.code}>
+                              <SelectLabel>{g.language}</SelectLabel>
+                              {g.names.map((n) => {
+                                const val = voiceValue(n, g.code);
+                                return <SelectItem key={val} value={val}>{n}</SelectItem>;
+                              })}
+                            </SelectGroup>
+                          ))}
                         </SelectContent>
                       </Select>
+
                     </div>
                   )}
                   <div className="flex items-center justify-between pt-2 border-t border-border">
