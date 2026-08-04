@@ -735,6 +735,27 @@ function Admin() {
 
           {/* ── SETTINGS ── */}
           <TabsContent value="settings">
+            <Card className="glass border-0 p-6 max-w-2xl mb-6">
+              <h3 className="font-display font-semibold mb-2">Voice Preview Samples</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                One-time setup: generates a short branded demo clip for every Inworld voice and stores
+                it in the <code>voice-previews</code> bucket (~$0.07 total). Voices that already have a
+                sample are skipped, so this never re-charges and never runs automatically.
+              </p>
+              <Button
+                variant="outline"
+                disabled={voicePrevRunning}
+                onClick={async () => {
+                  setVoicePrevRunning(true);
+                  const { data, error } = await supabase.functions.invoke("generate-voice-previews", { body: {} });
+                  setVoicePrevRunning(false);
+                  if (error) return toast.error(error.message);
+                  toast.success(`Generated ${data?.generated ?? 0}, skipped ${data?.skipped ?? 0}, failed ${data?.failed ?? 0}`);
+                }}
+              >
+                {voicePrevRunning ? "Generating…" : "Generate missing voice previews"}
+              </Button>
+            </Card>
             <Card className="glass border-0 p-6 max-w-2xl">
               <h3 className="font-display font-semibold mb-6 flex items-center gap-2">
                 <Globe className="size-5" /> Site Settings
