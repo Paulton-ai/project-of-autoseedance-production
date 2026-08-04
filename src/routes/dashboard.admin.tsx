@@ -125,6 +125,7 @@ function Admin() {
   const [preview, setPreview] = useState(false);
 
   // Settings
+  const [voicePrevRunning, setVoicePrevRunning] = useState(false);
   const [settings, setSettings] = useState<SiteSettings>({
     site_name: "Auto Seedance", support_email: "paultonai26@gmail.com",
     free_signup_credits: 50, max_images_per_day: 20, max_videos_per_day: 5, maintenance_mode: false,
