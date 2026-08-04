@@ -1,5 +1,5 @@
-// Inworld TTS voice catalogue (Fal.ai fal-ai/inworld-tts).
-// The value sent to the API is the full enum string, e.g. "Sarah (en)".
+// Inworld TTS voice catalogue + branded demo sentence per language.
+// Kept in sync with src/lib/reel-voices.ts
 export type VoiceGroup = { language: string; code: string; names: string[] };
 
 export const VOICE_GROUPS: VoiceGroup[] = [
@@ -34,20 +34,26 @@ export const VOICE_GROUPS: VoiceGroup[] = [
   { language: "Arabic", code: "ar", names: ["Nour", "Omar"] },
 ];
 
+// Brand name "AutoSeedance" stays untranslated in every language.
+export const DEMO_SENTENCES: Record<string, string> = {
+  en: "Welcome to AutoSeedance — this is a preview of how your video voiceover will sound.",
+  zh: "欢迎使用 AutoSeedance——这是您的视频配音效果预览。",
+  nl: "Welkom bij AutoSeedance — dit is een voorbeeld van hoe je videovoice-over zal klinken.",
+  fr: "Bienvenue sur AutoSeedance — voici un aperçu du rendu de la voix off de votre vidéo.",
+  de: "Willkommen bei AutoSeedance — so wird das Voiceover für Ihr Video klingen.",
+  it: "Benvenuto su AutoSeedance — ecco un'anteprima di come suonerà la voce fuori campo del tuo video.",
+  ja: "AutoSeedance へようこそ。これはあなたの動画ナレーションの音声プレビューです。",
+  ko: "AutoSeedance에 오신 것을 환영합니다. 영상 내레이션이 어떻게 들릴지 미리 들어보세요.",
+  pl: "Witamy w AutoSeedance — tak będzie brzmiał lektor w Twoim filmie.",
+  pt: "Bem-vindo ao AutoSeedance — esta é uma prévia de como ficará a narração do seu vídeo.",
+  es: "Bienvenido a AutoSeedance: esta es una muestra de cómo sonará la voz en off de tu vídeo.",
+  ru: "Добро пожаловать в AutoSeedance — так будет звучать закадровый голос в вашем видео.",
+  hi: "AutoSeedance में आपका स्वागत है — यह एक झलक है कि आपके वीडियो की आवाज़ कैसी सुनाई देगी।",
+  he: "ברוכים הבאים ל-AutoSeedance — כך יישמע הקריינות בסרטון שלכם.",
+  ar: "مرحبًا بك في AutoSeedance — هذه معاينة لكيفية سماع التعليق الصوتي في الفيديو الخاص بك.",
+};
+
 export const voiceValue = (name: string, code: string) => `${name} (${code})`;
 
-export const DEFAULT_VOICE = "Sarah (en)";
-
-// --- Voice preview samples (pre-generated once, stored in Supabase Storage) ---
-export const VOICE_PREVIEW_BUCKET = "voice-previews";
-
-/** Stable file id for a voice, e.g. Sarah/en -> "sarah-en" */
 export const voiceSlug = (name: string, code: string) =>
   `${name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${code}`;
-
-/** "Sarah (en)" -> "sarah-en.wav" */
-export const voicePreviewPath = (value: string) => {
-  const m = value.match(/^(.*)\s+\(([a-z]{2})\)$/i);
-  if (!m) return null;
-  return `${voiceSlug(m[1].trim(), m[2].toLowerCase())}.wav`;
-};
