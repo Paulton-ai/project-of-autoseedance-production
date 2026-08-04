@@ -37,3 +37,17 @@ export const VOICE_GROUPS: VoiceGroup[] = [
 export const voiceValue = (name: string, code: string) => `${name} (${code})`;
 
 export const DEFAULT_VOICE = "Sarah (en)";
+
+// --- Voice preview samples (pre-generated once, stored in Supabase Storage) ---
+export const VOICE_PREVIEW_BUCKET = "voice-previews";
+
+/** Stable file id for a voice, e.g. Sarah/en -> "sarah-en" */
+export const voiceSlug = (name: string, code: string) =>
+  `${name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${code}`;
+
+/** "Sarah (en)" -> "sarah-en.wav" */
+export const voicePreviewPath = (value: string) => {
+  const m = value.match(/^(.*)\s+\(([a-z]{2})\)$/i);
+  if (!m) return null;
+  return `${voiceSlug(m[1].trim(), m[2].toLowerCase())}.wav`;
+};
