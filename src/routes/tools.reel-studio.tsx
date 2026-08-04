@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { VOICE_GROUPS, voiceValue, DEFAULT_VOICE } from "@/lib/reel-voices";
+import { VoicePreviewSelect } from "@/components/tools/VoicePreviewSelect";
 import { Breadcrumb } from "@/components/seo/Breadcrumb";
 import { useSession } from "@/lib/auth";
 import { toast } from "sonner";
