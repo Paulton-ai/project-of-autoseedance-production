@@ -28,15 +28,24 @@ Deno.serve(async (req) => {
     const anon = Deno.env.get("SUPABASE_ANON_KEY")!;
     const svc = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    const authHeader = req.headers.get("Authorization") || "";
-    if (!authHeader) throw new Error("Missing Authorization");
-    const userClient = createClient(url, anon, { global: { headers: { Authorization: authHeader } } });
-    const { data: userData, error: userErr } = await userClient.auth.getUser();
-    if (userErr || !userData.user) throw new Error("Not authenticated");
-
     const admin = createClient(url, svc, { auth: { persistSession: false } });
-    const { data: isAdmin } = await admin.rpc("has_role", { _user_id: userData.user.id, _role: "admin" });
-    if (!isAdmin) throw new Error("Admin only");
+
+    // Auth: either a one-time setup key (service-role script / manual trigger)
+    // or a logged-in admin's JWT.
+    const setupKey = Deno.env.get("VOICE_PREVIEW_SETUP_KEY");
+    const providedKey = req.headers.get("x-setup-key");
+    const viaSetupKey = !!setupKey && providedKey === setupKey;
+
+    if (!viaSetupKey) {
+      const authHeader = req.headers.get("Authorization") || "";
+      const token = authHeader.replace(/^Bearer\s+/i, "");
+      if (!token) throw new Error("Missing Authorization (send a user token or x-setup-key)");
+      const userClient = createClient(url, anon, { global: { headers: { Authorization: `Bearer ${token}` } } });
+      const { data: userData, error: userErr } = await userClient.auth.getUser(token);
+      if (userErr || !userData.user) throw new Error("Not authenticated");
+      const { data: isAdmin } = await admin.rpc("has_role", { _user_id: userData.user.id, _role: "admin" });
+      if (!isAdmin) throw new Error("Admin only");
+    }
 
     const body = await req.json().catch(() => ({}));
     const force: boolean = body?.force === true;
