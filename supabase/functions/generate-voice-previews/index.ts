@@ -5,7 +5,7 @@ import { VOICE_GROUPS, DEMO_SENTENCES, voiceValue, voiceSlug } from "../_shared/
 const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey, x-setup-key",
 };
 
 const INWORLD_TTS = "https://fal.run/fal-ai/inworld-tts";
