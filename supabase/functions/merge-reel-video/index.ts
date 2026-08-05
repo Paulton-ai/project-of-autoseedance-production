@@ -71,7 +71,10 @@ Deno.serve(async (req) => {
     if (reel.user_id !== user.id) throw new Error("Forbidden");
 
     const assets: SceneAsset[] = reel.scene_assets ?? [];
-    const clips = assets.filter((a) => a.status === "completed" && a.video_url);
+    // Scene order is authoritative — never trust array order coming back from polling.
+    const clips = assets
+      .filter((a) => a.status === "completed" && a.video_url)
+      .sort((a, b) => Number(a.id) - Number(b.id));
     if (!clips.length) throw new Error("No completed scene clips to merge");
 
     // ---- POLL ----
