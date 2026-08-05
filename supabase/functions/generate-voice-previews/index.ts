@@ -5,7 +5,7 @@ import { VOICE_GROUPS, DEMO_SENTENCES, voiceValue, voiceSlug } from "../_shared/
 const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey, x-setup-key",
 };
 
 const INWORLD_TTS = "https://fal.run/fal-ai/inworld-tts";
@@ -28,15 +28,24 @@ Deno.serve(async (req) => {
     const anon = Deno.env.get("SUPABASE_ANON_KEY")!;
     const svc = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    const authHeader = req.headers.get("Authorization") || "";
-    if (!authHeader) throw new Error("Missing Authorization");
-    const userClient = createClient(url, anon, { global: { headers: { Authorization: authHeader } } });
-    const { data: userData, error: userErr } = await userClient.auth.getUser();
-    if (userErr || !userData.user) throw new Error("Not authenticated");
-
     const admin = createClient(url, svc, { auth: { persistSession: false } });
-    const { data: isAdmin } = await admin.rpc("has_role", { _user_id: userData.user.id, _role: "admin" });
-    if (!isAdmin) throw new Error("Admin only");
+
+    // Auth: either a one-time setup key (service-role script / manual trigger)
+    // or a logged-in admin's JWT.
+    const setupKey = Deno.env.get("VOICE_PREVIEW_SETUP_KEY");
+    const providedKey = req.headers.get("x-setup-key");
+    const viaSetupKey = !!setupKey && providedKey === setupKey;
+
+    if (!viaSetupKey) {
+      const authHeader = req.headers.get("Authorization") || "";
+      const token = authHeader.replace(/^Bearer\s+/i, "");
+      if (!token) throw new Error("Missing Authorization (send a user token or x-setup-key)");
+      const userClient = createClient(url, anon, { global: { headers: { Authorization: `Bearer ${token}` } } });
+      const { data: userData, error: userErr } = await userClient.auth.getUser(token);
+      if (userErr || !userData.user) throw new Error("Not authenticated");
+      const { data: isAdmin } = await admin.rpc("has_role", { _user_id: userData.user.id, _role: "admin" });
+      if (!isAdmin) throw new Error("Admin only");
+    }
 
     const body = await req.json().catch(() => ({}));
     const force: boolean = body?.force === true;
@@ -45,18 +54,22 @@ Deno.serve(async (req) => {
     const { data: existingList } = await admin.storage.from(BUCKET).list("", { limit: 1000 });
     const existing = new Set((existingList ?? []).map((f) => f.name));
 
-    const targets: { slug: string; voice: string; text: string }[] = [];
+    const allTargets: { slug: string; voice: string; text: string }[] = [];
     for (const g of VOICE_GROUPS) {
       const text = DEMO_SENTENCES[g.code] ?? DEMO_SENTENCES.en;
       for (const n of g.names) {
         const slug = voiceSlug(n, g.code);
         if (!force && existing.has(`${slug}.wav`)) continue;
-        targets.push({ slug, voice: voiceValue(n, g.code), text });
+        allTargets.push({ slug, voice: voiceValue(n, g.code), text });
       }
     }
+    // Process in chunks so a single invocation stays well inside the request timeout.
+    const limit: number = Number.isFinite(body?.limit) ? Math.max(1, Math.min(60, body.limit)) : 20;
+    const targets = allTargets.slice(0, limit);
+    const remaining = Math.max(0, allTargets.length - targets.length);
 
     const results: { slug: string; ok: boolean; error?: string }[] = [];
-    const CONCURRENCY = 6;
+    const CONCURRENCY = 5;
     for (let i = 0; i < targets.length; i += CONCURRENCY) {
       const batch = targets.slice(i, i + CONCURRENCY);
       const done = await Promise.all(batch.map(async (t) => {
@@ -89,6 +102,7 @@ Deno.serve(async (req) => {
       generated: results.length - failed.length,
       failed: failed.length,
       failures: failed.slice(0, 20),
+      remaining,
     }), { headers: { ...cors, "Content-Type": "application/json" } });
   } catch (err) {
     console.error("[generate-voice-previews]", err);
