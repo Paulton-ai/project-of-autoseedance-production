@@ -748,7 +748,16 @@ function Admin() {
                 disabled={voicePrevRunning}
                 onClick={async () => {
                   setVoicePrevRunning(true);
-                  const { data, error } = await supabase.functions.invoke("generate-voice-previews", { body: {} });
+                  const { data: sessionData } = await supabase.auth.getSession();
+                  const accessToken = sessionData.session?.access_token;
+                  if (!accessToken) {
+                    setVoicePrevRunning(false);
+                    return toast.error("You must be signed in as an admin");
+                  }
+                  const { data, error } = await supabase.functions.invoke("generate-voice-previews", {
+                    body: {},
+                    headers: { Authorization: `Bearer ${accessToken}` },
+                  });
                   setVoicePrevRunning(false);
                   if (error) return toast.error(error.message);
                   toast.success(`Generated ${data?.generated ?? 0}, skipped ${data?.skipped ?? 0}, failed ${data?.failed ?? 0}`);
