@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
     const remaining = Math.max(0, allTargets.length - targets.length);
 
     const results: { slug: string; ok: boolean; error?: string }[] = [];
-    const CONCURRENCY = 6;
+    const CONCURRENCY = 5;
     for (let i = 0; i < targets.length; i += CONCURRENCY) {
       const batch = targets.slice(i, i + CONCURRENCY);
       const done = await Promise.all(batch.map(async (t) => {
