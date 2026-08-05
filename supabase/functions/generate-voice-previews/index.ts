@@ -102,6 +102,7 @@ Deno.serve(async (req) => {
       generated: results.length - failed.length,
       failed: failed.length,
       failures: failed.slice(0, 20),
+      remaining,
     }), { headers: { ...cors, "Content-Type": "application/json" } });
   } catch (err) {
     console.error("[generate-voice-previews]", err);
