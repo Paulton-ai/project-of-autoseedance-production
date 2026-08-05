@@ -71,7 +71,10 @@ Deno.serve(async (req) => {
     if (reel.user_id !== user.id) throw new Error("Forbidden");
 
     const assets: SceneAsset[] = reel.scene_assets ?? [];
-    const clips = assets.filter((a) => a.status === "completed" && a.video_url);
+    // Scene order is authoritative — never trust array order coming back from polling.
+    const clips = assets
+      .filter((a) => a.status === "completed" && a.video_url)
+      .sort((a, b) => Number(a.id) - Number(b.id));
     if (!clips.length) throw new Error("No completed scene clips to merge");
 
     // ---- POLL ----
@@ -130,19 +133,33 @@ Deno.serve(async (req) => {
     let cursorMs = 0;
     for (const { clip, videoMs, audioMs } of measured) {
       const fallbackMs = Math.max(1, Number(clip.duration) || 5) * 1000;
-      const realVideoMs = videoMs ?? fallbackMs;
-      // The scene lasts as long as its clip, and never cuts the narration short.
-      const segmentMs = Math.ceil(Math.max(realVideoMs, audioMs ?? 0));
-      videoKeyframes.push({ url: clip.video_url, timestamp: cursorMs, duration: segmentMs });
+      const realVideoMs = Math.ceil(videoMs ?? fallbackMs);
+      const realAudioMs = audioMs != null ? Math.ceil(audioMs) : null;
+
+      console.log(
+        `[merge-reel-video] Scene ${clip.id}: video=${(realVideoMs / 1000).toFixed(2)}s` +
+        ` (measured=${videoMs != null}), audio=${realAudioMs != null ? (realAudioMs / 1000).toFixed(2) + "s" : "none"}` +
+        `, script_estimate=${clip.duration}s, start=${(cursorMs / 1000).toFixed(2)}s`,
+      );
+
+      // Video segments are strictly back-to-back using ACTUAL measured clip length.
+      videoKeyframes.push({ url: clip.video_url, timestamp: cursorMs, duration: realVideoMs });
       if (clip.audio_url) {
+        // Audio segment N starts at exactly the same cumulative timestamp as video segment N.
         audioKeyframes.push({
           url: clip.audio_url,
           timestamp: cursorMs,
-          duration: Math.ceil(audioMs ?? segmentMs),
+          duration: realAudioMs ?? realVideoMs,
         });
       }
-      cursorMs += segmentMs;
+      cursorMs += realVideoMs;
     }
+
+    console.log(
+      `[merge-reel-video] reel ${reel_id} timeline total=${(cursorMs / 1000).toFixed(2)}s`,
+      JSON.stringify({ video: videoKeyframes, audio: audioKeyframes }),
+    );
+
 
 
     if (reel.voiceover && !audioKeyframes.length) {
