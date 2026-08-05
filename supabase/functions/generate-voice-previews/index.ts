@@ -54,15 +54,19 @@ Deno.serve(async (req) => {
     const { data: existingList } = await admin.storage.from(BUCKET).list("", { limit: 1000 });
     const existing = new Set((existingList ?? []).map((f) => f.name));
 
-    const targets: { slug: string; voice: string; text: string }[] = [];
+    const allTargets: { slug: string; voice: string; text: string }[] = [];
     for (const g of VOICE_GROUPS) {
       const text = DEMO_SENTENCES[g.code] ?? DEMO_SENTENCES.en;
       for (const n of g.names) {
         const slug = voiceSlug(n, g.code);
         if (!force && existing.has(`${slug}.wav`)) continue;
-        targets.push({ slug, voice: voiceValue(n, g.code), text });
+        allTargets.push({ slug, voice: voiceValue(n, g.code), text });
       }
     }
+    // Process in chunks so a single invocation stays well inside the request timeout.
+    const limit: number = Number.isFinite(body?.limit) ? Math.max(1, Math.min(60, body.limit)) : 20;
+    const targets = allTargets.slice(0, limit);
+    const remaining = Math.max(0, allTargets.length - targets.length);
 
     const results: { slug: string; ok: boolean; error?: string }[] = [];
     const CONCURRENCY = 6;
