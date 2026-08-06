@@ -384,8 +384,6 @@ function VideoToolPage() {
     if (userId) fetchGenerations(userId);
   }
 
-  if (!userId) return null;
-
   const breadcrumbs = [
     { name: "Home", url: "/" },
     { name: "Tools", url: "/tools" },
@@ -394,6 +392,18 @@ function VideoToolPage() {
 
   return (
     <div className="min-h-screen bg-background pt-14">
+      <AuthGateDialog
+        open={authGateOpen}
+        onOpenChange={setAuthGateOpen}
+        toolName="the AI Video Generator"
+        onAuthenticated={() => { setTimeout(() => { void handleGenerate(); }, 400); }}
+      />
+      <InsufficientCreditsDialog
+        open={creditsDialog.open}
+        onOpenChange={(open: boolean) => setCreditsDialog((s) => ({ ...s, open }))}
+        required={CREDITS_PER_VIDEO}
+        balance={creditsDialog.balance}
+      />
       <ToolNavbar title="Video Generation" />
       <div className="p-6 md:p-10 max-w-6xl mx-auto">
         <Breadcrumb items={breadcrumbs} className="mb-4" />
