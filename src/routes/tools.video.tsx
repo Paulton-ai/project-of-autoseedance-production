@@ -2,6 +2,8 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ToolNavbar } from "@/components/tools/ToolNavbar";
+import { AuthGateDialog } from "@/components/tools/AuthGateDialog";
+import { InsufficientCreditsDialog } from "@/components/tools/InsufficientCreditsDialog";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -212,14 +214,24 @@ function VideoToolPage() {
   const [generations, setGenerations] = useState<Generation[]>([]);
   const intervalsRef = useRef<Map<string, ReturnType<typeof setInterval>>>(new Map());
 
+  const [authGateOpen, setAuthGateOpen] = useState(false);
+  const [creditsDialog, setCreditsDialog] = useState<{ open: boolean; balance: number }>({ open: false, balance: 0 });
+
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) { navigate({ to: "/login", search: { redirect: "/tools/video" } as any, replace: true }); return; }
-      setUserId(user.id);
-      supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle()
+    const loadUser = (uid: string) => {
+      setUserId(uid);
+      supabase.from("user_roles").select("role").eq("user_id", uid).eq("role", "admin").maybeSingle()
         .then(({ data }) => setIsAdmin(!!data));
+    };
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) loadUser(user.id);
     });
-  }, [navigate]);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      if (session?.user) loadUser(session.user.id);
+      else { setUserId(null); setIsAdmin(false); }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   async function fetchGenerations(uid: string) {
     const { data } = await supabase.from("generations").select("*").eq("user_id", uid).eq("tool_type", "video").order("created_at", { ascending: false }).limit(30);
@@ -255,12 +267,12 @@ function VideoToolPage() {
 
   const handleGenerate = async () => {
     if (!prompt.trim()) { toast.error("Please enter a prompt"); return; }
-    if (!userId) { navigate({ to: "/login", replace: true }); return; }
+    if (!userId) { setAuthGateOpen(true); return; }
 
     if (!isAdmin) {
       const { data: wallet } = await supabase.from("credit_wallets").select("balance").eq("user_id", userId).maybeSingle();
       if (wallet && wallet.balance < CREDITS_PER_VIDEO) {
-        toast.error("Insufficient credits", { action: { label: "Upgrade", onClick: () => window.location.href = "/pricing" } });
+        setCreditsDialog({ open: true, balance: wallet.balance });
         return;
       }
     }
@@ -374,8 +386,6 @@ function VideoToolPage() {
     if (userId) fetchGenerations(userId);
   }
 
-  if (!userId) return null;
-
   const breadcrumbs = [
     { name: "Home", url: "/" },
     { name: "Tools", url: "/tools" },
@@ -384,6 +394,18 @@ function VideoToolPage() {
 
   return (
     <div className="min-h-screen bg-background pt-14">
+      <AuthGateDialog
+        open={authGateOpen}
+        onOpenChange={setAuthGateOpen}
+        toolName="the AI Video Generator"
+        onAuthenticated={() => { setTimeout(() => { void handleGenerate(); }, 400); }}
+      />
+      <InsufficientCreditsDialog
+        open={creditsDialog.open}
+        onOpenChange={(open: boolean) => setCreditsDialog((s) => ({ ...s, open }))}
+        required={CREDITS_PER_VIDEO}
+        balance={creditsDialog.balance}
+      />
       <ToolNavbar title="Video Generation" />
       <div className="p-6 md:p-10 max-w-6xl mx-auto">
         <Breadcrumb items={breadcrumbs} className="mb-4" />

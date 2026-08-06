@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ToolNavbar } from "@/components/tools/ToolNavbar";
+import { AuthGateDialog } from "@/components/tools/AuthGateDialog";
+import { InsufficientCreditsDialog } from "@/components/tools/InsufficientCreditsDialog";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -65,6 +67,8 @@ const CAPTION_STYLES = [
 
 function ReelStudioPage() {
   const { user } = useSession();
+  const [authGateOpen, setAuthGateOpen] = useState(false);
+  const [creditsDialog, setCreditsDialog] = useState<{ open: boolean; balance: number }>({ open: false, balance: 0 });
   const fileRef = useRef<HTMLInputElement | null>(null);
 
   const [topic, setTopic] = useState("");
@@ -173,12 +177,23 @@ function ReelStudioPage() {
 
   const handleGenerate = async () => {
     if (!user) {
-      toast.error("Please sign in to generate reels");
+      setAuthGateOpen(true);
       return;
     }
     if (!canGenerate) {
       toast.error("Describe your video idea (at least a sentence)");
       return;
+    }
+    {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const [{ data: wallet }, { data: adminRole }] = await Promise.all([
+        supabase.from("credit_wallets").select("balance").eq("user_id", user.id).maybeSingle(),
+        supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle(),
+      ]);
+      if (!adminRole && wallet && wallet.balance < costEstimate.total) {
+        setCreditsDialog({ open: true, balance: wallet.balance });
+        return;
+      }
     }
     setGeneratingScript(true);
     try {
@@ -380,6 +395,18 @@ function ReelStudioPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <AuthGateDialog
+        open={authGateOpen}
+        onOpenChange={setAuthGateOpen}
+        toolName="AI Reel Studio"
+        onAuthenticated={() => { setTimeout(() => { void handleGenerate(); }, 600); }}
+      />
+      <InsufficientCreditsDialog
+        open={creditsDialog.open}
+        onOpenChange={(open: boolean) => setCreditsDialog((s) => ({ ...s, open }))}
+        required={costEstimate.total}
+        balance={creditsDialog.balance}
+      />
       <ToolNavbar title="AI Reel Studio" />
       <main className="pt-20 pb-16">
         <div className="mx-auto max-w-6xl px-4">
