@@ -113,12 +113,26 @@ export function Navbar() {
           <nav className="hidden md:flex items-center gap-7 text-sm text-muted-foreground">
             <a href="/#features" className="hover:text-foreground transition">Features</a>
             <Link to="/pricing" className="hover:text-foreground transition">Pricing</Link>
-            <Link to="/tools/image" className="hover:text-foreground transition flex items-center gap-1.5">
-              <ImageIcon className="size-3.5" /> Image Generation
-            </Link>
-            <Link to="/tools/video" className="hover:text-foreground transition flex items-center gap-1.5">
-              <Video className="size-3.5" /> Video Generation
-            </Link>
+
+            <div className="relative group">
+              <button className="hover:text-foreground transition flex items-center gap-1.5 py-2">
+                Tools <ChevronDown className="size-3.5" />
+              </button>
+              <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible focus-within:opacity-100 focus-within:visible transition">
+                <div className="w-56 rounded-xl border border-border bg-background/95 backdrop-blur shadow-lg overflow-hidden">
+                  <Link to="/tools/image" className="flex items-center gap-2 px-4 py-3 hover:bg-muted transition">
+                    <ImageIcon className="size-4 text-muted-foreground" /> Image Generation
+                  </Link>
+                  <Link to="/tools/video" className="flex items-center gap-2 px-4 py-3 hover:bg-muted transition">
+                    <Video className="size-4 text-muted-foreground" /> Video Generation
+                  </Link>
+                  <Link to="/tools/reel-studio" className="flex items-center gap-2 px-4 py-3 hover:bg-muted transition">
+                    <Clapperboard className="size-4 text-muted-foreground" /> AI Reel Studio
+                  </Link>
+                </div>
+              </div>
+            </div>
+
             {postsCount > 0 && (
               <Link to="/blog" className="hover:text-foreground transition">Blog</Link>
             )}
