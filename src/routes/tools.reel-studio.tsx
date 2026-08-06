@@ -65,6 +65,8 @@ const CAPTION_STYLES = [
 
 function ReelStudioPage() {
   const { user } = useSession();
+  const [authGateOpen, setAuthGateOpen] = useState(false);
+  const [creditsDialog, setCreditsDialog] = useState<{ open: boolean; balance: number }>({ open: false, balance: 0 });
   const fileRef = useRef<HTMLInputElement | null>(null);
 
   const [topic, setTopic] = useState("");
