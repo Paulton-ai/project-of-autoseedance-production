@@ -402,8 +402,6 @@ function ImageToolPage() {
     if (userId) fetchGenerations(userId);
   }
 
-  if (!userId) return null;
-
   const breadcrumbs = [
     { name: "Home", url: "/" },
     { name: "Tools", url: "/tools" },
@@ -414,6 +412,18 @@ function ImageToolPage() {
 
   return (
     <div className="min-h-screen bg-background pt-14">
+      <AuthGateDialog
+        open={authGateOpen}
+        onOpenChange={setAuthGateOpen}
+        toolName="the AI Image Generator"
+        onAuthenticated={() => { setTimeout(() => { void handleGenerate(); }, 400); }}
+      />
+      <InsufficientCreditsDialog
+        open={creditsDialog.open}
+        onOpenChange={(open) => setCreditsDialog((s) => ({ ...s, open }))}
+        required={CREDITS_PER_IMAGE}
+        balance={creditsDialog.balance}
+      />
       <ToolNavbar title="Image Generation" />
       <div className="p-6 md:p-10 max-w-6xl mx-auto">
         <Breadcrumb items={breadcrumbs} className="mb-4" />
