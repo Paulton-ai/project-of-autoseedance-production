@@ -173,12 +173,23 @@ function ReelStudioPage() {
 
   const handleGenerate = async () => {
     if (!user) {
-      toast.error("Please sign in to generate reels");
+      setAuthGateOpen(true);
       return;
     }
     if (!canGenerate) {
       toast.error("Describe your video idea (at least a sentence)");
       return;
+    }
+    {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const [{ data: wallet }, { data: adminRole }] = await Promise.all([
+        supabase.from("credit_wallets").select("balance").eq("user_id", user.id).maybeSingle(),
+        supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle(),
+      ]);
+      if (!adminRole && wallet && wallet.balance < costEstimate.total) {
+        setCreditsDialog({ open: true, balance: wallet.balance });
+        return;
+      }
     }
     setGeneratingScript(true);
     try {
