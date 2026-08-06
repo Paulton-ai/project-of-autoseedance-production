@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Image as ImageIcon, Video, LayoutDashboard, LogOut, ChevronDown, Coins } from "lucide-react";
+import { Sparkles, Image as ImageIcon, Video, LayoutDashboard, LogOut, ChevronDown, Coins, Clapperboard } from "lucide-react";
 import { motion } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
