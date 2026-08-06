@@ -265,12 +265,12 @@ function VideoToolPage() {
 
   const handleGenerate = async () => {
     if (!prompt.trim()) { toast.error("Please enter a prompt"); return; }
-    if (!userId) { navigate({ to: "/login", replace: true }); return; }
+    if (!userId) { setAuthGateOpen(true); return; }
 
     if (!isAdmin) {
       const { data: wallet } = await supabase.from("credit_wallets").select("balance").eq("user_id", userId).maybeSingle();
       if (wallet && wallet.balance < CREDITS_PER_VIDEO) {
-        toast.error("Insufficient credits", { action: { label: "Upgrade", onClick: () => window.location.href = "/pricing" } });
+        setCreditsDialog({ open: true, balance: wallet.balance });
         return;
       }
     }
