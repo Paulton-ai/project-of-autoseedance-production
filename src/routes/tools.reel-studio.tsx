@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ToolNavbar } from "@/components/tools/ToolNavbar";
+import { AuthGateDialog } from "@/components/tools/AuthGateDialog";
+import { InsufficientCreditsDialog } from "@/components/tools/InsufficientCreditsDialog";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
