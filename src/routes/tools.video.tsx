@@ -212,14 +212,24 @@ function VideoToolPage() {
   const [generations, setGenerations] = useState<Generation[]>([]);
   const intervalsRef = useRef<Map<string, ReturnType<typeof setInterval>>>(new Map());
 
+  const [authGateOpen, setAuthGateOpen] = useState(false);
+  const [creditsDialog, setCreditsDialog] = useState<{ open: boolean; balance: number }>({ open: false, balance: 0 });
+
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) { navigate({ to: "/login", search: { redirect: "/tools/video" } as any, replace: true }); return; }
-      setUserId(user.id);
-      supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle()
+    const loadUser = (uid: string) => {
+      setUserId(uid);
+      supabase.from("user_roles").select("role").eq("user_id", uid).eq("role", "admin").maybeSingle()
         .then(({ data }) => setIsAdmin(!!data));
+    };
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) loadUser(user.id);
     });
-  }, [navigate]);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      if (session?.user) loadUser(session.user.id);
+      else { setUserId(null); setIsAdmin(false); }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   async function fetchGenerations(uid: string) {
     const { data } = await supabase.from("generations").select("*").eq("user_id", uid).eq("tool_type", "video").order("created_at", { ascending: false }).limit(30);
