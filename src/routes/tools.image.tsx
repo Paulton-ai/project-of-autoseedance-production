@@ -2,6 +2,8 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ToolNavbar } from "@/components/tools/ToolNavbar";
+import { AuthGateDialog } from "@/components/tools/AuthGateDialog";
+import { InsufficientCreditsDialog } from "@/components/tools/InsufficientCreditsDialog";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
