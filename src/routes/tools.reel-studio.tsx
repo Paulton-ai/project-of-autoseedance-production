@@ -393,6 +393,18 @@ function ReelStudioPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <AuthGateDialog
+        open={authGateOpen}
+        onOpenChange={setAuthGateOpen}
+        toolName="AI Reel Studio"
+        onAuthenticated={() => { setTimeout(() => { void handleGenerate(); }, 600); }}
+      />
+      <InsufficientCreditsDialog
+        open={creditsDialog.open}
+        onOpenChange={(open: boolean) => setCreditsDialog((s) => ({ ...s, open }))}
+        required={costEstimate.total}
+        balance={creditsDialog.balance}
+      />
       <ToolNavbar title="AI Reel Studio" />
       <main className="pt-20 pb-16">
         <div className="mx-auto max-w-6xl px-4">
