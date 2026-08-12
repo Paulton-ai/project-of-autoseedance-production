@@ -1,3 +1,5 @@
+import { render } from "../dist/server/entry-server.js";
+
 function toWebHeaders(headers: Record<string, string | string[] | undefined>) {
   const result = new Headers();
   for (const [key, value] of Object.entries(headers)) {
@@ -9,11 +11,6 @@ function toWebHeaders(headers: Record<string, string | string[] | undefined>) {
 
 export default async function handler(req: any, res: any) {
   try {
-    // The SSR entry is produced by Vite during `npm run build`.
-    // Building it with Vite resolves the project's TS path aliases and
-    // bundles application source correctly for Vercel's server runtime.
-    const { render } = await import("../dist/server/entry-server.js");
-
     const forwardedProto = req.headers?.["x-forwarded-proto"] || "https";
     const proto = Array.isArray(forwardedProto) ? forwardedProto[0] : forwardedProto;
     const host = req.headers?.host || "autoseedance.site";
