@@ -7,6 +7,7 @@ import { fetchAllPosts } from "@/lib/sanity";
 import { Sparkles } from "lucide-react";
 
 const SITE_URL = "https://autoseedance.site";
+const BLOG_URL = `${SITE_URL}/blog`;
 
 export const Route = createFileRoute("/blog/")({
   loader: async () => ({ posts: await fetchAllPosts() }),
@@ -16,16 +17,56 @@ export const Route = createFileRoute("/blog/")({
       {
         name: "description",
         content:
-          "Tutorials, prompt guides, and tool reviews for AI image and video generation.",
+          "Tutorials, prompt guides, and case studies for AI image and video generation.",
       },
       { name: "robots", content: "index, follow, max-image-preview:large" },
       { property: "og:title", content: "Auto Seedance Blog" },
       { property: "og:description", content: "Tutorials and guides for AI image and video generation." },
-      { property: "og:url", content: `${SITE_URL}/blog` },
+      { property: "og:url", content: BLOG_URL },
       { property: "og:type", content: "website" },
+      { property: "og:image", content: `${SITE_URL}/og-image.png` },
+      { property: "og:image:alt", content: "Auto Seedance blog — AI image and video generation tutorials" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Auto Seedance Blog" },
+      { name: "twitter:description", content: "Tutorials and guides for AI image and video generation." },
+      { name: "twitter:image", content: `${SITE_URL}/og-image.png` },
+      { name: "twitter:image:alt", content: "Auto Seedance blog — AI image and video generation tutorials" },
     ],
-    links: [{ rel: "canonical", href: `${SITE_URL}/blog` }],
+    links: [{ rel: "canonical", href: BLOG_URL }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          name: "Auto Seedance Blog",
+          description: "Tutorials, prompt guides, and case studies for AI image and video generation.",
+          url: BLOG_URL,
+          isPartOf: { "@type": "WebSite", name: "Auto Seedance", url: SITE_URL },
+        }),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            {
+              "@type": "ListItem",
+              position: 1,
+              name: "Home",
+              item: SITE_URL,
+            },
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: "Blog",
+              item: BLOG_URL,
+            },
+          ],
+        }),
+      },
+    ],
   }),
   component: BlogIndex,
 });
