@@ -47,7 +47,7 @@ const components: PortableTextComponents = {
   },
   block: {
     h1: ({ children }) => (
-      <h1 className="mt-10 mb-4 font-display text-[36px] font-bold scroll-mt-28">{children}</h1>
+      <h2 className="mt-10 mb-4 font-display text-[36px] font-bold scroll-mt-28">{children}</h2>
     ),
     h2: ({ children }) => (
       <h2 className="mt-10 mb-3 font-display text-[28px] font-bold scroll-mt-28">{children}</h2>
