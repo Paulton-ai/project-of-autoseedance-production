@@ -12,9 +12,8 @@ export async function render({ request }: { request: Request }) {
     createRouter: () => createRouter(),
   });
 
-  return handler(({ request, responseHeaders, router }) =>
+  return handler(({ responseHeaders, router }) =>
     renderRouterToString({
-      request,
       responseHeaders,
       router,
       children: <RouterServer router={router} />,
