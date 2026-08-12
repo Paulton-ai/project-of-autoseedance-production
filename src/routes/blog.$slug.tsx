@@ -6,9 +6,11 @@ import { Footer } from "@/components/site/Footer";
 import { PortableBody } from "@/components/blog/PortableBody";
 import {
   fetchPostBySlug,
+  fetchRelatedPosts,
   urlFor,
   formatReadingTime,
   type PostDetail,
+  type PostListItem,
 } from "@/lib/sanity";
 import { Twitter, Link2, MessageCircle, Check, User, Calendar, Clock } from "lucide-react";
 
@@ -18,7 +20,8 @@ export const Route = createFileRoute("/blog/$slug")({
   loader: async ({ params }) => {
     const post = await fetchPostBySlug(params.slug);
     if (!post) throw notFound();
-    return { post };
+    const relatedPosts = await fetchRelatedPosts(params.slug, post.category);
+    return { post, relatedPosts };
   },
   head: ({ loaderData, params }) => {
     const post = loaderData?.post as PostDetail | undefined;
@@ -113,8 +116,58 @@ export const Route = createFileRoute("/blog/$slug")({
   component: PostPage,
 });
 
+function RelatedPosts({ posts }: { posts: PostListItem[] }) {
+  if (posts.length === 0) return null;
+
+  return (
+    <section className="mt-12 border-t border-border pt-8" aria-labelledby="related-posts-heading">
+      <h2 id="related-posts-heading" className="font-display text-2xl font-bold mb-5">
+        Related Articles
+      </h2>
+      <div className="grid gap-4 sm:grid-cols-3">
+        {posts.map((related) => (
+          <article
+            key={related._id}
+            className="overflow-hidden rounded-xl border border-border bg-card transition-shadow hover:shadow-md"
+          >
+            {related.mainImage && (
+              <Link to="/blog/$slug" params={{ slug: related.slug.current }} aria-label={related.title}>
+                <img
+                  src={urlFor(related.mainImage).width(600).height(338).fit("crop").auto("format").url()}
+                  alt={related.mainImage.alt || related.title}
+                  className="aspect-video w-full object-cover"
+                  loading="lazy"
+                />
+              </Link>
+            )}
+            <div className="p-4">
+              {related.category && (
+                <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">
+                  {related.category}
+                </div>
+              )}
+              <h3 className="font-semibold leading-snug">
+                <Link
+                  to="/blog/$slug"
+                  params={{ slug: related.slug.current }}
+                  className="hover:text-primary hover:underline underline-offset-2"
+                >
+                  {related.title}
+                </Link>
+              </h3>
+              {related.excerpt && (
+                <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{related.excerpt}</p>
+              )}
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function PostPage() {
-  const { post: initialPost } = Route.useLoaderData();
+  const { post: initialPost, relatedPosts: initialRelatedPosts } = Route.useLoaderData();
   const { slug } = Route.useParams();
 
   const { data: post } = useQuery({
@@ -230,18 +283,16 @@ function PostPage() {
                   >
                     <summary className="cursor-pointer font-semibold list-none flex items-center justify-between">
                       <span>{faq.question}</span>
-                      <span className="text-primary transition-transform group-open:rotate-45">
-                        +
-                      </span>
+                      <span className="text-primary transition-transform group-open:rotate-45">+</span>
                     </summary>
-                    <p className="mt-3 text-muted-foreground leading-relaxed">
-                      {faq.answer}
-                    </p>
+                    <p className="mt-3 text-muted-foreground leading-relaxed">{faq.answer}</p>
                   </details>
                 ))}
               </div>
             </section>
           )}
+
+          <RelatedPosts posts={initialRelatedPosts} />
 
           <div className="mt-10 flex flex-wrap items-center gap-3 border-t border-border pt-6">
             <span className="text-sm font-semibold">Share:</span>
