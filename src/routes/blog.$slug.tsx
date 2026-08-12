@@ -6,9 +6,11 @@ import { Footer } from "@/components/site/Footer";
 import { PortableBody } from "@/components/blog/PortableBody";
 import {
   fetchPostBySlug,
+  fetchRelatedPosts,
   urlFor,
   formatReadingTime,
   type PostDetail,
+  type PostListItem,
 } from "@/lib/sanity";
 import { Twitter, Link2, MessageCircle, Check, User, Calendar, Clock } from "lucide-react";
 
@@ -18,7 +20,8 @@ export const Route = createFileRoute("/blog/$slug")({
   loader: async ({ params }) => {
     const post = await fetchPostBySlug(params.slug);
     if (!post) throw notFound();
-    return { post };
+    const relatedPosts = await fetchRelatedPosts(params.slug, post.category);
+    return { post, relatedPosts };
   },
   head: ({ loaderData, params }) => {
     const post = loaderData?.post as PostDetail | undefined;
@@ -141,7 +144,7 @@ export const Route = createFileRoute("/blog/$slug")({
 });
 
 function PostPage() {
-  const { post: initialPost } = Route.useLoaderData();
+  const { post: initialPost, relatedPosts: initialRelatedPosts } = Route.useLoaderData();
   const { slug } = Route.useParams();
 
   const { data: post } = useQuery({
@@ -152,6 +155,7 @@ function PostPage() {
   });
 
   const active = post ?? initialPost;
+  const relatedPosts = initialRelatedPosts as PostListItem[];
   const [progress, setProgress] = useState(0);
   const [copied, setCopied] = useState(false);
 
@@ -305,6 +309,63 @@ function PostPage() {
                     </p>
                   </details>
                 ))}
+              </div>
+            </section>
+          )}
+
+          {relatedPosts.length > 0 && (
+            <section className="mt-12 border-t border-border pt-8" aria-labelledby="related-heading">
+              <div className="flex items-end justify-between gap-4 mb-5">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+                    Keep reading
+                  </p>
+                  <h2 id="related-heading" className="mt-1 font-display text-2xl font-bold">
+                    Related Articles
+                  </h2>
+                </div>
+                <Link to="/blog" className="text-sm text-primary hover:underline underline-offset-2">
+                  View all
+                </Link>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {relatedPosts.map((related) => {
+                  const image = related.mainImage
+                    ? urlFor(related.mainImage).width(640).height(360).fit("crop").auto("format").url()
+                    : null;
+                  return (
+                    <Link
+                      key={related._id}
+                      to="/blog/$slug"
+                      params={{ slug: related.slug.current }}
+                      className="group overflow-hidden rounded-2xl border border-border bg-card transition-colors hover:border-primary/40"
+                    >
+                      {image && (
+                        <img
+                          src={image}
+                          alt={related.mainImage?.alt || related.title}
+                          loading="lazy"
+                          className="aspect-[16/9] w-full object-cover"
+                        />
+                      )}
+                      <div className="p-4">
+                        {related.category && (
+                          <span className="text-[11px] font-semibold uppercase tracking-wider text-primary">
+                            {related.category}
+                          </span>
+                        )}
+                        <h3 className="mt-1 font-semibold leading-snug group-hover:text-primary">
+                          {related.title}
+                        </h3>
+                        {related.excerpt && (
+                          <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
+                            {related.excerpt}
+                          </p>
+                        )}
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             </section>
           )}
