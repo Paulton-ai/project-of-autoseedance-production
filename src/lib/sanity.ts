@@ -98,6 +98,22 @@ export const POST_DETAIL_QUERY = /* groq */ `
 }
 `;
 
+export const RELATED_POSTS_QUERY = /* groq */ `
+*[_type == "post" && defined(slug.current) && slug.current != $slug && ($category == null || category->title == $category)]
+| order(publishedAt desc)[0...3]{
+  _id,
+  title,
+  slug,
+  excerpt,
+  mainImage,
+  publishedAt,
+  "updatedAt": _updatedAt,
+  readingMinutes,
+  "category": category->title,
+  "author": author->name
+}
+`;
+
 export const POSTS_COUNT_QUERY = /* groq */ `count(*[_type == "post" && defined(slug.current) && !(_id in path("drafts.**"))])`;
 
 export async function fetchAllPosts(): Promise<PostListItem[]> {
@@ -106,6 +122,16 @@ export async function fetchAllPosts(): Promise<PostListItem[]> {
 
 export async function fetchPostBySlug(slug: string): Promise<PostDetail | null> {
   return sanityClient.fetch<PostDetail | null>(POST_DETAIL_QUERY, { slug });
+}
+
+export async function fetchRelatedPosts(
+  slug: string,
+  category?: string,
+): Promise<PostListItem[]> {
+  return sanityClient.fetch<PostListItem[]>(RELATED_POSTS_QUERY, {
+    slug,
+    category: category || null,
+  });
 }
 
 export async function fetchPostsCount(): Promise<number> {
