@@ -4,8 +4,26 @@ import { pathToFileURL } from "node:url";
 
 const ROOT = process.cwd();
 const DIST = path.join(ROOT, "dist");
-const SERVER_ENTRY = path.join(DIST, "server", "entry-server.js");
+const SERVER_DIR = path.join(DIST, "server");
 const SITEMAP = path.join(DIST, "sitemap.xml");
+
+async function resolveServerEntry() {
+  const preferred = path.join(SERVER_DIR, "entry-server.js");
+  const fallback = path.join(SERVER_DIR, "entry-client.js");
+
+  try {
+    await fs.access(preferred);
+    return preferred;
+  } catch {
+    try {
+      await fs.access(fallback);
+      console.warn("SSR build emitted entry-client.js; using it as the server bundle for prerendering.");
+      return fallback;
+    } catch {
+      throw new Error(`No SSR entry found in ${SERVER_DIR}. Expected entry-server.js or entry-client.js.`);
+    }
+  }
+}
 
 function extractUrls(xml) {
   return [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) =>
@@ -58,7 +76,9 @@ async function writeRoute(urlString, render) {
 }
 
 async function main() {
-  const entryPath = process.argv[2] ? path.resolve(process.argv[2]) : SERVER_ENTRY;
+  const entryPath = process.argv[2]
+    ? path.resolve(process.argv[2])
+    : await resolveServerEntry();
   const entryModule = await import(pathToFileURL(entryPath).href);
 
   if (typeof entryModule.render !== "function") {
@@ -90,7 +110,7 @@ async function main() {
   const notFoundHtml = await notFound.text();
   await fs.writeFile(path.join(DIST, "404.html"), notFoundHtml, "utf8");
 
-  await fs.rm(path.join(DIST, "server"), { recursive: true, force: true });
+  await fs.rm(SERVER_DIR, { recursive: true, force: true });
 
   const rootHtml = await fs.readFile(path.join(DIST, "index.html"), "utf8");
   if (rootHtml.match(/<div[^>]+id=["']root["'][^>]*>\s*<\/div>/i)) {
