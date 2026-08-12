@@ -1,8 +1,9 @@
 {
-  "rewrites": [
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "routes": [
     {
-      "source": "/((?!api(?:/|$)|.*\\.).*)",
-      "destination": "/api/render"
+      "src": "/((?!api(?:/|$)|.*\\.).*)",
+      "dest": "/api/render"
     }
   ],
   "headers": [
@@ -28,7 +29,7 @@
     {
       "source": "/robots.txt",
       "headers": [
-        { "key": "Content-Type", "value": "text/plain" },
+        { "key": "Content-Type", "value": "text/plain; charset=utf-8" },
         { "key": "Cache-Control", "value": "public, max-age=3600" }
       ]
     }
