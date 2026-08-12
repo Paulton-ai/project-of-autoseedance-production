@@ -58,14 +58,11 @@ async function writeRoute(urlString, render) {
 }
 
 async function main() {
-  const [, , entryUrl] = process.argv;
-  if (!entryUrl) {
-    throw new Error(`Missing server entry. Expected: node scripts/prerender.mjs`);
-  }
+  const entryPath = process.argv[2] ? path.resolve(process.argv[2]) : SERVER_ENTRY;
+  const entryModule = await import(pathToFileURL(entryPath).href);
 
-  const entryModule = await import(pathToFileURL(entryUrl).href);
   if (typeof entryModule.render !== "function") {
-    throw new Error(`Server entry ${entryUrl} does not export render()`);
+    throw new Error(`Server entry ${entryPath} does not export render()`);
   }
 
   const sitemapXml = await fs.readFile(SITEMAP, "utf8");
@@ -84,7 +81,6 @@ async function main() {
     console.log(`✓ ${url} -> ${path.relative(ROOT, result.output)} (${result.bytes} bytes)`);
   }
 
-  // Generate a real static 404 page. It is intentionally not included in the sitemap.
   const notFound = await entryModule.render({
     request: new Request("https://autoseedance.site/__static_404__", {
       method: "GET",
@@ -94,10 +90,8 @@ async function main() {
   const notFoundHtml = await notFound.text();
   await fs.writeFile(path.join(DIST, "404.html"), notFoundHtml, "utf8");
 
-  // The server bundle is only a build-time renderer. Do not deploy it as a public asset.
   await fs.rm(path.join(DIST, "server"), { recursive: true, force: true });
 
-  const badRoot = results.find((r) => r.output === path.join(DIST, "index.html"));
   const rootHtml = await fs.readFile(path.join(DIST, "index.html"), "utf8");
   if (rootHtml.match(/<div[^>]+id=["']root["'][^>]*>\s*<\/div>/i)) {
     throw new Error("Prerender verification failed: homepage still contains an empty root div");
@@ -107,7 +101,7 @@ async function main() {
   }
 
   console.log(`\n✓ Prerender complete: ${results.length} HTML routes + 404.html`);
-  console.log(`✓ Initial HTML verification passed${badRoot ? " (homepage included)" : ""}`);
+  console.log("✓ Initial HTML verification passed");
 }
 
 main().catch((error) => {
