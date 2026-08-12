@@ -21,5 +21,18 @@ export default defineConfig({
     alias: { "@": path.resolve(__dirname, "./src") },
   },
   server: { host: "::", port: 8080 },
-  build: { outDir: "dist", sourcemap: false },
+  build: {
+    outDir: "dist",
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        entryFileNames: "entry-client.js",
+        chunkFileNames: "assets/[name]-[hash].js",
+        assetFileNames: (assetInfo) =>
+          assetInfo.name?.endsWith(".css")
+            ? "assets/app.css"
+            : "assets/[name]-[hash][extname]",
+      },
+    },
+  },
 });
