@@ -3,10 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, Image as ImageIcon, Video, LayoutDashboard, LogOut, ChevronDown, Coins, Clapperboard } from "lucide-react";
 import { motion } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { signOut } from "@/lib/auth";
-import { fetchPostsCount } from "@/lib/sanity";
 import type { User } from "@supabase/supabase-js";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -21,12 +19,6 @@ export function Navbar() {
     const { data } = await supabase.from("credit_wallets").select("*").eq("user_id", uid).maybeSingle();
     setWallet(data as Tables<"credit_wallets"> | null);
   }, []);
-
-  const { data: postsCount = 0 } = useQuery({
-    queryKey: ["sanity", "posts", "count"],
-    queryFn: fetchPostsCount,
-    staleTime: 5 * 60 * 1000,
-  });
 
   useEffect(() => {
     let channel: ReturnType<typeof supabase.channel> | null = null;
@@ -133,9 +125,7 @@ export function Navbar() {
               </div>
             </div>
 
-            {postsCount > 0 && (
-              <Link to="/blog" className="hover:text-foreground transition">Blog</Link>
-            )}
+            <Link to="/blog" className="hover:text-foreground transition">Blog</Link>
           </nav>
 
           <div className="flex items-center gap-2">
