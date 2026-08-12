@@ -51,18 +51,8 @@ export const Route = createFileRoute("/blog/")({
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",
           itemListElement: [
-            {
-              "@type": "ListItem",
-              position: 1,
-              name: "Home",
-              item: SITE_URL,
-            },
-            {
-              "@type": "ListItem",
-              position: 2,
-              name: "Blog",
-              item: BLOG_URL,
-            },
+            { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+            { "@type": "ListItem", position: 2, name: "Blog", item: BLOG_URL },
           ],
         }),
       },
@@ -88,6 +78,16 @@ function BlogIndex() {
     staleTime: 60_000,
   });
 
+  const topicGroups = (posts || []).reduce<Record<string, typeof posts>>((groups, post) => {
+    const topic = post.category?.trim() || "AI Image & Video Generation";
+    (groups[topic] ||= []).push(post);
+    return groups;
+  }, {});
+
+  const topicEntries = Object.entries(topicGroups)
+    .map(([topic, topicPosts]) => [topic, topicPosts.slice(0, 6)] as const)
+    .sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
@@ -101,7 +101,7 @@ function BlogIndex() {
           </p>
         </section>
 
-        <section className="mx-auto max-w-7xl px-4 mt-16 pb-24">
+        <section className="mx-auto max-w-7xl px-4 mt-16 pb-12">
           <SectionHeading>Latest Posts</SectionHeading>
 
           {isLoading && (
@@ -141,6 +141,49 @@ function BlogIndex() {
             </div>
           )}
         </section>
+
+        {!isLoading && !isError && topicEntries.length > 0 && (
+          <section className="mx-auto max-w-7xl px-4 pb-24" aria-labelledby="topic-guides-heading">
+            <SectionHeading>
+              <span id="topic-guides-heading">Explore Guides by Topic</span>
+            </SectionHeading>
+            <p className="mb-8 max-w-3xl text-muted-foreground">
+              Browse related AI image and video generation guides by topic. These curated links connect related articles so readers and search engines can discover the site's deeper content.
+            </p>
+
+            <div className="space-y-10">
+              {topicEntries.map(([topic, topicPosts]) => (
+                <section key={topic} aria-labelledby={`topic-${topic.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}`}>
+                  <h3
+                    id={`topic-${topic.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}`}
+                    className="font-display text-xl md:text-2xl font-bold mb-4"
+                  >
+                    {topic}
+                  </h3>
+                  <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+                    {topicPosts.map((post) => (
+                      <Link
+                        key={`${topic}-${post._id}`}
+                        to="/blog/$slug"
+                        params={{ slug: post.slug.current }}
+                        className="group rounded-xl border border-border bg-card p-4 transition-colors hover:bg-muted/50"
+                      >
+                        <span className="font-semibold leading-snug group-hover:text-primary">
+                          {post.title}
+                        </span>
+                        {post.excerpt && (
+                          <span className="mt-2 block text-sm text-muted-foreground line-clamp-2">
+                            {post.excerpt}
+                          </span>
+                        )}
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          </section>
+        )}
       </main>
       <Footer />
     </div>
