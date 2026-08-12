@@ -98,6 +98,38 @@ export const POST_DETAIL_QUERY = /* groq */ `
 }
 `;
 
+export const RELATED_POSTS_QUERY = /* groq */ `
+*[_type == "post" && defined(slug.current) && slug.current != $slug && category->title == $category]
+  | order(publishedAt desc)[0...4]{
+    _id,
+    title,
+    slug,
+    excerpt,
+    mainImage,
+    publishedAt,
+    "updatedAt": _updatedAt,
+    readingMinutes,
+    "category": category->title,
+    "author": author->name
+  }
+`;
+
+export const RECENT_POSTS_QUERY = /* groq */ `
+*[_type == "post" && defined(slug.current) && slug.current != $slug]
+  | order(publishedAt desc)[0...4]{
+    _id,
+    title,
+    slug,
+    excerpt,
+    mainImage,
+    publishedAt,
+    "updatedAt": _updatedAt,
+    readingMinutes,
+    "category": category->title,
+    "author": author->name
+  }
+`;
+
 export const POSTS_COUNT_QUERY = /* groq */ `count(*[_type == "post" && defined(slug.current) && !(_id in path("drafts.**"))])`;
 
 export async function fetchAllPosts(): Promise<PostListItem[]> {
@@ -106,6 +138,26 @@ export async function fetchAllPosts(): Promise<PostListItem[]> {
 
 export async function fetchPostBySlug(slug: string): Promise<PostDetail | null> {
   return sanityClient.fetch<PostDetail | null>(POST_DETAIL_QUERY, { slug });
+}
+
+export async function fetchRelatedPosts(
+  slug: string,
+  category?: string,
+): Promise<PostListItem[]> {
+  if (!category) {
+    return sanityClient.fetch<PostListItem[]>(RECENT_POSTS_QUERY, { slug });
+  }
+
+  const related = await sanityClient.fetch<PostListItem[]>(RELATED_POSTS_QUERY, {
+    slug,
+    category,
+  });
+
+  if (related.length >= 4) return related;
+
+  const recent = await sanityClient.fetch<PostListItem[]>(RECENT_POSTS_QUERY, { slug });
+  const existing = new Set(related.map((post) => post._id));
+  return [...related, ...recent.filter((post) => !existing.has(post._id))].slice(0, 4);
 }
 
 export async function fetchPostsCount(): Promise<number> {
