@@ -19,6 +19,7 @@ export function PostCard({ post, priority = false }: { post: PostListItem; prior
   const cover = post.mainImage
     ? urlFor(post.mainImage).width(800).height(450).fit("crop").auto("format").url()
     : null;
+  const coverAlt = post.mainImage?.alt?.trim() || post.title;
 
   return (
     <article className="group flex h-full flex-col rounded-2xl border border-border bg-card overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:border-primary/30">
@@ -27,7 +28,7 @@ export function PostCard({ post, priority = false }: { post: PostListItem; prior
           {cover ? (
             <img
               src={cover}
-              alt={post.title}
+              alt={coverAlt}
               width={800}
               height={450}
               loading={priority ? "eager" : "lazy"}
