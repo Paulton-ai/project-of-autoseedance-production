@@ -10,6 +10,7 @@ const STATIC_PAGES = [
   { path: "/", priority: 1.0, changefreq: "weekly" },
   { path: "/tools/image", priority: 0.9, changefreq: "weekly" },
   { path: "/tools/video", priority: 0.9, changefreq: "weekly" },
+  { path: "/tools/reel-studio", priority: 0.9, changefreq: "weekly" },
   { path: "/pricing", priority: 0.8, changefreq: "monthly" },
   { path: "/blog", priority: 0.8, changefreq: "weekly" },
   { path: "/contact", priority: 0.6, changefreq: "monthly" },
@@ -20,6 +21,7 @@ const STATIC_PAGES = [
 interface SanityPost {
   slug: string;
   publishedAt: string;
+  updatedAt?: string;
 }
 
 function escapeXml(str: string): string {
@@ -33,7 +35,7 @@ function escapeXml(str: string): string {
 
 async function fetchSanityPosts(): Promise<SanityPost[]> {
   const query = encodeURIComponent(
-    `*[_type == "post" && defined(slug.current) && !(_id in path("drafts.**"))]{"slug": slug.current, publishedAt}`,
+    `*[_type == "post" && defined(slug.current) && !(_id in path("drafts.**"))]{"slug": slug.current, publishedAt, "updatedAt": _updatedAt}`,
   );
   const url = `https://${SANITY_PROJECT_ID}.apicdn.sanity.io/v${SANITY_API_VERSION}/data/query/${SANITY_DATASET}?query=${query}`;
   try {
@@ -68,7 +70,6 @@ async function main() {
   const today = new Date().toISOString().split("T")[0];
   const posts = await fetchSanityPosts();
 
-  // Main sitemap (static pages)
   const mainUrls = STATIC_PAGES.map((p) => ({
     loc: `${SITE_URL}${p.path}`,
     lastmod: today,
@@ -77,19 +78,16 @@ async function main() {
   }));
   const mainSitemap = buildUrlset(mainUrls);
 
-  // Blog sitemap (Sanity posts)
   const blogUrls = posts.map((p) => ({
     loc: `${SITE_URL}/blog/${escapeXml(p.slug)}`,
-    lastmod: (p.publishedAt || today).split("T")[0],
+    lastmod: (p.updatedAt || p.publishedAt || today).split("T")[0],
     changefreq: "monthly",
     priority: 0.7,
   }));
   const blogSitemap = buildUrlset(blogUrls);
 
-  // Combined sitemap.xml (for backward compatibility)
   const combined = buildUrlset([...mainUrls, ...blogUrls]);
 
-  // Sitemap index pointing at the two child sitemaps
   const sitemapIndex = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <sitemap>
