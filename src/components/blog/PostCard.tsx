@@ -15,7 +15,7 @@ export function categoryBadgeClass(category?: string) {
   return categoryStyles[category] || "bg-primary/10 text-primary border-primary/20";
 }
 
-export function PostCard({ post }: { post: PostListItem }) {
+export function PostCard({ post, priority = false }: { post: PostListItem; priority?: boolean }) {
   const cover = post.mainImage
     ? urlFor(post.mainImage).width(800).height(450).fit("crop").auto("format").url()
     : null;
@@ -30,7 +30,8 @@ export function PostCard({ post }: { post: PostListItem }) {
               alt={post.title}
               width={800}
               height={450}
-              loading="lazy"
+              loading={priority ? "eager" : "lazy"}
+              fetchPriority={priority ? "high" : "auto"}
               decoding="async"
               sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
