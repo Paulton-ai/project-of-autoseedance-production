@@ -81,6 +81,33 @@ export const Route = createFileRoute("/blog/$slug")({
             articleSection: post.category,
           }),
         },
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Home",
+                item: SITE_URL,
+              },
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: "Blog",
+                item: `${SITE_URL}/blog`,
+              },
+              {
+                "@type": "ListItem",
+                position: 3,
+                name: post.title,
+                item: url,
+              },
+            ],
+          }),
+        },
         ...(post.faqs && post.faqs.length > 0
           ? [
               {
@@ -159,6 +186,17 @@ function PostPage() {
     ? urlFor(active.mainImage).width(1600).height(900).fit("crop").auto("format").url()
     : null;
   const coverAlt = active.mainImage?.alt || active.title;
+  const dateModified = active.updatedAt || active.publishedAt;
+  const publishedLabel = new Date(active.publishedAt).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  const modifiedLabel = new Date(dateModified).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -170,6 +208,26 @@ function PostPage() {
 
       <main className="flex-1 pt-28 pb-20">
         <article className="mx-auto max-w-3xl px-4">
+          <nav aria-label="Breadcrumb" className="mb-6 text-sm text-muted-foreground">
+            <ol className="flex flex-wrap items-center gap-1.5">
+              <li>
+                <Link to="/" className="hover:text-foreground hover:underline underline-offset-2">
+                  Home
+                </Link>
+              </li>
+              <li aria-hidden="true">/</li>
+              <li>
+                <Link to="/blog" className="hover:text-foreground hover:underline underline-offset-2">
+                  Blog
+                </Link>
+              </li>
+              <li aria-hidden="true">/</li>
+              <li className="max-w-[18rem] truncate text-foreground" aria-current="page">
+                {active.title}
+              </li>
+            </ol>
+          </nav>
+
           {cover && (
             <figure className="aspect-[16/9] overflow-hidden rounded-2xl bg-muted mb-6">
               <img src={cover} alt={coverAlt} className="h-full w-full object-cover" />
@@ -178,18 +236,23 @@ function PostPage() {
 
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             {active.category && (
-              <span className="inline-block font-semibold uppercase tracking-wider text-primary bg-primary/10 px-2 py-1 rounded-md">
+              <Link
+                to="/blog"
+                className="inline-block font-semibold uppercase tracking-wider text-primary bg-primary/10 px-2 py-1 rounded-md hover:bg-primary/15"
+              >
                 {active.category}
-              </span>
+              </Link>
             )}
             <time dateTime={active.publishedAt} className="inline-flex items-center gap-1">
               <Calendar className="size-3.5" />
-              {new Date(active.publishedAt).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
+              Published {publishedLabel}
             </time>
+            {dateModified !== active.publishedAt && (
+              <time dateTime={dateModified} className="inline-flex items-center gap-1">
+                <Clock className="size-3.5" />
+                Updated {modifiedLabel}
+              </time>
+            )}
             <span className="inline-flex items-center gap-1">
               <Clock className="size-3.5" />
               {formatReadingTime(active.readingMinutes)}
@@ -209,7 +272,10 @@ function PostPage() {
               <div className="size-10 rounded-full btn-gradient grid place-items-center text-white">
                 <User className="size-5" />
               </div>
-              <div className="font-semibold">{active.author}</div>
+              <div>
+                <div className="font-semibold">{active.author}</div>
+                <div className="text-xs text-muted-foreground">Author</div>
+              </div>
             </div>
           )}
 
