@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
@@ -11,53 +11,67 @@ const BLOG_URL = `${SITE_URL}/blog`;
 
 export const Route = createFileRoute("/blog/")({
   loader: async () => ({ posts: await fetchAllPosts() }),
-  head: () => ({
-    meta: [
-      { title: "Blog — AI Image & Video Generation Tutorials | Auto Seedance" },
-      {
-        name: "description",
-        content:
-          "Tutorials, prompt guides, and case studies for AI image and video generation.",
-      },
-      { name: "robots", content: "index, follow, max-image-preview:large" },
-      { property: "og:title", content: "Auto Seedance Blog" },
-      { property: "og:description", content: "Tutorials and guides for AI image and video generation." },
-      { property: "og:url", content: BLOG_URL },
-      { property: "og:type", content: "website" },
-      { property: "og:image", content: `${SITE_URL}/og-image.png` },
-      { property: "og:image:alt", content: "Auto Seedance blog — AI image and video generation tutorials" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Auto Seedance Blog" },
-      { name: "twitter:description", content: "Tutorials and guides for AI image and video generation." },
-      { name: "twitter:image", content: `${SITE_URL}/og-image.png` },
-      { name: "twitter:image:alt", content: "Auto Seedance blog — AI image and video generation tutorials" },
-    ],
-    links: [{ rel: "canonical", href: BLOG_URL }],
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "WebPage",
-          name: "Auto Seedance Blog",
-          description: "Tutorials, prompt guides, and case studies for AI image and video generation.",
-          url: BLOG_URL,
-          isPartOf: { "@type": "WebSite", name: "Auto Seedance", url: SITE_URL },
-        }),
-      },
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "BreadcrumbList",
-          itemListElement: [
-            { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
-            { "@type": "ListItem", position: 2, name: "Blog", item: BLOG_URL },
-          ],
-        }),
-      },
-    ],
-  }),
+  head: ({ loaderData }) => {
+    const posts = loaderData?.posts || [];
+    const itemListElement = posts.slice(0, 50).map((post, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: post.title,
+      url: `${BLOG_URL}/${post.slug.current}`,
+    }));
+
+    return {
+      meta: [
+        { title: "Blog — AI Image & Video Generation Tutorials | Auto Seedance" },
+        {
+          name: "description",
+          content:
+            "Tutorials, prompt guides, and case studies for AI image and video generation.",
+        },
+        { name: "robots", content: "index, follow, max-image-preview:large" },
+        { property: "og:title", content: "Auto Seedance Blog" },
+        { property: "og:description", content: "Tutorials and guides for AI image and video generation." },
+        { property: "og:url", content: BLOG_URL },
+        { property: "og:type", content: "website" },
+        { property: "og:image", content: `${SITE_URL}/og-image.png` },
+        { property: "og:image:alt", content: "Auto Seedance blog — AI image and video generation tutorials" },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: "Auto Seedance Blog" },
+        { name: "twitter:description", content: "Tutorials and guides for AI image and video generation." },
+        { name: "twitter:image", content: `${SITE_URL}/og-image.png` },
+        { name: "twitter:image:alt", content: "Auto Seedance blog — AI image and video generation tutorials" },
+      ],
+      links: [{ rel: "canonical", href: BLOG_URL }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            name: "Auto Seedance Blog",
+            description: "Tutorials, prompt guides, and case studies for AI image and video generation.",
+            url: BLOG_URL,
+            isPartOf: { "@type": "WebSite", name: "Auto Seedance", url: SITE_URL },
+            mainEntity: {
+              "@type": "ItemList",
+              itemListElement,
+            },
+          }),
+        },
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+              { "@type": "ListItem", position: 2, name: "Blog", item: BLOG_URL },
+            ],
+          }),
+        },
+      ],
+    };
+  },
   component: BlogIndex,
 });
 
