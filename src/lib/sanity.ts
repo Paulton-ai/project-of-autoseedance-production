@@ -41,6 +41,7 @@ export interface PostListItem {
   excerpt?: string;
   mainImage?: SanityImage;
   publishedAt: string;
+  updatedAt?: string;
   readingMinutes?: number;
   category?: string;
   author?: string;
@@ -53,6 +54,7 @@ export interface PostDetail {
   body?: PortableTextBlock[];
   mainImage?: SanityImage;
   publishedAt: string;
+  updatedAt?: string;
   readingMinutes?: number;
   excerpt?: string;
   seoTitle?: string;
@@ -70,6 +72,7 @@ export const POSTS_LIST_QUERY = /* groq */ `
   excerpt,
   mainImage,
   publishedAt,
+  "updatedAt": _updatedAt,
   readingMinutes,
   "category": category->title,
   "author": author->name
@@ -84,6 +87,7 @@ export const POST_DETAIL_QUERY = /* groq */ `
   body,
   mainImage,
   publishedAt,
+  "updatedAt": _updatedAt,
   readingMinutes,
   excerpt,
   seoTitle,

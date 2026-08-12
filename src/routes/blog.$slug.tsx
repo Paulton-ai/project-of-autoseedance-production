@@ -23,6 +23,7 @@ export const Route = createFileRoute("/blog/$slug")({
   head: ({ loaderData, params }) => {
     const post = loaderData?.post as PostDetail | undefined;
     if (!post) return {};
+
     const url = `${SITE_URL}/blog/${params.slug}`;
     const title = post.seoTitle || `${post.title} | Auto Seedance Blog`;
     const description =
@@ -32,24 +33,29 @@ export const Route = createFileRoute("/blog/$slug")({
     const ogImage = post.mainImage
       ? urlFor(post.mainImage).width(1200).height(630).fit("crop").auto("format").url()
       : `${SITE_URL}/og-image.png`;
+    const dateModified = post.updatedAt || post.publishedAt;
 
     return {
       meta: [
         { title },
         { name: "description", content: description.slice(0, 160) },
-        { name: "robots", content: "index, follow, max-image-preview:large" },
-        { property: "og:title", content: post.title },
+        { name: "robots", content: "index, follow, max-image-preview:large, max-snippet:-1" },
+        { property: "og:site_name", content: "Auto Seedance" },
+        { property: "og:title", content: title },
         { property: "og:description", content: description },
         { property: "og:url", content: url },
         { property: "og:type", content: "article" },
         { property: "og:image", content: ogImage },
+        { property: "og:image:alt", content: post.mainImage?.alt || post.title },
         { property: "article:published_time", content: post.publishedAt },
+        { property: "article:modified_time", content: dateModified },
         ...(post.author ? [{ property: "article:author", content: post.author }] : []),
         ...(post.category ? [{ property: "article:section", content: post.category }] : []),
         { name: "twitter:card", content: "summary_large_image" },
-        { name: "twitter:title", content: post.title },
+        { name: "twitter:title", content: title },
         { name: "twitter:description", content: description },
         { name: "twitter:image", content: ogImage },
+        { name: "twitter:image:alt", content: post.mainImage?.alt || post.title },
       ],
       links: [{ rel: "canonical", href: url }],
       scripts: [
@@ -57,13 +63,15 @@ export const Route = createFileRoute("/blog/$slug")({
           type: "application/ld+json",
           children: JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "Article",
+            "@type": "BlogPosting",
             headline: post.title,
             description,
             image: ogImage,
             datePublished: post.publishedAt,
-            dateModified: post.publishedAt,
-            author: post.author ? { "@type": "Person", name: post.author } : undefined,
+            dateModified,
+            author: post.author
+              ? { "@type": "Person", name: post.author }
+              : { "@type": "Organization", name: "Auto Seedance" },
             publisher: {
               "@type": "Organization",
               name: "Auto Seedance",
@@ -150,6 +158,7 @@ function PostPage() {
   const cover = active.mainImage
     ? urlFor(active.mainImage).width(1600).height(900).fit("crop").auto("format").url()
     : null;
+  const coverAlt = active.mainImage?.alt || active.title;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -162,9 +171,9 @@ function PostPage() {
       <main className="flex-1 pt-28 pb-20">
         <article className="mx-auto max-w-3xl px-4">
           {cover && (
-            <div className="aspect-[16/9] overflow-hidden rounded-2xl bg-muted mb-6">
-              <img src={cover} alt={active.title} className="h-full w-full object-cover" />
-            </div>
+            <figure className="aspect-[16/9] overflow-hidden rounded-2xl bg-muted mb-6">
+              <img src={cover} alt={coverAlt} className="h-full w-full object-cover" />
+            </figure>
           )}
 
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
@@ -209,8 +218,8 @@ function PostPage() {
           </div>
 
           {active.faqs && active.faqs.length > 0 && (
-            <section className="mt-12">
-              <h2 className="font-display text-2xl font-bold mb-5">
+            <section className="mt-12" aria-labelledby="faq-heading">
+              <h2 id="faq-heading" className="font-display text-2xl font-bold mb-5">
                 Frequently Asked Questions
               </h2>
               <div className="space-y-3">
