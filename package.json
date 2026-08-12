@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run sitemap && vite build && vite build --ssr src/entry-server.tsx --outDir dist/server",
+    "build": "npm run sitemap && vite build && vite build --ssr src/entry-server.tsx --outDir dist/server && node scripts/prerender.mjs",
     "build:dev": "npm run sitemap && vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
