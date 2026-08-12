@@ -5,7 +5,7 @@ import tailwindcss from "@tailwindcss/vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import path from "node:path";
 
-export default defineConfig({
+export default defineConfig(({ ssrBuild }) => ({
   plugins: [
     tsconfigPaths(),
     tanstackRouter({
@@ -26,7 +26,10 @@ export default defineConfig({
     sourcemap: false,
     rollupOptions: {
       output: {
-        entryFileNames: "entry-client.js",
+        // The client bundle keeps its stable public filename. The SSR build
+        // must retain the actual entry name so scripts/prerender.mjs can load
+        // dist/server/entry-server.js after `vite build --ssr`.
+        entryFileNames: ssrBuild ? "[name].js" : "entry-client.js",
         chunkFileNames: "assets/[name]-[hash].js",
         assetFileNames: (assetInfo) =>
           assetInfo.name?.endsWith(".css")
@@ -35,4 +38,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));
