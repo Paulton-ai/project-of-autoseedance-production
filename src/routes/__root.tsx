@@ -8,8 +8,6 @@ import {
 } from "@tanstack/react-router";
 import { Toaster } from "@/components/ui/sonner";
 
-import "../styles.css";
-
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center grid-bg px-4">
@@ -84,6 +82,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "canonical", href: SITE_URL },
+      { rel: "icon", href: "/favicon.ico" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+      { rel: "manifest", href: "/site.webmanifest" },
+      { rel: "stylesheet", href: "/assets/app.css" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
       { rel: "preconnect", href: "https://vcercajwtbjbvjhzivjb.supabase.co" },
@@ -130,6 +132,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           aggregateRating: { "@type": "AggregateRating", ratingValue: "4.8", ratingCount: "1250" },
         }),
       },
+      { type: "module", src: "/entry-client.js" },
     ],
   }),
   component: RootComponent,
@@ -141,9 +144,15 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <HeadContent />
-      <Outlet />
-      <Toaster richColors position="top-right" theme="dark" />
+      <html lang="en" className="dark" style={{ colorScheme: "dark" }}>
+        <head>
+          <HeadContent />
+        </head>
+        <body>
+          <Outlet />
+          <Toaster richColors position="top-right" theme="dark" />
+        </body>
+      </html>
     </QueryClientProvider>
   );
 }
