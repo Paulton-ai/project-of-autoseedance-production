@@ -9,6 +9,7 @@ import { Sparkles } from "lucide-react";
 const SITE_URL = "https://autoseedance.site";
 
 export const Route = createFileRoute("/blog/")({
+  loader: async () => ({ posts: await fetchAllPosts() }),
   head: () => ({
     meta: [
       { title: "Blog — AI Image & Video Generation Tutorials | Auto Seedance" },
@@ -38,9 +39,11 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
 }
 
 function BlogIndex() {
+  const { posts: initialPosts } = Route.useLoaderData();
   const { data: posts, isLoading, isError } = useQuery({
     queryKey: ["sanity", "posts", "list"],
     queryFn: fetchAllPosts,
+    initialData: initialPosts,
     staleTime: 60_000,
   });
 
