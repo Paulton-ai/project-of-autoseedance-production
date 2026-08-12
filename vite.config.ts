@@ -26,10 +26,10 @@ export default defineConfig(({ ssrBuild }) => ({
     sourcemap: false,
     rollupOptions: {
       output: {
-        // The client bundle keeps its stable public filename. The SSR build
-        // must retain the actual entry name so scripts/prerender.mjs can load
-        // dist/server/entry-server.js after `vite build --ssr`.
-        entryFileNames: ssrBuild ? "[name].js" : "entry-client.js",
+        // Vite/TanStack's SSR build is currently resolving the SSR entry name
+        // as entry-client. Keep the public client filename stable, but force
+        // the SSR bundle to the exact filename used by the static prerenderer.
+        entryFileNames: ssrBuild ? "entry-server.js" : "entry-client.js",
         chunkFileNames: "assets/[name]-[hash].js",
         assetFileNames: (assetInfo) =>
           assetInfo.name?.endsWith(".css")
