@@ -12,8 +12,11 @@ const components: PortableTextComponents = {
           <img
             src={src}
             alt={value.alt || ""}
+            width={1600}
+            height={900}
             loading="lazy"
-            className="rounded-xl w-full"
+            decoding="async"
+            className="rounded-xl w-full h-auto"
           />
           {value.alt && (
             <figcaption className="text-center text-xs text-muted-foreground mt-2">
