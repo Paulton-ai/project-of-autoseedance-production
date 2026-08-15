@@ -14,7 +14,15 @@ const reelCreditPolicy: Plugin = {
   },
 };
 
+const buildId =
+  process.env.VERCEL_GIT_COMMIT_SHA ||
+  process.env.VERCEL_DEPLOYMENT_ID ||
+  `local-${Date.now()}`;
+
 export default defineConfig(({ ssrBuild }) => ({
+  define: {
+    __APP_BUILD_ID__: JSON.stringify(buildId),
+  },
   plugins: [
     tsconfigPaths(),
     tanstackRouter({
