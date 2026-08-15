@@ -1,0 +1,38 @@
+name: Fix Reel Studio credit cost
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Enforce fixed 40-credit Reel Studio cost
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path("src/routes/tools.reel-studio.tsx")
+          s = p.read_text()
+          old = '''  const costEstimate = useMemo(() => {\n    const base = quality === "premium" ? 80 : 40;\n    return { base, total: base };\n  }, [quality]);'''
+          new = '''  const costEstimate = useMemo(() => {\n    // Reel Studio has one fixed generation cost regardless of quality tier.\n    const base = 40;\n    return { base, total: base };\n  }, []);'''
+          if old not in s:
+              print("Target cost block not found; no changes made.")
+              raise SystemExit(0)
+          p.write_text(s.replace(old, new, 1))
+          PY
+
+      - name: Commit fix and remove temporary workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/routes/tools.reel-studio.tsx
+          git rm .github/workflows/fix-reel-credit-cost.yml
+          git commit -m "Fix Reel Studio premium cost to 40 credits"
+          git push
