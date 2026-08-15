@@ -7,25 +7,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
+const REEL_CREDIT_COST = 40;
 type Scene = { id: number; duration: number; visual: string; voiceover: string };
-
-interface Body {
-  topic: string;
-  niche?: string;
-  video_length: 30 | 60 | 90;
-  style?: string;
-  aspect?: string;
-  model?: string;
-  quality?: "budget" | "premium";
-  voiceover?: boolean;
-  voice?: string;
-  music?: boolean;
-  music_mood?: string;
-  captions?: boolean;
-  caption_style?: string;
-  reference_image_url?: string | null;
-}
-
+interface Body { topic: string; niche?: string; video_length: 30 | 60 | 90; style?: string; aspect?: string; model?: string; quality?: "budget" | "premium"; voiceover?: boolean; voice?: string; music?: boolean; music_mood?: string; captions?: boolean; caption_style?: string; reference_image_url?: string | null; }
 function buildPrompt(b: Body) {
   const sceneCount = b.video_length === 30 ? 4 : b.video_length === 60 ? 6 : 8;
   const perScene = Math.round(b.video_length / sceneCount);
@@ -53,127 +37,39 @@ VISUAL RULES (critical — apply to EVERY topic, whatever it is)
 
 SELF-CHECK before answering: for each scene, ask "if I mute the narration, would a viewer see exactly what this scene's narration describes?" If not, rewrite the visual.`;
 }
-
-
 async function callAnthropic(prompt: string): Promise<{ scenes: Scene[] }> {
-  const key = Deno.env.get("ANTHROPIC_API_KEY");
-  if (!key) throw new Error("ANTHROPIC_API_KEY missing");
-
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "x-api-key": key,
-      "anthropic-version": "2023-06-01",
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-5-20250929",
-      max_tokens: 4096,
-      messages: [{ role: "user", content: prompt }],
-    }),
-  });
-
-  if (!res.ok) {
-    const txt = await res.text();
-    throw new Error(`Anthropic ${res.status}: ${txt}`);
-  }
+  const key = Deno.env.get("ANTHROPIC_API_KEY"); if (!key) throw new Error("ANTHROPIC_API_KEY missing");
+  const res = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" }, body: JSON.stringify({ model: "claude-sonnet-4-5-20250929", max_tokens: 4096, messages: [{ role: "user", content: prompt }] }) });
+  if (!res.ok) throw new Error(`Anthropic ${res.status}: ${await res.text()}`);
   const data = await res.json();
-  console.log("[generate-reel-script] FULL DATA:", JSON.stringify(data));
-  console.log("[generate-reel-script] stop_reason:", data?.stop_reason);
-  console.log("[generate-reel-script] content.length:", Array.isArray(data?.content) ? data.content.length : `not-array (${typeof data?.content})`);
-  console.log("[generate-reel-script] usage:", JSON.stringify(data?.usage));
-  const textBlock = Array.isArray(data?.content)
-    ? data.content.find((c: { type?: string; text?: string }) => c?.type === "text")
-    : null;
+  const textBlock = Array.isArray(data?.content) ? data.content.find((c: { type?: string }) => c?.type === "text") : null;
   const text: string = textBlock?.text ?? data?.content?.[0]?.text ?? "";
-  console.log("[generate-reel-script] Raw Claude response:", text);
-  // Extract JSON (strip fences if the model still adds them)
   const jsonStr = text.replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
-  const match = jsonStr.match(/\{[\s\S]*\}/);
-  if (!match) throw new Error(`Model did not return JSON. stop_reason=${data?.stop_reason}`);
-  const parsed = JSON.parse(match[0]);
-  if (!Array.isArray(parsed?.scenes)) throw new Error("Invalid script shape");
-
+  const match = jsonStr.match(/\{[\s\S]*\}/); if (!match) throw new Error(`Model did not return JSON. stop_reason=${data?.stop_reason}`);
+  const parsed = JSON.parse(match[0]); if (!Array.isArray(parsed?.scenes)) throw new Error("Invalid script shape");
   return parsed as { scenes: Scene[] };
 }
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
-  if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), {
-      status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-
+  if (req.method !== "POST") return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   try {
-    const authHeader = req.headers.get("Authorization") || "";
-    if (!authHeader) throw new Error("Missing Authorization");
-
-    const url = Deno.env.get("SUPABASE_URL")!;
-    const anon = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const svc = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-
-    const userClient = createClient(url, anon, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const { data: userData, error: userErr } = await userClient.auth.getUser();
-    if (userErr || !userData.user) throw new Error("Not authenticated");
-    const user = userData.user;
-
-    const body = (await req.json()) as Body;
-    if (!body?.topic || body.topic.trim().length < 10) {
-      throw new Error("Topic is required (min 10 chars)");
-    }
-    if (![30, 60, 90].includes(body.video_length)) {
-      throw new Error("video_length must be 30, 60 or 90");
-    }
-
-    const prompt = buildPrompt(body);
-    const script = await callAnthropic(prompt);
-
-    // Log every scene's visual next to its own voiceover so pairing can be verified for any topic
-    for (const s of script.scenes) {
-      console.log(
-        `[generate-reel-script] SCENE ${s.id} (${s.duration}s)\n  VOICEOVER: ${s.voiceover}\n  VISUAL:    ${s.visual}`,
-      );
-    }
-
-
-    // Persist as draft with service role (bypass RLS but stamp real user_id)
+    const authHeader = req.headers.get("Authorization") || ""; if (!authHeader) throw new Error("Missing Authorization");
+    const url = Deno.env.get("SUPABASE_URL")!; const anon = Deno.env.get("SUPABASE_ANON_KEY")!; const svc = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const userClient = createClient(url, anon, { global: { headers: { Authorization: authHeader } } });
+    const { data: userData, error: userErr } = await userClient.auth.getUser(); if (userErr || !userData.user) throw new Error("Not authenticated");
+    const user = userData.user; const body = (await req.json()) as Body;
+    if (!body?.topic || body.topic.trim().length < 10) throw new Error("Topic is required (min 10 chars)");
+    if (![30, 60, 90].includes(body.video_length)) throw new Error("video_length must be 30, 60 or 90");
+    const script = await callAnthropic(buildPrompt(body));
     const admin = createClient(url, svc, { auth: { persistSession: false } });
-    const { data: row, error: insErr } = await admin
-      .from("reel_generations")
-      .insert({
-        user_id: user.id,
-        status: "script_ready",
-        topic: body.topic.trim(),
-        niche: body.niche ?? null,
-        video_length: body.video_length,
-        style: body.style ?? null,
-        aspect: body.aspect ?? "portrait",
-        model: body.model ?? null,
-        quality: body.quality ?? "budget",
-        voiceover: body.voiceover ?? true,
-        voice: body.voice ?? null,
-        music: body.music ?? false,
-        music_mood: body.music_mood ?? null,
-        captions: body.captions ?? true,
-        caption_style: body.caption_style ?? null,
-        reference_image_url: body.reference_image_url ?? null,
-        script,
-      })
-      .select("id")
-      .single();
-
+    const { data: roleRow } = await admin.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle();
+    const isAdmin = !!roleRow;
+    const { data: row, error: insErr } = await admin.from("reel_generations").insert({ user_id: user.id, status: "script_ready", topic: body.topic.trim(), niche: body.niche ?? null, video_length: body.video_length, style: body.style ?? null, aspect: body.aspect ?? "portrait", model: body.model ?? null, quality: body.quality ?? "budget", voiceover: body.voiceover ?? true, voice: body.voice ?? null, music: body.music ?? false, music_mood: body.music_mood ?? null, captions: body.captions ?? true, caption_style: body.caption_style ?? null, reference_image_url: body.reference_image_url ?? null, script, credits_used: isAdmin ? 0 : REEL_CREDIT_COST }).select("id").single();
     if (insErr) throw new Error(insErr.message);
-
-    return new Response(JSON.stringify({ success: true, reel_id: row.id, scenes: script.scenes }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  } catch (err) {
-    console.error("[generate-reel-script]", err);
-    return new Response(JSON.stringify({ error: String(err instanceof Error ? err.message : err) }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
+    if (!isAdmin) {
+      const { data: creditResult, error: creditError } = await userClient.rpc("consume_credits", { _tool: "reel_studio", _amount: REEL_CREDIT_COST, _generation_id: row.id });
+      if (creditError || !creditResult?.success) { await admin.from("reel_generations").delete().eq("id", row.id); throw new Error(creditResult?.error || creditError?.message || `Insufficient credits. Reel Studio requires ${REEL_CREDIT_COST} credits.`); }
+    }
+    return new Response(JSON.stringify({ success: true, reel_id: row.id, scenes: script.scenes, credits_debited: isAdmin ? 0 : REEL_CREDIT_COST, credit_cost: REEL_CREDIT_COST }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  } catch (err) { console.error("[generate-reel-script]", err); return new Response(JSON.stringify({ error: String(err instanceof Error ? err.message : err) }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }); }
 });
