@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Coins, TrendingUp, TrendingDown, ArrowRight, Sparkles, ArrowUpRight, Wallet, Clock, Zap, Gift, ShoppingCart, Wand as Wand2, MessageSquare, ShieldCheck, Repeat, Ban, RotateCcw, Circle as HelpCircle } from "lucide-react";
+import { Coins, TrendingUp, TrendingDown, ArrowRight, ArrowUpRight, Wallet, Clock, Gift, ShoppingCart, Wand as Wand2, MessageSquare, ShieldCheck, Repeat, Ban, RotateCcw, Circle as HelpCircle, Film } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -39,15 +39,16 @@ const CREDIT_COSTS = {
   text: 1,
   image: 5,
   video: 30,
-  animation: 20,
+  "reel generator": 40,
 };
 
-// Icon mapping for transaction reasons
 const REASON_ICONS: Record<string, LucideIcon> = {
   "Signup Bonus": Gift,
   "Subscription": ShoppingCart,
   "AI Image Generation": Wand2,
   "AI Video Generation": Wand2,
+  "Reel Studio": Film,
+  "reel_studio": Film,
   "AI Chat": MessageSquare,
   "Admin Credit": ShieldCheck,
   "Admin Deduction": Ban,
@@ -64,7 +65,6 @@ function getReasonIcon(reason: string): LucideIcon {
   return HelpCircle;
 }
 
-// Skeleton loader components
 function BalanceSkeleton() {
   return (
     <Card className="glass border-0 p-6 mt-6">
@@ -109,26 +109,17 @@ function CreditsPage() {
 
     const [walletRes, txRes, adminRes] = await Promise.all([
       supabase.from("credit_wallets").select("*").eq("user_id", user.id).maybeSingle(),
-      sb
-        .from("credits_transactions")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(100),
+      sb.from("credits_transactions").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(100),
       supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle(),
     ]);
 
-    // If wallet doesn't exist, create one with signup bonus
+    // Defensive fallback for older wallets; normal signup bootstrap is 30 credits.
     if (!walletRes.data) {
       await supabase.from("credit_wallets").upsert(
-        { user_id: user.id, balance: 50, monthly_grant: 50 },
+        { user_id: user.id, balance: 30, monthly_grant: 30 },
         { onConflict: "user_id", ignoreDuplicates: true },
       );
-      const { data: newWallet } = await supabase
-        .from("credit_wallets")
-        .select("*")
-        .eq("user_id", user.id)
-        .maybeSingle();
+      const { data: newWallet } = await supabase.from("credit_wallets").select("*").eq("user_id", user.id).maybeSingle();
       setWallet(newWallet as Wallet | null);
     } else {
       setWallet(walletRes.data as Wallet | null);
@@ -138,98 +129,51 @@ function CreditsPage() {
     setLoading(false);
   }, [user]);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
-  // Realtime subscriptions + focus refetch
   useEffect(() => {
     if (!user) return;
-
     const channel = supabase
       .channel("credit_changes")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "credits_transactions", filter: `user_id=eq.${user.id}` },
-        () => { fetchData(); },
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "credit_wallets", filter: `user_id=eq.${user.id}` },
-        () => { fetchData(); },
-      )
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "credits_transactions", filter: `user_id=eq.${user.id}` }, () => { fetchData(); })
+      .on("postgres_changes", { event: "*", schema: "public", table: "credit_wallets", filter: `user_id=eq.${user.id}` }, () => { fetchData(); })
       .subscribe();
-
     const onFocus = () => fetchData();
     window.addEventListener("focus", onFocus);
-
     return () => {
       supabase.removeChannel(channel);
       window.removeEventListener("focus", onFocus);
     };
   }, [user, fetchData]);
 
-  const usedCredits = wallet ? wallet.monthly_grant - wallet.balance : 0;
-  const usagePercent = wallet && wallet.monthly_grant > 0
-    ? Math.min(100, (usedCredits / wallet.monthly_grant) * 100)
-    : 0;
-
+  const usedCredits = wallet ? Math.max(0, wallet.monthly_grant - wallet.balance) : 0;
+  const usagePercent = wallet && wallet.monthly_grant > 0 ? Math.min(100, (usedCredits / wallet.monthly_grant) * 100) : 0;
   const balance = wallet?.balance ?? 0;
 
   return (
     <div className="p-4 md:p-6 lg:p-10 max-w-4xl mx-auto">
       <h1 className="font-display text-3xl font-bold">Credits</h1>
       <p className="text-muted-foreground mt-1">Manage your AI generation credits</p>
-
-      {loading ? (
-        <BalanceSkeleton />
-      ) : (
+      {loading ? <BalanceSkeleton /> : (
         <>
-          {/* Balance card */}
           <Card className="glass border-0 p-6 mt-6">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
-                <div className="text-sm text-muted-foreground flex items-center gap-2">
-                  <Wallet className="size-4 text-primary" /> Current balance
-                </div>
-                <div className="text-5xl font-display font-bold mt-2">
-                  {isAdmin ? "∞" : balance.toLocaleString()}
-                </div>
-                <div className="text-sm text-muted-foreground mt-1">
-                  {isAdmin
-                    ? "Unlimited credits"
-                    : `of ${wallet?.monthly_grant.toLocaleString() ?? 50} monthly credits`}
-                </div>
+                <div className="text-sm text-muted-foreground flex items-center gap-2"><Wallet className="size-4 text-primary" /> Current balance</div>
+                <div className="text-5xl font-display font-bold mt-2">{isAdmin ? "∞" : balance.toLocaleString()}</div>
+                <div className="text-sm text-muted-foreground mt-1">{isAdmin ? "Unlimited credits" : `of ${wallet?.monthly_grant.toLocaleString() ?? 30} monthly credits`}</div>
               </div>
-              <div className="hidden sm:block">
-                <Link to="/pricing">
-                  <Button className="btn-gradient text-white border-0">
-                    Upgrade <ArrowRight className="size-4 ml-1" />
-                  </Button>
-                </Link>
-              </div>
+              <div className="hidden sm:block"><Link to="/pricing"><Button className="btn-gradient text-white border-0">Upgrade <ArrowRight className="size-4 ml-1" /></Button></Link></div>
             </div>
-
             {!isAdmin && (
               <div className="mt-6">
-                <div className="flex items-center justify-between text-sm mb-2">
-                  <span className="text-muted-foreground">Used this period</span>
-                  <span className="font-medium">{usedCredits} credits</span>
-                </div>
+                <div className="flex items-center justify-between text-sm mb-2"><span className="text-muted-foreground">Used this period</span><span className="font-medium">{usedCredits} credits</span></div>
                 <Progress value={usagePercent} className="h-3" />
               </div>
             )}
-
-            <div className="sm:hidden mt-4">
-              <Link to="/pricing" className="block">
-                <Button className="w-full btn-gradient text-white border-0">
-                  Upgrade <ArrowUpRight className="size-4 ml-1" />
-                </Button>
-              </Link>
-            </div>
+            <div className="sm:hidden mt-4"><Link to="/pricing" className="block"><Button className="w-full btn-gradient text-white border-0">Upgrade <ArrowUpRight className="size-4 ml-1" /></Button></Link></div>
           </Card>
 
-          {/* Credit costs */}
           <Card className="glass border-0 p-6 mt-4">
             <h2 className="font-display font-semibold">Credit costs per generation</h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
@@ -243,110 +187,28 @@ function CreditsPage() {
             </div>
           </Card>
 
-          {/* Transaction history */}
           <Card className="glass border-0 p-6 mt-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-display font-semibold">Transaction History</h2>
-              <Badge variant="outline" className="text-xs">
-                {transactions.length} {transactions.length === 1 ? "entry" : "entries"}
-              </Badge>
+              <Badge variant="outline" className="text-xs">{transactions.length} {transactions.length === 1 ? "entry" : "entries"}</Badge>
             </div>
-
-            {loading ? (
-              <TransactionSkeleton />
-            ) : transactions.length === 0 ? (
-              <div className="py-12 text-center">
-                <Coins className="size-10 mx-auto text-muted-foreground opacity-30 mb-3" />
-                <p className="text-muted-foreground text-sm">No transactions yet.</p>
-                <p className="text-muted-foreground text-xs mt-1">
-                  Generate content or get a signup bonus to see your first transaction.
-                </p>
-              </div>
+            {transactions.length === 0 ? (
+              <div className="py-12 text-center"><Coins className="size-10 mx-auto text-muted-foreground opacity-30 mb-3" /><p className="text-muted-foreground text-sm">No transactions yet.</p><p className="text-muted-foreground text-xs mt-1">Generate content or get a signup bonus to see your first transaction.</p></div>
             ) : (
               <div className="space-y-0">
-                {/* Desktop header */}
-                <div className="hidden md:grid grid-cols-[1fr_1fr_120px] gap-4 py-2 border-b border-border text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  <span>Transaction</span>
-                  <span>Date</span>
-                  <span className="text-right">Amount</span>
-                </div>
-
+                <div className="hidden md:grid grid-cols-[1fr_1fr_120px] gap-4 py-2 border-b border-border text-xs font-medium text-muted-foreground uppercase tracking-wider"><span>Transaction</span><span>Date</span><span className="text-right">Amount</span></div>
                 {transactions.map((tx) => {
                   const Icon = getReasonIcon(tx.reason);
                   const isCredit = tx.transaction_type === "credit";
                   const date = new Date(tx.created_at);
-                  const dateStr = date.toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  });
-                  const timeStr = date.toLocaleTimeString("en-US", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  });
-
+                  const dateStr = date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+                  const timeStr = date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
                   return (
-                    <div
-                      key={tx.id}
-                      className="group flex items-center gap-3 md:grid md:grid-cols-[1fr_1fr_120px] py-3 border-b border-border/50 hover:bg-muted/20 transition-colors rounded-lg md:rounded-none px-2 md:px-0 -mx-2 md:mx-0"
-                    >
-                      {/* Transaction info */}
-                      <div className="flex items-center gap-3 min-w-0 flex-1 md:flex-none">
-                        <div
-                          className={`shrink-0 size-9 rounded-lg grid place-items-center ${
-                            isCredit
-                              ? "bg-green-500/15 text-green-500"
-                              : "bg-red-500/15 text-red-500"
-                          }`}
-                        >
-                          <Icon className="size-4" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium truncate">{tx.reason}</p>
-                          <p className="text-xs text-muted-foreground">
-                            Balance: {tx.balance_after.toLocaleString()}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Date - hidden on mobile, shown on desktop */}
-                      <div className="hidden md:flex items-center gap-1 text-sm text-muted-foreground">
-                        <Clock className="size-3.5" />
-                        <span>{dateStr}</span>
-                        <span className="text-muted-foreground/50">{timeStr}</span>
-                      </div>
-
-                      {/* Mobile: date inline */}
-                      <div className="md:hidden text-xs text-muted-foreground">
-                        {dateStr}
-                      </div>
-
-                      {/* Amount */}
-                      <div className="text-right shrink-0">
-                        <span
-                          className={`inline-flex items-center gap-1 text-sm font-semibold ${
-                            isCredit ? "text-green-500" : "text-red-500"
-                          }`}
-                        >
-                          {isCredit ? (
-                            <TrendingUp className="size-3.5" />
-                          ) : (
-                            <TrendingDown className="size-3.5" />
-                          )}
-                          {isCredit ? "+" : "-"}
-                          {tx.amount.toLocaleString()}
-                        </span>
-                        <Badge
-                          variant="outline"
-                          className={`ml-2 text-[10px] px-1.5 py-0 border-0 ${
-                            isCredit
-                              ? "bg-green-500/10 text-green-500"
-                              : "bg-red-500/10 text-red-500"
-                          }`}
-                        >
-                          {isCredit ? "Credit" : "Debit"}
-                        </Badge>
-                      </div>
+                    <div key={tx.id} className="group flex items-center gap-3 md:grid md:grid-cols-[1fr_1fr_120px] py-3 border-b border-border/50 hover:bg-muted/20 transition-colors rounded-lg md:rounded-none px-2 md:px-0 -mx-2 md:mx-0">
+                      <div className="flex items-center gap-3 min-w-0 flex-1 md:flex-none"><div className={`shrink-0 size-9 rounded-lg grid place-items-center ${isCredit ? "bg-green-500/15 text-green-500" : "bg-red-500/15 text-red-500"}`}><Icon className="size-4" /></div><div className="min-w-0"><p className="text-sm font-medium truncate">{tx.reason}</p><p className="text-xs text-muted-foreground">Balance: {tx.balance_after.toLocaleString()}</p></div></div>
+                      <div className="hidden md:flex items-center gap-1 text-sm text-muted-foreground"><Clock className="size-3.5" /><span>{dateStr}</span><span className="text-muted-foreground/50">{timeStr}</span></div>
+                      <div className="md:hidden text-xs text-muted-foreground">{dateStr}</div>
+                      <div className="text-right shrink-0"><span className={`inline-flex items-center gap-1 text-sm font-semibold ${isCredit ? "text-green-500" : "text-red-500"}`}>{isCredit ? <TrendingUp className="size-3.5" /> : <TrendingDown className="size-3.5" />}{isCredit ? "+" : "-"}{tx.amount.toLocaleString()}</span><Badge variant="outline" className={`ml-2 text-[10px] px-1.5 py-0 border-0 ${isCredit ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"}`}>{isCredit ? "Credit" : "Debit"}</Badge></div>
                     </div>
                   );
                 })}

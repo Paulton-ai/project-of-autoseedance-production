@@ -15,7 +15,6 @@ import {
   Video,
   History,
   Crown,
-  Film,
   Menu,
 } from "lucide-react";
 import {
@@ -32,7 +31,6 @@ const NAV_ITEMS = [
   { to: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { to: "/tools/image", label: "Image Generation", icon: ImageIcon },
   { to: "/tools/video", label: "Video Generation", icon: Video },
-  { to: "/tools/reel-studio", label: "AI Reel Generator", icon: Film },
   { to: "/dashboard/credits", label: "Credits", icon: Coins },
   { to: "/dashboard/history", label: "History", icon: History },
   { to: "/dashboard/billing", label: "Billing", icon: CreditCard },
