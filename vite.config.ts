@@ -37,6 +37,7 @@ export default defineConfig(({ isSsrBuild }) => ({
   ],
   resolve: {
     alias: { "@": path.resolve(__dirname, "./src") },
+    dedupe: ["react", "react-dom"],
   },
   server: { host: "::", port: 8080 },
   build: {
