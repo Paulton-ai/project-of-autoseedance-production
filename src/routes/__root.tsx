@@ -5,7 +5,6 @@ import {
   createRootRouteWithContext,
   useRouter,
   HeadContent,
-  Scripts,
 } from "@tanstack/react-router";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -126,7 +125,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           url: SITE_URL,
         }),
       },
-      { type: "module", src: `/entry-client.js?v=${__APP_BUILD_ID__}` },
+      { type: "module", src: "/entry-client.js" },
     ],
   }),
   component: RootComponent,
@@ -145,7 +144,6 @@ function RootComponent() {
         <body>
           <Outlet />
           <Toaster richColors position="top-right" theme="dark" />
-          <Scripts />
         </body>
       </html>
     </QueryClientProvider>

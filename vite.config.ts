@@ -14,15 +14,7 @@ const reelCreditPolicy: Plugin = {
   },
 };
 
-const buildId =
-  process.env.VERCEL_GIT_COMMIT_SHA ||
-  process.env.VERCEL_DEPLOYMENT_ID ||
-  `local-${Date.now()}`;
-
-export default defineConfig(({ isSsrBuild }) => ({
-  define: {
-    __APP_BUILD_ID__: JSON.stringify(buildId),
-  },
+export default defineConfig(({ ssrBuild }) => ({
   plugins: [
     tsconfigPaths(),
     tanstackRouter({
@@ -37,7 +29,6 @@ export default defineConfig(({ isSsrBuild }) => ({
   ],
   resolve: {
     alias: { "@": path.resolve(__dirname, "./src") },
-    dedupe: ["react", "react-dom"],
   },
   server: { host: "::", port: 8080 },
   build: {
@@ -45,7 +36,7 @@ export default defineConfig(({ isSsrBuild }) => ({
     sourcemap: false,
     rollupOptions: {
       output: {
-        entryFileNames: isSsrBuild ? "entry-server.js" : "entry-client.js",
+        entryFileNames: ssrBuild ? "entry-server.js" : "entry-client.js",
         chunkFileNames: "assets/[name]-[hash].js",
         assetFileNames: (assetInfo) =>
           assetInfo.name?.endsWith(".css")
