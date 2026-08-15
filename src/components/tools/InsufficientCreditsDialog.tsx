@@ -1,4 +1,5 @@
-import { Link } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Coins, Zap } from "lucide-react";
@@ -17,6 +18,14 @@ const PLANS = [
 ];
 
 export function InsufficientCreditsDialog({ open, onOpenChange, required, balance }: InsufficientCreditsDialogProps) {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!open) return;
+    onOpenChange(false);
+    void navigate({ to: "/pricing" });
+  }, [open, navigate, onOpenChange]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -25,32 +34,33 @@ export function InsufficientCreditsDialog({ open, onOpenChange, required, balanc
             <Coins className="size-5 text-primary" /> Not enough credits
           </DialogTitle>
           <DialogDescription>
-            This generation needs {required} credits and you have {balance}. Top up to keep creating.
+            This generation needs {required} credits and you have {balance}. Redirecting you to pricing…
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-2">
           {PLANS.map((p) => (
-            <Link
+            <button
               key={p.name}
-              to="/pricing"
-              onClick={() => onOpenChange(false)}
-              className="flex items-center justify-between rounded-xl border border-border p-3 hover:bg-muted transition"
+              type="button"
+              onClick={() => { onOpenChange(false); void navigate({ to: "/pricing" }); }}
+              className="flex items-center justify-between rounded-xl border border-border p-3 hover:bg-muted transition text-left"
             >
               <div>
                 <div className="font-medium">{p.name}</div>
                 <div className="text-xs text-muted-foreground">{p.credits.toLocaleString()} credits</div>
               </div>
               <div className="font-semibold">{p.price}</div>
-            </Link>
+            </button>
           ))}
         </div>
 
-        <Link to="/pricing" onClick={() => onOpenChange(false)}>
-          <Button className="w-full btn-gradient text-white border-0 gap-2">
-            <Zap className="size-4" /> See all plans
-          </Button>
-        </Link>
+        <Button
+          className="w-full btn-gradient text-white border-0 gap-2"
+          onClick={() => { onOpenChange(false); void navigate({ to: "/pricing" }); }}
+        >
+          <Zap className="size-4" /> See all plans
+        </Button>
       </DialogContent>
     </Dialog>
   );
