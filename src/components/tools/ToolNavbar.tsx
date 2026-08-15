@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ArrowLeft, Sparkles, Coins, LogOut, User, Settings, Crown } from "lucide-react";
+import { ArrowLeft, Sparkles, Coins, LogOut, User, Crown } from "lucide-react";
 import { signOut } from "@/lib/auth";
 
 interface ToolNavbarProps {
@@ -64,21 +64,21 @@ export function ToolNavbar({ title }: ToolNavbarProps) {
   return (
     <header className="fixed top-0 inset-x-0 z-50 bg-background/80 backdrop-blur border-b border-border">
       <div className="mx-auto max-w-7xl px-4 h-14 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 min-w-0">
           <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition">
             <ArrowLeft className="size-5" />
           </Link>
-          <Link to="/" className="flex items-center gap-2 font-display font-bold">
+          <Link to="/" className="flex items-center gap-2 font-display font-bold shrink-0">
             <span className="size-8 rounded-lg btn-gradient grid place-items-center">
               <Sparkles className="size-4 text-white" />
             </span>
             <span className="gradient-text hidden sm:inline">Auto Seedance</span>
           </Link>
-          <span className="text-muted-foreground">|</span>
-          <span className="font-medium">{title}</span>
+          <span className="text-muted-foreground hidden sm:inline">|</span>
+          <span className="font-medium truncate">{title}</span>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 shrink-0">
           {!user ? (
             <>
               <Link to="/login">
@@ -91,11 +91,11 @@ export function ToolNavbar({ title }: ToolNavbarProps) {
           ) : (
             <>
               {balance !== null && (
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 border border-border">
+                <Link to="/dashboard/credits" className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 border border-border hover:bg-muted transition">
                   {isAdmin ? <Crown className="size-4 text-amber-500" /> : <Coins className="size-4 text-primary" />}
                   <span className="font-semibold">{isAdmin ? "∞" : balance}</span>
-                  <span className="text-xs text-muted-foreground">{isAdmin ? "Unlimited" : "credits"}</span>
-                </div>
+                  <span className="text-xs text-muted-foreground hidden sm:inline">{isAdmin ? "Unlimited" : "credits"}</span>
+                </Link>
               )}
 
               <DropdownMenu>
@@ -121,13 +121,18 @@ export function ToolNavbar({ title }: ToolNavbarProps) {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
+                    <Link to="/tools/reel-studio" className="cursor-pointer">
+                      <Sparkles className="mr-2 size-4" /> AI Reel Generator
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
                     <Link to="/dashboard/credits" className="cursor-pointer">
                       <Coins className="mr-2 size-4" /> Credits
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link to="/dashboard/settings" className="cursor-pointer">
-                      <Settings className="mr-2 size-4" /> Settings
+                    <Link to="/dashboard/profile" className="cursor-pointer">
+                      <User className="mr-2 size-4" /> Profile
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
