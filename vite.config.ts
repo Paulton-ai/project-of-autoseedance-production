@@ -19,7 +19,7 @@ const buildId =
   process.env.VERCEL_DEPLOYMENT_ID ||
   `local-${Date.now()}`;
 
-export default defineConfig(({ ssrBuild }) => ({
+export default defineConfig(({ isSsrBuild }) => ({
   define: {
     __APP_BUILD_ID__: JSON.stringify(buildId),
   },
@@ -44,7 +44,7 @@ export default defineConfig(({ ssrBuild }) => ({
     sourcemap: false,
     rollupOptions: {
       output: {
-        entryFileNames: ssrBuild ? "entry-server.js" : "entry-client.js",
+        entryFileNames: isSsrBuild ? "entry-server.js" : "entry-client.js",
         chunkFileNames: "assets/[name]-[hash].js",
         assetFileNames: (assetInfo) =>
           assetInfo.name?.endsWith(".css")
