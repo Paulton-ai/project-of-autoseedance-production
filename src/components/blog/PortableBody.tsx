@@ -1,5 +1,6 @@
 import { PortableText, type PortableTextComponents } from "@portabletext/react";
 import type { PortableTextBlock } from "@portabletext/react";
+import type { ReactNode } from "react";
 import { urlFor } from "@/lib/sanity";
 import { headingId } from "./BlogTableOfContents";
 
@@ -15,7 +16,8 @@ import { headingId } from "./BlogTableOfContents";
 function sanitizeArticleHtml(html: string): string {
   let safe = html
     .replace(/<!--[\s\S]*?-->/g, "")
-    .replace(/<\/?\s*(script|style|iframe|object|embed|form|input|button|textarea|select|option|link|meta|base)[^>]*>/gi, "")
+    .replace(/<\s*(script|style|iframe|object|embed|form|input|button|textarea|select|option|link|meta|base)[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi, "")
+    .replace(/<\s*(script|style|iframe|object|embed|form|input|button|textarea|select|option|link|meta|base)[^>]*\/?\s*>/gi, "")
     .replace(/\s+on[a-z]+\s*=\s*(?:\"[^\"]*\"|'[^']*'|[^\s>]+)/gi, "")
     .replace(/\s+(?:src|href)\s*=\s*(?:\"|')\s*(?:javascript:|vbscript:|data:text\/html)[^\"']*(?:\"|')/gi, "")
     .replace(/\s+(?:src|href)\s*=\s*(?:javascript:|vbscript:|data:text\/html)[^\s>]+/gi, "");
@@ -75,7 +77,7 @@ function getPlainBlockText(value: PortableTextBlock): string {
   return value.children?.map((child) => child.text || "").join("") || "";
 }
 
-function renderMaybeHtml(value: PortableTextBlock, children: React.ReactNode) {
+function renderMaybeHtml(value: PortableTextBlock, children: ReactNode) {
   const text = getPlainBlockText(value);
   if (!/<\/?[a-z][^>]*>/i.test(text)) return <p className="mb-5 leading-[1.8] text-[17px]">{children}</p>;
 
