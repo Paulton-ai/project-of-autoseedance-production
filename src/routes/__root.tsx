@@ -125,7 +125,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           url: SITE_URL,
         }),
       },
-      { type: "module", src: "/entry-client.js" },
+      { type: "module", src: `/entry-client.js?v=${__APP_BUILD_ID__}` },
     ],
   }),
   component: RootComponent,
