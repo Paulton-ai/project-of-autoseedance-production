@@ -14,10 +14,14 @@ interface BreadcrumbProps {
 export function Breadcrumb({ items, className = "" }: BreadcrumbProps) {
   if (items.length === 0) return null;
 
+  // Tool pages currently pass a legacy "Tools" parent, but /tools is not a real route.
+  // Keep the breadcrumb useful and clickable: Home → specific tool.
+  const visibleItems = items.filter((item) => item.name.toLowerCase() !== "tools");
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
-    itemListElement: items.map((item, index) => ({
+    itemListElement: visibleItems.map((item, index) => ({
       "@type": "ListItem",
       position: index + 1,
       name: item.name,
@@ -43,9 +47,10 @@ export function Breadcrumb({ items, className = "" }: BreadcrumbProps) {
           aria-label="Home"
         >
           <Home className="size-3.5" />
+          <span className="sr-only">Home</span>
         </Link>
-        {items.map((item, index) => {
-          const isLast = index === items.length - 1;
+        {visibleItems.map((item, index) => {
+          const isLast = index === visibleItems.length - 1;
           return (
             <span key={item.url} className="flex items-center gap-1">
               <ChevronRight className="size-3.5" />
