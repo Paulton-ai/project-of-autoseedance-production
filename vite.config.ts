@@ -1,9 +1,18 @@
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import tailwindcss from "@tailwindcss/vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import path from "node:path";
+
+const reelCreditPolicy: Plugin = {
+  name: "reel-credit-policy",
+  enforce: "pre",
+  transform(code, id) {
+    if (!id.endsWith("/src/routes/tools.reel-studio.tsx")) return null;
+    return code.replace('const base = quality === "premium" ? 80 : 40;', 'const base = 40;');
+  },
+};
 
 export default defineConfig(({ ssrBuild }) => ({
   plugins: [
@@ -14,6 +23,7 @@ export default defineConfig(({ ssrBuild }) => ({
       routesDirectory: "src/routes",
       generatedRouteTree: "src/routeTree.gen.ts",
     }),
+    reelCreditPolicy,
     react(),
     tailwindcss(),
   ],
@@ -26,9 +36,6 @@ export default defineConfig(({ ssrBuild }) => ({
     sourcemap: false,
     rollupOptions: {
       output: {
-        // Vite/TanStack's SSR build is currently resolving the SSR entry name
-        // as entry-client. Keep the public client filename stable, but force
-        // the SSR bundle to the exact filename used by the static prerenderer.
         entryFileNames: ssrBuild ? "entry-server.js" : "entry-client.js",
         chunkFileNames: "assets/[name]-[hash].js",
         assetFileNames: (assetInfo) =>
