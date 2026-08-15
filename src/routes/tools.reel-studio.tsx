@@ -159,9 +159,10 @@ function ReelStudioPage() {
 
 
   const costEstimate = useMemo(() => {
-    const base = quality === "premium" ? 80 : 40;
+    // Reel Studio has one fixed generation cost regardless of quality tier.
+    const base = 40;
     return { base, total: base };
-  }, [quality]);
+  }, []);
 
   const handleRefUpload = (f: File | null) => {
     if (!f) return;
