@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Image as ImageIcon, Video, LayoutDashboard, LogOut, ChevronDown, Coins } from "lucide-react";
+import { Sparkles, Image as ImageIcon, Video, Film, LayoutDashboard, LogOut, ChevronDown, Coins } from "lucide-react";
 import { motion } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,7 +35,7 @@ export function Navbar() {
         <Link to="/" className="flex items-center gap-2 font-display font-bold text-lg shrink-0"><span className="size-8 rounded-lg btn-gradient grid place-items-center"><Sparkles className="size-4 text-white" /></span><span className="gradient-text">Auto Seedance</span></Link>
         <nav className="hidden md:flex items-center gap-7 text-sm text-muted-foreground">
           <a href="/#features" className="hover:text-foreground transition">Features</a><Link to="/pricing" className="hover:text-foreground transition">Pricing</Link>
-          <div className="relative group"><button className="hover:text-foreground transition flex items-center gap-1.5 py-2">Tools <ChevronDown className="size-3.5" /></button><div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible focus-within:opacity-100 focus-within:visible transition"><div className="w-56 rounded-xl border border-border bg-background/95 backdrop-blur shadow-lg overflow-hidden"><Link to="/tools/image" className="flex items-center gap-2 px-4 py-3 hover:bg-muted transition"><ImageIcon className="size-4 text-muted-foreground" /> Image Generation</Link><Link to="/tools/video" className="flex items-center gap-2 px-4 py-3 hover:bg-muted transition"><Video className="size-4 text-muted-foreground" /> Video Generation</Link></div></div></div>
+          <div className="relative group"><button className="hover:text-foreground transition flex items-center gap-1.5 py-2">Tools <ChevronDown className="size-3.5" /></button><div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible focus-within:opacity-100 focus-within:visible transition"><div className="w-56 rounded-xl border border-border bg-background/95 backdrop-blur shadow-lg overflow-hidden"><Link to="/tools/image" className="flex items-center gap-2 px-4 py-3 hover:bg-muted transition"><ImageIcon className="size-4 text-muted-foreground" /> Image Generation</Link><Link to="/tools/video" className="flex items-center gap-2 px-4 py-3 hover:bg-muted transition"><Video className="size-4 text-muted-foreground" /> Video Generation</Link><Link to="/tools/reel-studio" className="flex items-center gap-2 px-4 py-3 hover:bg-muted transition"><Film className="size-4 text-muted-foreground" /> Reel Generator</Link></div></div></div>
           <Link to="/blog" className="hover:text-foreground transition">Blog</Link>
         </nav>
         <div className="flex items-center gap-2">{user ? <>
