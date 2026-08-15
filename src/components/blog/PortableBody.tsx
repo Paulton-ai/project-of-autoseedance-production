@@ -3,6 +3,86 @@ import type { PortableTextBlock } from "@portabletext/react";
 import { urlFor } from "@/lib/sanity";
 import { headingId } from "./BlogTableOfContents";
 
+/**
+ * Some existing Sanity posts contain HTML markup as plain text inside a
+ * Portable Text paragraph (for example: <div class="key-takeaway-box">).
+ * Without handling that case, browsers display the tags literally.
+ *
+ * The article body is trusted editorial content, but we still strip executable
+ * or unsafe HTML before injecting it into the page. This keeps existing and
+ * future posts working without exposing script/event-handler HTML to readers.
+ */
+function sanitizeArticleHtml(html: string): string {
+  let safe = html
+    .replace(/<!--[\s\S]*?-->/g, "")
+    .replace(/<\/?\s*(script|style|iframe|object|embed|form|input|button|textarea|select|option|link|meta|base)[^>]*>/gi, "")
+    .replace(/\s+on[a-z]+\s*=\s*(?:\"[^\"]*\"|'[^']*'|[^\s>]+)/gi, "")
+    .replace(/\s+(?:src|href)\s*=\s*(?:\"|')\s*(?:javascript:|vbscript:|data:text\/html)[^\"']*(?:\"|')/gi, "")
+    .replace(/\s+(?:src|href)\s*=\s*(?:javascript:|vbscript:|data:text\/html)[^\s>]+/gi, "");
+
+  const allowedTags = new Set([
+    "a", "abbr", "b", "blockquote", "br", "code", "div", "em", "figcaption",
+    "figure", "h1", "h2", "h3", "h4", "h5", "h6", "hr", "i", "img", "li",
+    "ol", "p", "pre", "s", "small", "span", "strong", "sub", "sup", "u", "ul",
+  ]);
+
+  safe = safe.replace(/<\/?\s*([a-z0-9-]+)([^>]*)>/gi, (full, tagName: string, attrs: string) => {
+    const tag = tagName.toLowerCase();
+    if (!allowedTags.has(tag)) return "";
+    if (full.startsWith("</")) return `</${tag}>`;
+
+    const safeAttrs: string[] = [];
+    const attrPattern = /([a-zA-Z_:][a-zA-Z0-9:._-]*)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g;
+    let match: RegExpExecArray | null;
+
+    while ((match = attrPattern.exec(attrs)) !== null) {
+      const name = match[1].toLowerCase();
+      const value = match[2] ?? match[3] ?? match[4] ?? "";
+
+      if (["class", "id", "title", "alt", "width", "height", "loading", "decoding"].includes(name)) {
+        safeAttrs.push(`${name}="${escapeHtmlAttribute(value)}"`);
+        continue;
+      }
+
+      if (name === "href" || name === "src") {
+        const normalized = value.trim().toLowerCase();
+        if (normalized.startsWith("javascript:") || normalized.startsWith("vbscript:") || normalized.startsWith("data:text/html")) continue;
+        safeAttrs.push(`${name}="${escapeHtmlAttribute(value)}"`);
+        continue;
+      }
+
+      if (name === "target" && (value === "_blank" || value === "_self" || value === "_parent" || value === "_top")) {
+        safeAttrs.push(`target="${value}"`);
+        continue;
+      }
+
+      if (name === "rel") {
+        safeAttrs.push(`rel="${escapeHtmlAttribute(value)}"`);
+      }
+    }
+
+    return `<${tag}${safeAttrs.length ? ` ${safeAttrs.join(" ")}` : ""}>`;
+  });
+
+  return safe;
+}
+
+function escapeHtmlAttribute(value: string): string {
+  return value.replace(/&/g, "&amp;").replace(/\"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function getPlainBlockText(value: PortableTextBlock): string {
+  return value.children?.map((child) => child.text || "").join("") || "";
+}
+
+function renderMaybeHtml(value: PortableTextBlock, children: React.ReactNode) {
+  const text = getPlainBlockText(value);
+  if (!/<\/?[a-z][^>]*>/i.test(text)) return <p className="mb-5 leading-[1.8] text-[17px]">{children}</p>;
+
+  const html = sanitizeArticleHtml(text);
+  return <div className="portable-html-block" dangerouslySetInnerHTML={{ __html: html }} />;
+}
+
 const components: PortableTextComponents = {
   types: {
     image: ({ value }) => {
@@ -59,9 +139,7 @@ const components: PortableTextComponents = {
     h4: ({ children, value }) => (
       <h4 id={headingId(value as PortableTextBlock)} className="mt-6 mb-2 font-display text-lg font-bold scroll-mt-28">{children}</h4>
     ),
-    normal: ({ children }) => (
-      <p className="mb-5 leading-[1.8] text-[17px]">{children}</p>
-    ),
+    normal: ({ children, value }) => renderMaybeHtml(value as PortableTextBlock, children),
     blockquote: ({ children }) => (
       <blockquote className="border-l-4 border-primary bg-primary/5 pl-4 py-2 my-4 italic text-foreground/90">
         {children}
