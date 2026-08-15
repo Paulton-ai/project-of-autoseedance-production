@@ -29,7 +29,7 @@ export async function ensureUserBootstrap(user: User) {
   if (existing) return existing;
 
   const task = (async () => {
-    const { error: rpcError } = await (supabase.rpc as unknown as (fn: "ensure_user_bootstrap") => Promise<{ error: { message: string } | null }>)("ensure_user_bootstrap");
+    const { error: rpcError } = await (supabase.rpc as unknown as (fn: "ensure_user_bootstrap") => Promise<{ error: { message: string } | null }>) ("ensure_user_bootstrap");
     if (!rpcError) return;
 
     console.warn("User bootstrap RPC failed; falling back to client-safe defaults", rpcError.message);
@@ -53,7 +53,7 @@ export async function ensureUserBootstrap(user: User) {
         { onConflict: "user_id", ignoreDuplicates: true },
       ),
       supabase.from("credit_wallets").upsert(
-        { user_id: user.id, balance: 50, monthly_grant: 50 },
+        { user_id: user.id, balance: 30, monthly_grant: 30 },
         { onConflict: "user_id", ignoreDuplicates: true },
       ),
     ]);
