@@ -26,11 +26,9 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization") || "";
     const supabase = getSupabaseClient(authHeader);
 
-    // Get user from auth
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Not authenticated");
 
-    // Check admin status
     const { data: roleData } = await supabase
       .from("user_roles")
       .select("role")
@@ -39,16 +37,9 @@ Deno.serve(async (req) => {
       .maybeSingle();
     const isAdmin = !!roleData;
 
-    // Only consume credits if not admin
-    if (!isAdmin) {
-      const { data: creditResult, error: creditError } = await supabase.rpc("consume_credits", {
-        _tool: "image",
-        _amount: 5,
-      });
-      if (creditError || !creditResult?.success) {
-        throw new Error(creditResult?.error || creditError?.message || "Failed to deduct credits");
-      }
-    }
+    // Credit deduction is handled by the authenticated client flow before this
+    // function is invoked. Keeping the deduction in one place prevents a
+    // single image generation from being charged twice.
 
     const FAL_API_KEY = Deno.env.get("FAL_API_KEY");
     if (!FAL_API_KEY) throw new Error("FAL_API_KEY missing");
@@ -104,7 +95,6 @@ Deno.serve(async (req) => {
     if (!submitRes.ok) throw new Error(`Fal.ai submit error: ${submitRes.status} - ${submitText}`);
     const submitData = JSON.parse(submitText);
 
-    // Insert generation record
     await supabase.from("generations").insert({
       user_id: user.id,
       tool_type: "image",
