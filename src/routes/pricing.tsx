@@ -76,6 +76,7 @@ function PricingPage() {
       .eq("is_active", true)
       .neq("name", "Free")
       .order("sort_order", { ascending: true })
+      .order("price_monthly", { ascending: true })
       .then(({ data }) => { setPlans((data as Plan[]) ?? []); setLoading(false); });
   }, []);
 
@@ -125,14 +126,12 @@ function PricingPage() {
             <Badge variant="outline" className="border-border bg-muted/50">Pricing</Badge>
             <h1 className="mt-4 font-display text-5xl font-bold">Simple credit-based pricing</h1>
             <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
-              Pay once, create endlessly. All plans include image and video generation.
+              Start free, then choose the credit plan that matches how much content you create.
             </p>
 
             <div className="mt-8 inline-flex items-center gap-1 rounded-full border border-border bg-muted/40 p-1">
               <button onClick={() => setYearly(false)} className={`px-5 py-2 rounded-full text-sm font-medium transition ${!yearly ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>Monthly</button>
-              <button onClick={() => setYearly(true)} className={`px-5 py-2 rounded-full text-sm font-medium transition flex items-center gap-2 ${yearly ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-                Yearly <Badge className="bg-orange-500 text-white border-0 text-xs px-1.5 py-0">Save 50%</Badge>
-              </button>
+              <button onClick={() => setYearly(true)} className={`px-5 py-2 rounded-full text-sm font-medium transition flex items-center gap-2 ${yearly ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>Yearly</button>
             </div>
           </div>
 
@@ -146,14 +145,14 @@ function PricingPage() {
                 const price = yearly ? priceYearly : priceMonthly;
                 const credits = yearly ? plan.monthly_credits * 12 : plan.monthly_credits;
                 const pricePerCredit = price > 0 && credits > 0 ? price / credits : 0;
-                const isPopular = plan.name === "Pro";
+                const isPopular = plan.name.toLowerCase() === "pro";
                 const isCurrent = currentPlan === plan.name.toLowerCase();
                 const displayName = plan.display_name ?? plan.name;
                 const isThisLoading = loadingPlan === plan.name;
 
                 return (
-                  <Card key={plan.id} className={`relative glass border-0 p-6 flex flex-col ${isPopular ? "glow-purple ring-2 ring-primary/50" : "border border-border"}`}>
-                    {isPopular && <Badge className="absolute -top-3 left-6 bg-primary text-primary-foreground border-0">Most Popular</Badge>}
+                  <Card key={plan.id} className={`relative glass p-6 flex flex-col transition-all duration-300 ${isPopular ? "border-2 border-primary/60 shadow-xl shadow-primary/20 ring-2 ring-primary/25 before:absolute before:-inset-px before:-z-10 before:rounded-xl before:bg-primary/20 before:blur-xl" : "border border-border"}`}>
+                    {isPopular && <Badge className="absolute -top-3 left-6 bg-primary text-primary-foreground border-0 shadow-lg shadow-primary/30">Most Popular</Badge>}
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="font-display font-semibold text-xl">{displayName}</h3>
                       {pricePerCredit > 0 && <Badge className="bg-green-500/20 text-green-400 border border-green-500/30 text-xs">${pricePerCredit.toFixed(3)}/cr</Badge>}
@@ -169,7 +168,7 @@ function PricingPage() {
                     {isCurrent ? (
                       <Button className="w-full" variant="outline" disabled>Current plan</Button>
                     ) : (
-                      <Button className={`w-full ${isPopular ? "btn-gradient text-white border-0" : ""}`} variant={isPopular ? "default" : "outline"} disabled={isThisLoading || !!loadingPlan} onClick={() => handleSubscribe(plan)}>
+                      <Button className={`w-full ${isPopular ? "btn-gradient text-white border-0 shadow-lg shadow-primary/20" : ""}`} variant={isPopular ? "default" : "outline"} disabled={isThisLoading || !!loadingPlan} onClick={() => handleSubscribe(plan)}>
                         {isThisLoading ? <><Loader2 className="size-4 mr-2 animate-spin" /> Redirecting to PayPal…</> : <>Subscribe <ArrowRight className="ml-1 size-4" /></>}
                       </Button>
                     )}
@@ -179,7 +178,7 @@ function PricingPage() {
             </div>
           )}
 
-          <div className="mt-8 text-center text-sm text-muted-foreground">Secure payments via PayPal · Image 5 credits · Video 30 credits</div>
+          <div className="mt-8 text-center text-sm text-muted-foreground">Secure payments via PayPal · Image 5 credits · Video 30 credits · Reel Studio 40 credits</div>
           <Card className="glass border-0 p-6 mt-8 max-w-2xl mx-auto">
             <h3 className="font-display font-semibold">Need enterprise or custom credits?</h3>
             <p className="mt-2 text-sm text-muted-foreground">Contact us for volume discounts, custom packages, or API access.</p>
