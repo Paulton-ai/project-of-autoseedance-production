@@ -66,7 +66,7 @@ const replacement = String.raw`function PricingPreview() {
               <div className="grid size-10 place-items-center rounded-xl bg-primary/10 text-primary"><CreditCard className="size-5" /></div>
             </div>
             <p className="mt-4 text-sm leading-6 text-muted-foreground">{plan.text}</p>
-            <div className="mt-5 text-3xl font-display font-bold">${Number(plan.price_monthly).toFixed(2)}<span className="text-sm font-normal text-muted-foreground">/month</span></div>
+            <div className="mt-5 text-3xl font-display font-bold">\${Number(plan.price_monthly).toFixed(2)}<span className="text-sm font-normal text-muted-foreground">/month</span></div>
             <div className="mt-3 rounded-xl border border-primary/20 bg-primary/5 px-3 py-2 text-sm font-semibold text-primary">{Number(plan.monthly_credits).toLocaleString()} credits/month</div>
             <div className="mt-5 space-y-3">{plan.features.map((point) => <div key={point} className="flex items-start gap-2 text-sm"><Check className="mt-0.5 size-4 shrink-0 text-primary" />{point}</div>)}</div>
             <Link to="/pricing" className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:gap-3 transition-all">{plan.featured ? 'Choose Pro' : 'View plan'} <ArrowRight className="size-4" /></Link>
