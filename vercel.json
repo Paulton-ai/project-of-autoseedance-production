@@ -11,12 +11,6 @@
       ]
     },
     {
-      "source": "/entry-client.js",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-      ]
-    },
-    {
       "source": "/sitemap.xml",
       "headers": [
         { "key": "Content-Type", "value": "application/xml" },
