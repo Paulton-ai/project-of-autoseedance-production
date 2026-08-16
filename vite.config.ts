@@ -36,11 +36,11 @@ export default defineConfig(({ ssrBuild }) => ({
     sourcemap: false,
     rollupOptions: {
       output: {
-        entryFileNames: ssrBuild ? "entry-server.js" : "entry-client.js",
+        entryFileNames: ssrBuild ? "entry-server.js" : "entry-client-[hash].js",
         chunkFileNames: "assets/[name]-[hash].js",
         assetFileNames: (assetInfo) =>
           assetInfo.name?.endsWith(".css")
-            ? "assets/app.css"
+            ? "assets/app-[hash].css"
             : "assets/[name]-[hash][extname]",
       },
     },
