@@ -27,16 +27,20 @@ async function resolveServerEntry() {
 }
 
 async function resolveClientAssets() {
-  const files = await fs.readdir(ASSETS_DIR);
-  const css = files.find((file) => /^app-[^/]+\.css$/.test(file));
-  const client = files.find((file) => /^entry-client-[^/]+\.js$/.test(file));
+  const [assetFiles, distFiles] = await Promise.all([
+    fs.readdir(ASSETS_DIR),
+    fs.readdir(DIST),
+  ]);
+
+  const css = assetFiles.find((file) => /^app-[^/]+\.css$/.test(file));
+  const client = distFiles.find((file) => /^entry-client-[^/]+\.js$/.test(file));
 
   if (!css) throw new Error(`No hashed application CSS found in ${ASSETS_DIR}`);
-  if (!client) throw new Error(`No hashed client entry found in ${ASSETS_DIR}`);
+  if (!client) throw new Error(`No hashed client entry found in ${DIST}`);
 
   return {
     css: `/assets/${css}`,
-    client: `/assets/${client}`,
+    client: `/${client}`,
   };
 }
 
