@@ -63,7 +63,7 @@ const replacement = String.raw`function PricingPreview() {
             {plan.featured && <Badge className="absolute -top-3 left-6 border-0 bg-primary text-primary-foreground shadow-lg shadow-primary/30">Most popular</Badge>}
             <div className="flex items-start justify-between gap-3">
               <div><div className="text-xs font-bold uppercase tracking-[.16em] text-primary">{plan.label}</div><h3 className="mt-2 font-display text-2xl font-bold">{plan.name}</h3></div>
-              <div className="grid size-10 place-items-center rounded-xl bg-primary/10 text-primary"><CreditCard className="size-5" /></div>
+              <div className="grid size-10 place-items-center rounded-xl bg-primary/10 text-primary"><Sparkles className="size-5" /></div>
             </div>
             <p className="mt-4 text-sm leading-6 text-muted-foreground">{plan.text}</p>
             <div className="mt-5 text-3xl font-display font-bold">\${Number(plan.price_monthly).toFixed(2)}<span className="text-sm font-normal text-muted-foreground">/month</span></div>
