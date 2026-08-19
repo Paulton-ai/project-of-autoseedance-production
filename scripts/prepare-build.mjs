@@ -80,3 +80,37 @@ const replacement = String.raw`function PricingPreview() {
 source = source.slice(0, start) + replacement + source.slice(end);
 await fs.writeFile(indexPath, source, "utf8");
 console.log("✓ Prepared home pricing preview: Standard / Pro / Basic with live Supabase plan sync.");
+
+// Normalize SEO metadata at build time across every public route so emitted
+// HTML, canonicals, Open Graph URLs, sitemap generation and robots all use
+// the same canonical host and current free-credit amount.
+const routeDir = path.join(root, "src/routes");
+const routeFiles = (await fs.readdir(routeDir)).filter((file) => file.endsWith(".tsx"));
+const seoFiles = [
+  path.join(root, "index.html"),
+  path.join(root, "src/lib/seo.ts"),
+  path.join(root, "scripts/generate-sitemap.ts"),
+  path.join(root, "public/robots.txt"),
+  ...routeFiles.map((file) => path.join(routeDir, file)),
+];
+
+const fakeRatingPattern = /\s*aggregateRating:\s*\{\s*["']@type["']:\s*["']AggregateRating["'],\s*ratingValue:\s*["'][^"']+["'],\s*ratingCount:\s*["'][^"']+["'],?\s*\},?/g;
+
+for (const filePath of seoFiles) {
+  let text;
+  try {
+    text = await fs.readFile(filePath, "utf8");
+  } catch {
+    continue;
+  }
+
+  const normalized = text
+    .replaceAll("https://autoseedance.site", "https://www.autoseedance.site")
+    .replaceAll("50 free credits", "30 free credits")
+    .replaceAll("50 Free Credits", "30 Free Credits")
+    .replace(fakeRatingPattern, "");
+
+  if (normalized !== text) await fs.writeFile(filePath, normalized, "utf8");
+}
+
+console.log("✓ Normalized public SEO metadata: canonical www host, 30 free credits, no fabricated ratings.");
