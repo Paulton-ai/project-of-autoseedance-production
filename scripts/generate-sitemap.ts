@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 
-const SITE_URL = "https://autoseedance.site";
+const SITE_URL = "https://www.autoseedance.site";
 const SANITY_PROJECT_ID = "wazk28tf";
 const SANITY_DATASET = "production";
 const SANITY_API_VERSION = "2024-01-01";
