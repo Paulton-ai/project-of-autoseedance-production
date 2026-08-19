@@ -1,6 +1,6 @@
 User-agent: *
 
-# Block private/auth pages
+# Public pages and blog are crawlable. Private/account areas are excluded.
 Disallow: /dashboard/
 Disallow: /auth/
 Disallow: /login
@@ -11,5 +11,4 @@ Disallow: /payment/
 Disallow: /workspace/
 Disallow: /admin/
 
-# Sitemap
-Sitemap: https://autoseedance.site/sitemap.xml
+Sitemap: https://www.autoseedance.site/sitemap.xml
