@@ -9,11 +9,39 @@ import { Check, ArrowRight, Loader as Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/auth";
 import { toast } from "sonner";
-import type { Tables } from "@/integrations/supabase/types";
 
-type Plan = Tables<"plans">;
+type PublicPlan = {
+  id: string;
+  name: string;
+  display_name: string | null;
+  price_monthly: number | null;
+  price_yearly: number | null;
+  monthly_credits: number;
+  features: unknown;
+  sort_order: number | null;
+};
+
+const FALLBACK_PLANS: PublicPlan[] = [
+  { id: "standard", name: "Standard", display_name: "Standard", price_monthly: 24.9, price_yearly: 249, monthly_credits: 1600, features: ["1,600 credits/month", "AI image generation", "AI video generation", "Multiple AI models", "Priority generation", "No watermark", "Private generation", "Priority customer support", "Commercial Use License"], sort_order: 1 },
+  { id: "pro", name: "Pro", display_name: "Pro", price_monthly: 49.9, price_yearly: 499, monthly_credits: 4000, features: ["4,000 credits/month", "AI image generation", "AI video generation", "Multiple AI models", "Fastest generation speed", "No watermark", "Private generation", "Expert team support", "Commercial Use License"], sort_order: 2 },
+  { id: "basic", name: "Basic", display_name: "Basic", price_monthly: 7.95, price_yearly: 79.5, monthly_credits: 500, features: ["500 credits/month", "AI image generation", "AI video generation", "Multiple AI models", "Standard generation speed", "No watermark", "Private generation", "Customer support", "Commercial Use License"], sort_order: 3 },
+];
+
+async function fetchPublicPlans(): Promise<PublicPlan[]> {
+  const { data, error } = await supabase
+    .from("plans")
+    .select("id, name, display_name, price_monthly, price_yearly, monthly_credits, features, sort_order")
+    .eq("is_active", true)
+    .neq("name", "Free")
+    .order("sort_order", { ascending: true })
+    .order("price_monthly", { ascending: true });
+
+  if (error || !data?.length) return FALLBACK_PLANS;
+  return data as PublicPlan[];
+}
 
 export const Route = createFileRoute("/pricing")({
+  loader: async () => ({ plans: await fetchPublicPlans() }),
   component: PricingPage,
   head: () => ({
     meta: [
@@ -23,15 +51,15 @@ export const Route = createFileRoute("/pricing")({
       { name: "robots", content: "index, follow, max-image-preview:large" },
       { property: "og:title", content: "Pricing — Free AI Image & Video Generation Credits" },
       { property: "og:description", content: "Simple credit-based pricing. Start free with 30 credits. No credit card required." },
-      { property: "og:url", content: "https://autoseedance.site/pricing" },
+      { property: "og:url", content: "https://www.autoseedance.site/pricing" },
       { property: "og:type", content: "website" },
-      { property: "og:image", content: "https://autoseedance.site/og-image.png" },
+      { property: "og:image", content: "https://www.autoseedance.site/og-image.png" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Pricing — Auto Seedance AI" },
       { name: "twitter:description", content: "Simple credit-based pricing. Start free with 30 credits." },
-      { name: "twitter:image", content: "https://autoseedance.site/og-image.png" },
+      { name: "twitter:image", content: "https://www.autoseedance.site/og-image.png" },
     ],
-    links: [{ rel: "canonical", href: "https://autoseedance.site/pricing" }],
+    links: [{ rel: "canonical", href: "https://www.autoseedance.site/pricing" }],
     scripts: [
       {
         type: "application/ld+json",
@@ -39,8 +67,8 @@ export const Route = createFileRoute("/pricing")({
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",
           itemListElement: [
-            { "@type": "ListItem", position: 1, name: "Home", item: "https://autoseedance.site/" },
-            { "@type": "ListItem", position: 2, name: "Pricing", item: "https://autoseedance.site/pricing" },
+            { "@type": "ListItem", position: 1, name: "Home", item: "https://www.autoseedance.site/" },
+            { "@type": "ListItem", position: 2, name: "Pricing", item: "https://www.autoseedance.site/pricing" },
           ],
         }),
       },
@@ -64,20 +92,15 @@ export const Route = createFileRoute("/pricing")({
 function PricingPage() {
   const navigate = useNavigate();
   const { user } = useSession();
+  const { plans: initialPlans } = Route.useLoaderData();
   const [yearly, setYearly] = useState(false);
   const [currentPlan, setCurrentPlan] = useState<string | null>(null);
-  const [plans, setPlans] = useState<Plan[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [plans, setPlans] = useState<PublicPlan[]>(initialPlans);
+  const [loading, setLoading] = useState(false);
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.from("plans")
-      .select("*")
-      .eq("is_active", true)
-      .neq("name", "Free")
-      .order("sort_order", { ascending: true })
-      .order("price_monthly", { ascending: true })
-      .then(({ data }) => { setPlans((data as Plan[]) ?? []); setLoading(false); });
+    fetchPublicPlans().then(setPlans);
   }, []);
 
   useEffect(() => {
@@ -86,7 +109,7 @@ function PricingPage() {
       .then(({ data }) => { if (data) setCurrentPlan(data.plan); });
   }, [user]);
 
-  const handleSubscribe = async (plan: Plan) => {
+  const handleSubscribe = async (plan: PublicPlan) => {
     if (!user) {
       navigate({ to: "/login", search: { redirect: "/pricing" } as any });
       return;
@@ -135,48 +158,44 @@ function PricingPage() {
             </div>
           </div>
 
-          {loading ? (
-            <div className="mt-20 flex justify-center"><Loader2 className="size-8 animate-spin text-primary" /></div>
-          ) : (
-            <div className="mt-12 grid md:grid-cols-3 gap-6">
-              {plans.map((plan) => {
-                const priceMonthly = Number(plan.price_monthly ?? 0);
-                const priceYearly = Number(plan.price_yearly ?? 0);
-                const price = yearly ? priceYearly : priceMonthly;
-                const credits = yearly ? plan.monthly_credits * 12 : plan.monthly_credits;
-                const pricePerCredit = price > 0 && credits > 0 ? price / credits : 0;
-                const isPopular = plan.name.toLowerCase() === "pro";
-                const isCurrent = currentPlan === plan.name.toLowerCase();
-                const displayName = plan.display_name ?? plan.name;
-                const isThisLoading = loadingPlan === plan.name;
+          <div className="mt-12 grid md:grid-cols-3 gap-6">
+            {plans.map((plan) => {
+              const priceMonthly = Number(plan.price_monthly ?? 0);
+              const priceYearly = Number(plan.price_yearly ?? 0);
+              const price = yearly ? priceYearly : priceMonthly;
+              const credits = yearly ? plan.monthly_credits * 12 : plan.monthly_credits;
+              const pricePerCredit = price > 0 && credits > 0 ? price / credits : 0;
+              const isPopular = plan.name.toLowerCase() === "pro";
+              const isCurrent = currentPlan === plan.name.toLowerCase();
+              const displayName = plan.display_name ?? plan.name;
+              const isThisLoading = loadingPlan === plan.name;
 
-                return (
-                  <Card key={plan.id} className={`relative glass p-6 flex flex-col transition-all duration-300 ${isPopular ? "border-2 border-primary/60 shadow-xl shadow-primary/20 ring-2 ring-primary/25 before:absolute before:-inset-px before:-z-10 before:rounded-xl before:bg-primary/20 before:blur-xl" : "border border-border"}`}>
-                    {isPopular && <Badge className="absolute -top-3 left-6 bg-primary text-primary-foreground border-0 shadow-lg shadow-primary/30">Most Popular</Badge>}
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="font-display font-semibold text-xl">{displayName}</h3>
-                      {pricePerCredit > 0 && <Badge className="bg-green-500/20 text-green-400 border border-green-500/30 text-xs">${pricePerCredit.toFixed(3)}/cr</Badge>}
-                    </div>
-                    <div className="mb-4">
-                      <div className="text-4xl font-display font-bold">${price.toFixed(2)}<span className="text-base font-normal text-muted-foreground">/{yearly ? "year" : "month"}</span></div>
-                      {yearly && <div className="text-sm text-muted-foreground mt-1">${priceMonthly.toFixed(2)}/month billed yearly</div>}
-                    </div>
-                    <Badge variant="outline" className="w-fit border-primary/30 text-primary mb-6 text-sm">{credits.toLocaleString()} credits/{yearly ? "year" : "month"}</Badge>
-                    <ul className="space-y-3 text-sm flex-1 mb-6">
-                      {((plan.features as string[]) ?? []).map((f) => <li key={f} className="flex gap-2"><Check className="size-4 text-green-400 shrink-0 mt-0.5" />{f}</li>)}
-                    </ul>
-                    {isCurrent ? (
-                      <Button className="w-full" variant="outline" disabled>Current plan</Button>
-                    ) : (
-                      <Button className={`w-full ${isPopular ? "btn-gradient text-white border-0 shadow-lg shadow-primary/20" : ""}`} variant={isPopular ? "default" : "outline"} disabled={isThisLoading || !!loadingPlan} onClick={() => handleSubscribe(plan)}>
-                        {isThisLoading ? <><Loader2 className="size-4 mr-2 animate-spin" /> Redirecting to PayPal…</> : <>Subscribe <ArrowRight className="ml-1 size-4" /></>}
-                      </Button>
-                    )}
-                  </Card>
-                );
-              })}
-            </div>
-          )}
+              return (
+                <Card key={plan.id} className={`relative glass p-6 flex flex-col transition-all duration-300 ${isPopular ? "border-2 border-primary/60 shadow-xl shadow-primary/20 ring-2 ring-primary/25 before:absolute before:-inset-px before:-z-10 before:rounded-xl before:bg-primary/20 before:blur-xl" : "border border-border"}`}>
+                  {isPopular && <Badge className="absolute -top-3 left-6 bg-primary text-primary-foreground border-0 shadow-lg shadow-primary/30">Most Popular</Badge>}
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-display font-semibold text-xl">{displayName}</h3>
+                    {pricePerCredit > 0 && <Badge className="bg-green-500/20 text-green-400 border border-green-500/30 text-xs">${pricePerCredit.toFixed(3)}/cr</Badge>}
+                  </div>
+                  <div className="mb-4">
+                    <div className="text-4xl font-display font-bold">${price.toFixed(2)}<span className="text-base font-normal text-muted-foreground">/{yearly ? "year" : "month"}</span></div>
+                    {yearly && <div className="text-sm text-muted-foreground mt-1">${priceMonthly.toFixed(2)}/month billed yearly</div>}
+                  </div>
+                  <Badge variant="outline" className="w-fit border-primary/30 text-primary mb-6 text-sm">{credits.toLocaleString()} credits/{yearly ? "year" : "month"}</Badge>
+                  <ul className="space-y-3 text-sm flex-1 mb-6">
+                    {(Array.isArray(plan.features) ? plan.features as string[] : []).map((f) => <li key={f} className="flex gap-2"><Check className="size-4 text-green-400 shrink-0 mt-0.5" />{f}</li>)}
+                  </ul>
+                  {isCurrent ? (
+                    <Button className="w-full" variant="outline" disabled>Current plan</Button>
+                  ) : (
+                    <Button className={`w-full ${isPopular ? "btn-gradient text-white border-0 shadow-lg shadow-primary/20" : ""}`} variant={isPopular ? "default" : "outline"} disabled={isThisLoading || !!loadingPlan} onClick={() => handleSubscribe(plan)}>
+                      {isThisLoading ? <><Loader2 className="size-4 mr-2 animate-spin" /> Redirecting to PayPal…</> : <>Subscribe <ArrowRight className="ml-1 size-4" /></>}
+                    </Button>
+                  )}
+                </Card>
+              );
+            })}
+          </div>
 
           <div className="mt-8 text-center text-sm text-muted-foreground">Secure payments via PayPal · Image 5 credits · Video 30 credits · Reel Studio 40 credits</div>
           <Card className="glass border-0 p-6 mt-8 max-w-2xl mx-auto">
