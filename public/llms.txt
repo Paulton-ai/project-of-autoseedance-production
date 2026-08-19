@@ -1,0 +1,21 @@
+# Auto Seedance
+
+> Auto Seedance is an AI content creation platform for generating images, videos, and short-form reels from one creator workflow.
+
+## Public tools
+
+- AI Image Generator: https://www.autoseedance.site/tools/image
+- AI Video Generator: https://www.autoseedance.site/tools/video
+- AI Reel Studio: https://www.autoseedance.site/tools/reel-studio
+- Pricing: https://www.autoseedance.site/pricing
+
+## Public content
+
+- Blog: https://www.autoseedance.site/blog
+- Contact: https://www.autoseedance.site/contact
+- Privacy: https://www.autoseedance.site/privacy
+- Terms: https://www.autoseedance.site/terms
+
+## Crawlability
+
+All public tool and blog pages are intended to be directly retrievable over normal HTTPS GET requests without login, cookies, CAPTCHA, browser challenges, or JavaScript interaction.
