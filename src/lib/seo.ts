@@ -1,8 +1,8 @@
-export const SITE_URL = "https://autoseedance.site";
+export const SITE_URL = "https://www.autoseedance.site";
 export const SITE_NAME = "Auto Seedance";
 export const SITE_TAGLINE = "AI Image & Video Generation Platform";
-export const DEFAULT_OG_IMAGE = "https://autoseedance.site/og-image.png";
-export const LOGO_URL = "https://autoseedance.site/android-chrome-512x512.png";
+export const DEFAULT_OG_IMAGE = "https://www.autoseedance.site/og-image.png";
+export const LOGO_URL = "https://www.autoseedance.site/android-chrome-512x512.png";
 
 export const KEYWORDS = {
   primary: [
@@ -132,11 +132,6 @@ export function generateSoftwareAppSchema() {
       priceCurrency: "USD",
     },
     url: SITE_URL,
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "4.8",
-      ratingCount: "1250",
-    },
   };
 }
 
@@ -233,14 +228,14 @@ export const PAGE_SEO_CONFIG: Record<string, PageSEO> = {
   "/": {
     title: generateTitle("AI Image & Video Generation Platform"),
     description: generateMetaDescription(
-      "Create stunning AI images and videos with Auto Seedance. Free AI image generator and video generator powered by Seedream, Veo 3, Meta AI, and Grok. Start with 50 free credits."
+      "Create stunning AI images and videos with Auto Seedance. Free AI image generator and video generator powered by Seedream, Veo 3, Meta AI, and Grok. Start with 30 free credits."
     ),
     keywords: [...KEYWORDS.primary, ...KEYWORDS.aiModels],
     canonical: SITE_URL,
     breadcrumbs: [{ name: "Home", url: "/" }],
     faqSchema: [
-      { question: "What is Auto Seedance?", answer: "Auto Seedance is a free AI image and video generation platform that lets you create professional visuals using advanced AI models like Seedream, Veo 3, and more." },
-      { question: "Is the AI image generator free?", answer: "Yes, you start with 50 free credits. Generate AI images and videos without any credit card required." },
+      { question: "What is Auto Seedance?", answer: "Auto Seedance is an AI image and video generation platform that lets you create professional visuals using advanced AI models like Seedream, Veo 3, and more." },
+      { question: "Is the AI image generator free?", answer: "Yes, you start with 30 free credits. Generate AI images and videos without a credit card required." },
       { question: "What AI models are available?", answer: "Auto Seedance supports Seedream for image generation, Veo 3 for video, and integration with Meta AI and Grok AI models." },
     ],
   },
@@ -277,15 +272,15 @@ export const PAGE_SEO_CONFIG: Record<string, PageSEO> = {
       { name: "Video Generator", url: "/tools/video" },
     ],
     faqSchema: [
-      { question: "How does AI video generation work?", answer: "Describe your scene with a text prompt, set duration (1-10s), resolution, and aspect ratio. The AI creates a cinematic video in 2-3 minutes." },
+      { question: "How does AI video generation work?", answer: "Describe your scene with a text prompt, set duration (1-10s), resolution, and aspect ratio. The AI creates a cinematic video." },
       { question: "Can I add audio to my videos?", answer: "Yes, we offer AI-generated background audio that matches your video's mood and content automatically." },
       { question: "What video resolutions are supported?", answer: "We support 720p HD and 1080p Full HD resolutions in 16:9, 9:16 (shorts), and 1:1 (square) aspect ratios." },
     ],
   },
   "/pricing": {
-    title: generateTitle("Pricing — Free AI Image & Video Generation Credits"),
+    title: generateTitle("Pricing — AI Image & Video Generation Credits"),
     description: generateMetaDescription(
-      "Simple credit-based pricing for AI image and video generation. Start free with 50 credits. Image generation 5 credits, video generation 30 credits. No subscription required."
+      "Simple credit-based pricing for AI image and video generation. Start with 30 free credits, then choose a monthly plan based on your creation volume."
     ),
     keywords: ["AI image generator pricing", "AI video generator cost", "free AI credits", "credit-based AI generation"],
     canonical: `${SITE_URL}/pricing`,
@@ -311,7 +306,7 @@ export const PAGE_SEO_CONFIG: Record<string, PageSEO> = {
   "/contact": {
     title: generateTitle("Contact Us — Support and Partnership Inquiries"),
     description: generateMetaDescription(
-      "Get in touch with the Auto Seedance team for support, feedback, bug reports, or partnership inquiries. We respond within 24 hours."
+      "Get in touch with the Auto Seedance team for support, feedback, bug reports, or partnership inquiries."
     ),
     keywords: ["contact Auto Seedance", "AI generation support", "AI tool feedback"],
     canonical: `${SITE_URL}/contact`,
@@ -324,7 +319,7 @@ export const PAGE_SEO_CONFIG: Record<string, PageSEO> = {
   "/privacy": {
     title: generateTitle("Privacy Policy"),
     description: generateMetaDescription(
-      "Auto Seedance privacy policy: We never sell your data, collect passwords, or share personal information. Learn how we protect your privacy."
+      "Auto Seedance privacy policy: Learn how we collect, use, protect, and retain information when you use our services."
     ),
     keywords: ["Auto Seedance privacy", "data protection", "AI privacy policy"],
     canonical: `${SITE_URL}/privacy`,
@@ -337,7 +332,7 @@ export const PAGE_SEO_CONFIG: Record<string, PageSEO> = {
   "/terms": {
     title: generateTitle("Terms of Service"),
     description: generateMetaDescription(
-      "Auto Seedance terms of service: Fair usage policies, account responsibilities, and legal terms for our AI image and video generation platform."
+      "Auto Seedance terms of service: Review account responsibilities, fair-use requirements, payments, credits, and legal terms."
     ),
     keywords: ["Auto Seedance terms", "terms of service", "AI platform terms"],
     canonical: `${SITE_URL}/terms`,
@@ -362,11 +357,11 @@ export const PAGE_SEO_CONFIG: Record<string, PageSEO> = {
     ],
   },
   "/signup": {
-    title: generateTitle("Sign Up — Free AI Image & Video Generation"),
+    title: generateTitle("Sign Up — AI Image & Video Generation"),
     description: generateMetaDescription(
-      "Create your free Auto Seedance account. Get 50 free credits to start generating AI images and videos. No credit card required."
+      "Create your Auto Seedance account and access AI image, video, and reel generation tools."
     ),
-    keywords: ["Auto Seedance signup", "free AI account", "AI generation registration"],
+    keywords: ["Auto Seedance signup", "AI account", "AI generation registration"],
     canonical: `${SITE_URL}/signup`,
     ogType: "website",
     noIndex: true,
