@@ -113,4 +113,80 @@ for (const filePath of seoFiles) {
   if (normalized !== text) await fs.writeFile(filePath, normalized, "utf8");
 }
 
+// The Reel Studio was the one public tool page with only a minimal head.
+// Give it the same crawlable metadata and entity/schema signals as the other
+// public tools. This is intentionally done before SSR so crawlers receive it
+// in the initial HTML rather than after hydration.
+const reelPath = path.join(routeDir, "tools.reel-studio.tsx");
+let reelSource = await fs.readFile(reelPath, "utf8");
+const minimalReelHead = `  head: () => ({
+    meta: [
+      { title: "AI Reel Studio — Generate Short Videos with Voiceover | Auto Seedance" },
+      {
+        name: "description",
+        content:
+          "Turn any idea into a ready-to-publish short video. Pick a style, model, voiceover, captions, and get a finished 30s/60s/90s reel in minutes.",
+      },
+      { name: "robots", content: "index, follow" },
+    ],
+    links: [{ rel: "canonical", href: "https://www.autoseedance.site/tools/reel-studio" }],
+  }),`;
+const richReelHead = `  head: () => ({
+    meta: [
+      { title: "AI Reel Studio — Generate Short Videos with Voiceover | Auto Seedance" },
+      {
+        name: "description",
+        content:
+          "Turn any idea into a ready-to-publish short video. Pick a style, model, voiceover, captions, and get a finished 30s/60s/90s reel in minutes.",
+      },
+      { name: "robots", content: "index, follow, max-image-preview:large, max-video-preview:-1, max-snippet:-1" },
+      { property: "og:site_name", content: "Auto Seedance" },
+      { property: "og:title", content: "AI Reel Studio — Generate Short Videos with Voiceover" },
+      { property: "og:description", content: "Turn an idea into a short-form video with scenes, voiceover, captions, and export." },
+      { property: "og:url", content: "https://www.autoseedance.site/tools/reel-studio" },
+      { property: "og:type", content: "website" },
+      { property: "og:image", content: "https://www.autoseedance.site/og-image.png" },
+      { property: "og:image:alt", content: "Auto Seedance AI Reel Studio" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "AI Reel Studio — Auto Seedance" },
+      { name: "twitter:description", content: "Create short-form videos with AI scenes, voiceover and captions." },
+      { name: "twitter:image", content: "https://www.autoseedance.site/og-image.png" },
+    ],
+    links: [{ rel: "canonical", href: "https://www.autoseedance.site/tools/reel-studio" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          name: "Auto Seedance AI Reel Studio",
+          applicationCategory: "MultimediaApplication",
+          operatingSystem: "Web Browser",
+          url: "https://www.autoseedance.site/tools/reel-studio",
+          description: "Create short-form videos from an idea using AI-generated scenes, voiceover and captions.",
+          offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+        }),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Home", item: "https://www.autoseedance.site/" },
+            { "@type": "ListItem", position: 2, name: "Tools", item: "https://www.autoseedance.site/tools" },
+            { "@type": "ListItem", position: 3, name: "Reel Studio", item: "https://www.autoseedance.site/tools/reel-studio" },
+          ],
+        }),
+      },
+    ],
+  }),`;
+if (reelSource.includes(minimalReelHead)) {
+  reelSource = reelSource.replace(minimalReelHead, richReelHead);
+  await fs.writeFile(reelPath, reelSource, "utf8");
+  console.log("✓ Added full initial-HTML SEO metadata and schema to Reel Studio.");
+} else if (!reelSource.includes("@type: \"SoftwareApplication\"")) {
+  console.warn("⚠ Reel Studio head did not match the expected template; no rich head rewrite applied.");
+}
+
 console.log("✓ Normalized public SEO metadata: canonical www host, 30 free credits, no fabricated ratings.");
