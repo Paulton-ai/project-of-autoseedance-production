@@ -1,0 +1,22 @@
+# Auto Seedance — Detailed LLM Content Index
+
+This file is regenerated during the production build from the canonical sitemap and published Sanity blog content.
+
+## Public tools
+
+- AI Image Generator: https://www.autoseedance.site/tools/image
+- AI Video Generator: https://www.autoseedance.site/tools/video
+- AI Reel Studio: https://www.autoseedance.site/tools/reel-studio
+
+## Public pages
+
+- Home: https://www.autoseedance.site/
+- Pricing: https://www.autoseedance.site/pricing
+- Blog: https://www.autoseedance.site/blog
+- Contact: https://www.autoseedance.site/contact
+- Privacy: https://www.autoseedance.site/privacy
+- Terms: https://www.autoseedance.site/terms
+
+## Build note
+
+Published article titles, summaries, metadata, URLs, and plain-text article bodies are added automatically by scripts/generate-sitemap.ts during the production build.

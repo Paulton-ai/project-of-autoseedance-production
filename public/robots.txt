@@ -1,6 +1,30 @@
-User-agent: *
+# Auto Seedance crawl policy
+# Public marketing, tool and blog pages are crawlable.
+# Account, payment and admin areas are intentionally excluded.
 
-# Public pages and blog are crawlable. Private/account areas are excluded.
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /auth/
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /payment/
+Disallow: /workspace/
+Disallow: /admin/
+
+# Explicitly allow major search and AI retrieval crawlers on the same public surface.
+# Keep the private-area exclusions above in this specific group because a specific
+# user-agent group does not inherit rules from User-agent: *.
+User-agent: Googlebot
+User-agent: Bingbot
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ClaudeBot
+User-agent: PerplexityBot
+User-agent: Google-Extended
+Allow: /
 Disallow: /dashboard/
 Disallow: /auth/
 Disallow: /login

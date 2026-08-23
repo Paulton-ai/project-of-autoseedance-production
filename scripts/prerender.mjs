@@ -7,6 +7,7 @@ const DIST = path.join(ROOT, "dist");
 const SERVER_DIR = path.join(DIST, "server");
 const ASSETS_DIR = path.join(DIST, "assets");
 const SITEMAP = path.join(DIST, "sitemap.xml");
+const SITE_URL = "https://www.autoseedance.site";
 
 async function resolveServerEntry() {
   const preferred = path.join(SERVER_DIR, "entry-server.js");
@@ -87,8 +88,49 @@ function outputPathFor(urlString) {
     : path.join(DIST, ...segments, "index.html");
 }
 
+function assertPublicHtml(html, urlString) {
+  if (!html.includes("<html") || !html.includes("<body")) {
+    throw new Error(`Invalid SSR HTML for ${urlString}: document shell is missing`);
+  }
+
+  if (html.match(/<div[^>]+id=["']root["'][^>]*>\s*<\/div>/i)) {
+    throw new Error(`Prerender verification failed for ${urlString}: empty root div remains in initial HTML`);
+  }
+
+  if (!html.match(/<h1\b[^>]*>/i)) {
+    throw new Error(`Prerender verification failed for ${urlString}: no H1 in initial HTML`);
+  }
+
+  if (!html.match(/<title>[^<]+<\/title>/i)) {
+    throw new Error(`Prerender verification failed for ${urlString}: missing title`);
+  }
+
+  if (!html.match(/<meta[^>]+name=["']description["'][^>]+content=["'][^"']+[^>]*>/i)) {
+    throw new Error(`Prerender verification failed for ${urlString}: missing meta description`);
+  }
+
+  if (!html.match(/<link[^>]+rel=["']canonical["'][^>]+href=["']https:\/\/www\.autoseedance\.site[^"']*["'][^>]*>/i)) {
+    throw new Error(`Prerender verification failed for ${urlString}: missing canonical www URL`);
+  }
+
+  if (!html.match(/data-autoseedance-client-asset=\"css\"/)) {
+    throw new Error(`Prerender verification failed for ${urlString}: missing hashed application CSS`);
+  }
+
+  if (!html.match(/data-autoseedance-client-asset=\"js\"/)) {
+    throw new Error(`Prerender verification failed for ${urlString}: missing hashed client entry`);
+  }
+}
+
 async function writeRoute(urlString, render, assets) {
   const requestUrl = new URL(urlString);
+  if (requestUrl.origin !== SITE_URL) {
+    throw new Error(`Refusing to prerender non-canonical origin: ${urlString}`);
+  }
+  if (requestUrl.hash || requestUrl.search) {
+    throw new Error(`Refusing to prerender URL with fragment/query: ${urlString}`);
+  }
+
   const response = await render({
     request: new Request(requestUrl, {
       method: "GET",
@@ -101,11 +143,13 @@ async function writeRoute(urlString, render, assets) {
   }
 
   const html = await response.text();
-  if (!html.includes("<html") || !html.includes("<body")) {
-    throw new Error(`Invalid SSR HTML for ${urlString}: document shell is missing`);
+  if (response.status < 200 || response.status >= 300) {
+    throw new Error(`Prerender returned HTTP ${response.status} for public URL ${urlString}`);
   }
 
   const finalHtml = injectClientAssets(html, assets);
+  assertPublicHtml(finalHtml, urlString);
+
   const output = outputPathFor(urlString);
   await fs.mkdir(path.dirname(output), { recursive: true });
   await fs.writeFile(output, finalHtml, "utf8");
@@ -135,40 +179,39 @@ async function main() {
   const results = [];
   for (const url of urls) {
     const result = await writeRoute(url, entryModule.render, assets);
-    if (result.status < 200 || result.status >= 300) {
-      throw new Error(`Prerender returned HTTP ${result.status} for ${url}`);
-    }
     results.push(result);
     console.log(`✓ ${url} -> ${path.relative(ROOT, result.output)} (${result.bytes} bytes)`);
   }
 
   const notFound = await entryModule.render({
-    request: new Request("https://autoseedance.site/__static_404__", {
+    request: new Request(`${SITE_URL}/__static_404__`, {
       method: "GET",
       headers: { accept: "text/html" },
     }),
   });
+
+  if (!(notFound instanceof Response)) {
+    throw new Error("404 renderer did not return a Response");
+  }
+  if (notFound.status !== 404) {
+    throw new Error(`404 verification failed: unknown URL returned HTTP ${notFound.status}, expected 404`);
+  }
+
   const notFoundHtml = await notFound.text();
-  await fs.writeFile(path.join(DIST, "404.html"), injectClientAssets(notFoundHtml, assets), "utf8");
+  const final404 = injectClientAssets(notFoundHtml, assets);
+  if (!final404.match(/<h1\b[^>]*>/i)) {
+    throw new Error("404 verification failed: 404 page has no H1");
+  }
+  await fs.writeFile(path.join(DIST, "404.html"), final404, "utf8");
 
   await fs.rm(SERVER_DIR, { recursive: true, force: true });
 
   const rootHtml = await fs.readFile(path.join(DIST, "index.html"), "utf8");
-  if (rootHtml.match(/<div[^>]+id=["']root["'][^>]*>\s*<\/div>/i)) {
-    throw new Error("Prerender verification failed: homepage still contains an empty root div");
-  }
-  if (!rootHtml.match(/<h1\b[^>]*>/i)) {
-    throw new Error("Prerender verification failed: homepage has no H1 in initial HTML");
-  }
-  if (!rootHtml.match(/data-autoseedance-client-asset=\"css\"/)) {
-    throw new Error("Prerender verification failed: homepage is missing the hashed application CSS");
-  }
-  if (!rootHtml.match(/data-autoseedance-client-asset=\"js\"/)) {
-    throw new Error("Prerender verification failed: homepage is missing the hashed client entry");
-  }
+  assertPublicHtml(rootHtml, SITE_URL);
 
   console.log(`\n✓ Prerender complete: ${results.length} HTML routes + 404.html`);
-  console.log("✓ Initial HTML + client asset verification passed");
+  console.log("✓ Initial HTML, metadata, canonical, H1 and asset verification passed");
+  console.log("✓ Unknown-route verification passed with HTTP 404");
 }
 
 main().catch((error) => {
