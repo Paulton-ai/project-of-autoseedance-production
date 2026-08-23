@@ -4,18 +4,24 @@
 
 ## Public tools
 
-- AI Image Generator: https://www.autoseedance.site/tools/image
-- AI Video Generator: https://www.autoseedance.site/tools/video
-- AI Reel Studio: https://www.autoseedance.site/tools/reel-studio
-- Pricing: https://www.autoseedance.site/pricing
+- [AI Image Generator](https://www.autoseedance.site/tools/image) — Generate AI images from text prompts and reference images.
+- [AI Video Generator](https://www.autoseedance.site/tools/video) — Generate AI video clips from text prompts and supported model settings.
+- [AI Reel Studio](https://www.autoseedance.site/tools/reel-studio) — Turn an idea into a short-form video with scenes, voiceover, captions, and export.
 
-## Public content
+## Public site pages
 
-- Blog: https://www.autoseedance.site/blog
-- Contact: https://www.autoseedance.site/contact
-- Privacy: https://www.autoseedance.site/privacy
-- Terms: https://www.autoseedance.site/terms
+- [Pricing](https://www.autoseedance.site/pricing) — Credit-based pricing for Auto Seedance generation tools.
+- [Blog](https://www.autoseedance.site/blog) — AI image and video tutorials, prompt guides, tool explainers, and case studies.
+- [Contact](https://www.autoseedance.site/contact) — Support, feedback, bug reports, and partnership inquiries.
+- [Privacy Policy](https://www.autoseedance.site/privacy)
+- [Terms of Service](https://www.autoseedance.site/terms)
 
-## Crawlability
+## Retrieval
 
-All public tool and blog pages are intended to be directly retrievable over normal HTTPS GET requests without login, cookies, CAPTCHA, browser challenges, or JavaScript interaction.
+Public pages are intended to be directly retrievable over HTTPS GET without login, cookies, CAPTCHA, browser challenges, or JavaScript interaction. The build also regenerates this file from the current sitemap and published Sanity blog posts.
+
+For a detailed plain-text content index, see:
+https://www.autoseedance.site/llms-full.txt
+
+Canonical sitemap:
+https://www.autoseedance.site/sitemap.xml
