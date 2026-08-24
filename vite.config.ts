@@ -20,6 +20,17 @@ export default defineConfig(({ isSsrBuild }) => ({
     tanstackRouter({
       target: "react",
       autoCodeSplitting: true,
+      codeSplittingOptions: {
+        // The app has several route loaders that pull in large SDKs such as
+        // Supabase and Sanity. Keep those out of the universal entry chunk;
+        // the active route loads its own loader when it is actually needed.
+        defaultBehavior: [
+          ["loader"],
+          ["component"],
+          ["errorComponent"],
+          ["notFoundComponent"],
+        ],
+      },
       routesDirectory: "src/routes",
       generatedRouteTree: "src/routeTree.gen.ts",
     }),
