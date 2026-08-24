@@ -7,7 +7,7 @@ export const Route = createFileRoute("/privacy")({
   head: () => ({
     meta: [
       { title: "Privacy Policy — Data Protection & User Privacy | Auto Seedance" },
-      { name: "description", content: "Auto Seedance privacy policy: We never sell your data, collect passwords, or share personal information. Learn how we protect your privacy with encryption, local storage, and minimal data collection." },
+      { name: "description", content: "Auto Seedance privacy policy: Learn how we collect, use, protect, and retain information when you use our AI image, video, and reel creation platform." },
       { name: "keywords", content: "Auto Seedance privacy, data protection, AI privacy policy, user data security, privacy policy" },
       { name: "robots", content: "index, follow" },
       { property: "og:title", content: "Privacy Policy — Auto Seedance" },
@@ -47,64 +47,57 @@ function PrivacyPage() {
 
           <p className="mt-6 text-muted-foreground">
             Auto Seedance ("we", "our", "us") is committed to protecting your privacy. This Privacy Policy explains
-            how the Auto Seedance browser extension and dashboard collect, use, and safeguard information.
+            how our AI content creation platform collects, uses, and safeguards information when you use our website,
+            account, generation tools, and creator dashboard.
           </p>
 
           <h2 className="mt-8 font-display text-2xl font-semibold">1. What we collect</h2>
           <ul className="mt-3 list-disc pl-6 text-sm text-muted-foreground space-y-1">
-            <li>Account email (when you create a dashboard account)</li>
-            <li>Queue metadata: prompts you submit, job status, generation settings</li>
-            <li>Resulting media URLs you choose to sync to your dashboard library</li>
-            <li>Anonymous, aggregated usage data to improve the product</li>
+            <li>Account information such as your email address and display name.</li>
+            <li>Generation inputs such as prompts, settings, job status, and related creation metadata.</li>
+            <li>Generated media or media URLs that you choose to save to your account or dashboard library.</li>
+            <li>Anonymous or aggregated usage information used to improve reliability and product performance.</li>
           </ul>
 
           <h2 className="mt-8 font-display text-2xl font-semibold">2. What we do NOT collect</h2>
           <ul className="mt-3 list-disc pl-6 text-sm text-muted-foreground space-y-1">
-            <li>We do <strong>not</strong> collect or store your Dreamina passwords.</li>
-            <li>We do <strong>not</strong> collect browsing history outside of Auto Seedance workflows.</li>
+            <li>We do <strong>not</strong> collect or store passwords for your third-party accounts.</li>
+            <li>We do <strong>not</strong> collect unrelated browsing history.</li>
             <li>We do <strong>not</strong> sell, rent, or trade your personal information to third parties.</li>
-            <li>We do <strong>not</strong> sell user data.</li>
           </ul>
 
-          <h2 className="mt-8 font-display text-2xl font-semibold">3. Local browser storage</h2>
+          <h2 className="mt-8 font-display text-2xl font-semibold">3. How we use information</h2>
           <p className="mt-3 text-sm text-muted-foreground">
-            The extension may use local browser storage (chrome.storage.local) to remember your preferences and
-            queue state. This data stays on your device and is never transmitted to our servers unless you
-            explicitly sync it to your dashboard.
+            We use information to provide AI generation features, maintain your account and credit balance, process
+            requests, store your creation history when enabled, provide support, prevent abuse, and improve the service.
           </p>
 
-          <h2 className="mt-8 font-display text-2xl font-semibold">4. Extension permissions</h2>
+          <h2 className="mt-8 font-display text-2xl font-semibold">4. Data security</h2>
           <p className="mt-3 text-sm text-muted-foreground">
-            Browser permissions requested by the extension are used <strong>only</strong> to enable workflow
-            automation functionality (driving Dreamina with your already-logged-in session). The extension
-            automates only user-initiated workflows — nothing runs without your action.
+            We use HTTPS/TLS for communications and access controls to protect account and generation data. Database
+            access is restricted using row-level security so users can access only records they are authorized to see.
           </p>
 
-          <h2 className="mt-8 font-display text-2xl font-semibold">5. Credentials</h2>
+          <h2 className="mt-8 font-display text-2xl font-semibold">5. Third-party AI and infrastructure providers</h2>
           <p className="mt-3 text-sm text-muted-foreground">
-            No passwords are collected by Auto Seedance. Automation runs inside your own logged-in browser
-            session — your Dreamina credentials never leave your browser.
+            Some generation requests are processed through third-party AI or infrastructure providers. Information
+            needed to fulfill a requested generation may be sent to those providers according to the applicable service
+            configuration. We do not ask for or intentionally transmit unrelated account passwords to generation providers.
           </p>
 
-          <h2 className="mt-8 font-display text-2xl font-semibold">6. Data security</h2>
+          <h2 className="mt-8 font-display text-2xl font-semibold">6. Your rights</h2>
           <p className="mt-3 text-sm text-muted-foreground">
-            We use industry-standard encryption (HTTPS/TLS) for all communication between the extension,
-            dashboard, and our servers. Dashboard data is stored using Row-Level Security so each user can
-            only access their own records.
+            You can request access, export, correction, or deletion of your account data by contacting us. Some records
+            may need to be retained where required for security, fraud prevention, billing, or legal obligations.
           </p>
 
-          <h2 className="mt-8 font-display text-2xl font-semibold">7. Your rights</h2>
+          <h2 className="mt-8 font-display text-2xl font-semibold">7. Changes to this policy</h2>
           <p className="mt-3 text-sm text-muted-foreground">
-            You can request export or deletion of your account data at any time by contacting us.
+            We may update this Privacy Policy from time to time. The updated version will be published on this page with
+            a revised effective date.
           </p>
 
-          <h2 className="mt-8 font-display text-2xl font-semibold">8. Changes to this policy</h2>
-          <p className="mt-3 text-sm text-muted-foreground">
-            We may update this Privacy Policy from time to time. Continued use of Auto Seedance after changes
-            means you accept the updated policy.
-          </p>
-
-          <h2 className="mt-8 font-display text-2xl font-semibold">9. Contact</h2>
+          <h2 className="mt-8 font-display text-2xl font-semibold">8. Contact</h2>
           <p className="mt-3 text-sm text-muted-foreground">
             Questions? Reach us via the <a href="/contact" className="text-primary hover:underline">contact page</a>.
           </p>
