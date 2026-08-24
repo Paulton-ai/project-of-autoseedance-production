@@ -41,7 +41,7 @@ export function AuthGateDialog({ open, onOpenChange, onAuthenticated, toolName =
           setConfirmSent(true);
           return;
         }
-        toast.success("Account created — 50 free credits added");
+        toast.success("Account created — 30 free credits added");
         onAuthenticated?.(data.session.user.id);
         onOpenChange(false);
       } else {
@@ -72,7 +72,7 @@ export function AuthGateDialog({ open, onOpenChange, onAuthenticated, toolName =
             Create a free account
           </DialogTitle>
           <DialogDescription>
-            Your settings are saved — sign up to use {toolName} and get 50 free credits instantly.
+            Your settings are saved — sign up to use {toolName} and get 30 free credits instantly.
           </DialogDescription>
         </DialogHeader>
 
