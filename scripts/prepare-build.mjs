@@ -108,10 +108,42 @@ for (const filePath of seoFiles) {
     .replaceAll("https://autoseedance.site", "https://www.autoseedance.site")
     .replaceAll("50 free credits", "30 free credits")
     .replaceAll("50 Free Credits", "30 Free Credits")
+    .replaceAll("50 credits", "30 credits")
+    .replaceAll("50 Credits", "30 Credits")
+    .replaceAll("/og-image.png", "/web-app-manifest-512x512.png")
+    .replaceAll("/android-chrome-512x512.png", "/web-app-manifest-512x512.png")
+    .replaceAll("/#features", "/#tools")
     .replace(fakeRatingPattern, "");
 
   if (normalized !== text) await fs.writeFile(filePath, normalized, "utf8");
 }
+
+// Remove the Framer Motion dependency from the public landing bundle at build
+// time. The page keeps the same semantic HTML and visual styling, but the
+// animation library is not needed for the first public page load.
+const landingPath = path.join(routeDir, "index.tsx");
+let landingSource = await fs.readFile(landingPath, "utf8");
+landingSource = landingSource.replace('import { motion } from "framer-motion";\n', `
+const stripMotionProps = ({ initial, animate, transition, whileInView, viewport, whileHover, ...props }: any) => props;
+const motion = {
+  div: ({ children, ...props }: any) => <div {...stripMotionProps(props)}>{children}</div>,
+  h1: ({ children, ...props }: any) => <h1 {...stripMotionProps(props)}>{children}</h1>,
+  p: ({ children, ...props }: any) => <p {...stripMotionProps(props)}>{children}</p>,
+};
+`);
+await fs.writeFile(landingPath, landingSource, "utf8");
+
+// The navbar is present on every public page. Remove its animation dependency
+// from the shared public bundle while preserving the header markup.
+const navbarPath = path.join(root, "src/components/site/Navbar.tsx");
+let navbarSource = await fs.readFile(navbarPath, "utf8");
+navbarSource = navbarSource
+  .replace('import { motion } from "framer-motion";\n', "")
+  .replace('<motion.header initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5 }} className=', '<header className=')
+  .replace('</motion.header>', '</header>');
+await fs.writeFile(navbarPath, navbarSource, "utf8");
+
+console.log("✓ Removed Framer Motion from the public landing/navbar bundle; animation-heavy dashboard/tool routes remain code-split.");
 
 // The Reel Studio was the one public tool page with only a minimal head.
 // Give it the same crawlable metadata and entity/schema signals as the other
@@ -145,12 +177,12 @@ const richReelHead = `  head: () => ({
       { property: "og:description", content: "Turn an idea into a short-form video with scenes, voiceover, captions, and export." },
       { property: "og:url", content: "https://www.autoseedance.site/tools/reel-studio" },
       { property: "og:type", content: "website" },
-      { property: "og:image", content: "https://www.autoseedance.site/og-image.png" },
+      { property: "og:image", content: "https://www.autoseedance.site/web-app-manifest-512x512.png" },
       { property: "og:image:alt", content: "Auto Seedance AI Reel Studio" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "AI Reel Studio — Auto Seedance" },
       { name: "twitter:description", content: "Create short-form videos with AI scenes, voiceover and captions." },
-      { name: "twitter:image", content: "https://www.autoseedance.site/og-image.png" },
+      { name: "twitter:image", content: "https://www.autoseedance.site/web-app-manifest-512x512.png" },
     ],
     links: [{ rel: "canonical", href: "https://www.autoseedance.site/tools/reel-studio" }],
     scripts: [
