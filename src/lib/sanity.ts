@@ -45,6 +45,8 @@ export interface PostListItem {
   readingMinutes?: number;
   category?: string;
   author?: string;
+  authorImage?: SanityImage;
+  authorBio?: string;
 }
 
 export interface PostDetail {
@@ -61,6 +63,8 @@ export interface PostDetail {
   seoDescription?: string;
   category?: string;
   author?: string;
+  authorImage?: SanityImage;
+  authorBio?: string;
   faqs?: FaqItem[];
 }
 
@@ -75,7 +79,9 @@ export const POSTS_LIST_QUERY = /* groq */ `
   "updatedAt": _updatedAt,
   readingMinutes,
   "category": category->title,
-  "author": author->name
+  "author": author->name,
+  "authorImage": coalesce(author->image, author->profileImage),
+  "authorBio": coalesce(author->bio, author->shortBio, author->description)
 }
 `;
 
@@ -94,6 +100,8 @@ export const POST_DETAIL_QUERY = /* groq */ `
   seoDescription,
   "category": category->title,
   "author": author->name,
+  "authorImage": coalesce(author->image, author->profileImage),
+  "authorBio": coalesce(author->bio, author->shortBio, author->description),
   faqs
 }
 `;
@@ -110,7 +118,9 @@ export const RELATED_POSTS_QUERY = /* groq */ `
     "updatedAt": _updatedAt,
     readingMinutes,
     "category": category->title,
-    "author": author->name
+    "author": author->name,
+    "authorImage": coalesce(author->image, author->profileImage),
+    "authorBio": coalesce(author->bio, author->shortBio, author->description)
   }
 `;
 
@@ -126,7 +136,9 @@ export const RECENT_POSTS_QUERY = /* groq */ `
     "updatedAt": _updatedAt,
     readingMinutes,
     "category": category->title,
-    "author": author->name
+    "author": author->name,
+    "authorImage": coalesce(author->image, author->profileImage),
+    "authorBio": coalesce(author->bio, author->shortBio, author->description)
   }
 `;
 
