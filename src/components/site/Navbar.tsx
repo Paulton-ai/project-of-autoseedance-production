@@ -131,6 +131,7 @@ export function Navbar() {
               </div>
             </div>
             <Link to="/blog" className="hover:text-foreground transition">Blog</Link>
+            <Link to="/about" className="hover:text-foreground transition">About Us</Link>
           </nav>
 
           <div className="flex items-center gap-2">
