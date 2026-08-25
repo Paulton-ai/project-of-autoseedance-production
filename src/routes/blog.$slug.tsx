@@ -33,6 +33,9 @@ export const Route = createFileRoute("/blog/$slug")({
     const ogImage = post.mainImage
       ? urlFor(post.mainImage).width(1200).height(630).fit("crop").auto("format").url()
       : `${SITE_URL}/og-image.png`;
+    const authorImage = post.authorImage
+      ? urlFor(post.authorImage).width(160).height(160).fit("crop").auto("format").url()
+      : undefined;
     const dateModified = post.updatedAt || post.publishedAt;
 
     return {
@@ -69,7 +72,9 @@ export const Route = createFileRoute("/blog/$slug")({
             image: ogImage,
             datePublished: post.publishedAt,
             dateModified,
-            author: post.author ? { "@type": "Person", name: post.author } : { "@type": "Organization", name: "Auto Seedance" },
+            author: post.author
+              ? { "@type": "Person", name: post.author, ...(authorImage ? { image: authorImage } : {}) }
+              : { "@type": "Organization", name: "Auto Seedance" },
             publisher: { "@type": "Organization", name: "Auto Seedance", logo: { "@type": "ImageObject", url: `${SITE_URL}/android-chrome-512x512.png` } },
             mainEntityOfPage: { "@type": "WebPage", "@id": url },
             articleSection: post.category,
@@ -142,6 +147,7 @@ function PostPage() {
 
   const cover = active.mainImage ? urlFor(active.mainImage).width(1600).height(900).fit("crop").auto("format").url() : null;
   const coverAlt = active.mainImage?.alt || active.title;
+  const authorImage = active.authorImage ? urlFor(active.authorImage).width(160).height(160).fit("crop").auto("format").url() : null;
   const dateModified = active.updatedAt || active.publishedAt;
   const publishedLabel = new Date(active.publishedAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
   const modifiedLabel = new Date(dateModified).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
@@ -182,9 +188,29 @@ function PostPage() {
             {active.excerpt && <p className="mt-4 text-lg text-muted-foreground">{active.excerpt}</p>}
 
             {active.author && (
-              <div className="mt-6 flex items-center gap-3 p-4 rounded-2xl border border-border bg-card">
-                <div className="size-10 rounded-full btn-gradient grid place-items-center text-white"><User className="size-5" /></div>
-                <div><div className="font-semibold">{active.author}</div><div className="text-xs text-muted-foreground">Author</div></div>
+              <div className="mt-6 rounded-2xl border border-border bg-card p-4 sm:p-5">
+                <div className="flex items-start gap-4">
+                  {authorImage ? (
+                    <img
+                      src={authorImage}
+                      alt={`${active.author} profile photo`}
+                      width={64}
+                      height={64}
+                      loading="eager"
+                      decoding="async"
+                      className="size-16 shrink-0 rounded-full object-cover ring-2 ring-background"
+                    />
+                  ) : (
+                    <div className="size-16 shrink-0 rounded-full btn-gradient grid place-items-center text-white"><User className="size-6" /></div>
+                  )}
+                  <div className="min-w-0 pt-1">
+                    <div className="font-semibold text-base">{active.author}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">Author</div>
+                    {active.authorBio && (
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">{active.authorBio}</p>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 
