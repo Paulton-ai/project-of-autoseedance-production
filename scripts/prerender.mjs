@@ -8,6 +8,8 @@ const SERVER_DIR = path.join(DIST, "server");
 const ASSETS_DIR = path.join(DIST, "assets");
 const SITEMAP = path.join(DIST, "sitemap.xml");
 const SITE_URL = "https://www.autoseedance.site";
+const ADSENSE_CLIENT = "ca-pub-2817573116229045";
+const ADSENSE_SCRIPT = `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}" crossorigin="anonymous"></script>`;
 
 async function resolveServerEntry() {
   const preferred = path.join(SERVER_DIR, "entry-server.js");
@@ -61,6 +63,18 @@ function injectClientAssets(html, assets) {
   }
 
   return output;
+}
+
+function injectAdSense(html) {
+  if (html.includes(ADSENSE_CLIENT) || html.includes("pagead2.googlesyndication.com/pagead/js/adsbygoogle.js")) {
+    return html;
+  }
+
+  if (!html.includes("</head>")) {
+    throw new Error("HTML is missing </head>; cannot inject Google AdSense Auto Ads script");
+  }
+
+  return html.replace("</head>", `\n    <!-- Google AdSense Auto Ads: site-wide script -->\n    ${ADSENSE_SCRIPT}\n  </head>`);
 }
 
 function extractUrls(xml) {
@@ -120,6 +134,10 @@ function assertPublicHtml(html, urlString) {
   if (!html.match(/data-autoseedance-client-asset=\"js\"/)) {
     throw new Error(`Prerender verification failed for ${urlString}: missing hashed client entry`);
   }
+
+  if (!html.includes(ADSENSE_CLIENT) || !html.includes("pagead2.googlesyndication.com/pagead/js/adsbygoogle.js")) {
+    throw new Error(`Prerender verification failed for ${urlString}: missing Google AdSense Auto Ads script`);
+  }
 }
 
 async function writeRoute(urlString, render, assets) {
@@ -147,7 +165,8 @@ async function writeRoute(urlString, render, assets) {
     throw new Error(`Prerender returned HTTP ${response.status} for public URL ${urlString}`);
   }
 
-  const finalHtml = injectClientAssets(html, assets);
+  let finalHtml = injectClientAssets(html, assets);
+  finalHtml = injectAdSense(finalHtml);
   assertPublicHtml(finalHtml, urlString);
 
   const output = outputPathFor(urlString);
@@ -180,7 +199,7 @@ async function main() {
   for (const url of urls) {
     const result = await writeRoute(url, entryModule.render, assets);
     results.push(result);
-    console.log(`✓ ${url} -> ${path.relative(ROOT, result.output)} (${result.bytes} bytes)`);
+    console.log(`✓ ${url} -> ${path.relative(ROOT, result.output)} (${result.bytes} bytes, AdSense ✓)`);
   }
 
   const notFound = await entryModule.render({
@@ -198,7 +217,8 @@ async function main() {
   }
 
   const notFoundHtml = await notFound.text();
-  const final404 = injectClientAssets(notFoundHtml, assets);
+  let final404 = injectClientAssets(notFoundHtml, assets);
+  final404 = injectAdSense(final404);
   if (!final404.match(/<h1\b[^>]*>/i)) {
     throw new Error("404 verification failed: 404 page has no H1");
   }
@@ -207,10 +227,14 @@ async function main() {
   await fs.rm(SERVER_DIR, { recursive: true, force: true });
 
   const rootHtml = await fs.readFile(path.join(DIST, "index.html"), "utf8");
-  assertPublicHtml(rootHtml, SITE_URL);
+  const rootWithAdSense = injectAdSense(rootHtml);
+  if (rootWithAdSense !== rootHtml) {
+    await fs.writeFile(path.join(DIST, "index.html"), rootWithAdSense, "utf8");
+  }
+  assertPublicHtml(rootWithAdSense, SITE_URL);
 
   console.log(`\n✓ Prerender complete: ${results.length} HTML routes + 404.html`);
-  console.log("✓ Initial HTML, metadata, canonical, H1 and asset verification passed");
+  console.log("✓ Initial HTML, metadata, canonical, H1, assets and AdSense verification passed");
   console.log("✓ Unknown-route verification passed with HTTP 404");
 }
 
