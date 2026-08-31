@@ -10,6 +10,8 @@ const SITEMAP = path.join(DIST, "sitemap.xml");
 const SITE_URL = "https://www.autoseedance.site";
 const ADSENSE_CLIENT = "ca-pub-2817573116229045";
 const ADSENSE_SCRIPT = `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}" crossorigin="anonymous"></script>`;
+const GA_MEASUREMENT_ID = "G-KFFD4XT5W6";
+const GA_SCRIPT = `<script async src="https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}"></script>\n    <script>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '${GA_MEASUREMENT_ID}');</script>`;
 
 async function resolveServerEntry() {
   const preferred = path.join(SERVER_DIR, "entry-server.js");
@@ -77,6 +79,18 @@ function injectAdSense(html) {
   return html.replace("</head>", `\n    <!-- Google AdSense Auto Ads: site-wide script -->\n    ${ADSENSE_SCRIPT}\n  </head>`);
 }
 
+function injectGoogleAnalytics(html) {
+  if (html.includes(GA_MEASUREMENT_ID) || html.includes("googletagmanager.com/gtag/js")) {
+    return html;
+  }
+
+  if (!html.includes("</head>")) {
+    throw new Error("HTML is missing </head>; cannot inject Google Analytics tag");
+  }
+
+  return html.replace("</head>", `\n    <!-- Google Analytics 4: site-wide measurement -->\n    ${GA_SCRIPT}\n  </head>`);
+}
+
 function extractUrls(xml) {
   return [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) =>
     m[1]
@@ -138,6 +152,10 @@ function assertPublicHtml(html, urlString) {
   if (!html.includes(ADSENSE_CLIENT) || !html.includes("pagead2.googlesyndication.com/pagead/js/adsbygoogle.js")) {
     throw new Error(`Prerender verification failed for ${urlString}: missing Google AdSense Auto Ads script`);
   }
+
+  if (!html.includes(GA_MEASUREMENT_ID) || !html.includes("googletagmanager.com/gtag/js")) {
+    throw new Error(`Prerender verification failed for ${urlString}: missing Google Analytics tag ${GA_MEASUREMENT_ID}`);
+  }
 }
 
 async function writeRoute(urlString, render, assets) {
@@ -162,11 +180,12 @@ async function writeRoute(urlString, render, assets) {
 
   const html = await response.text();
   if (response.status < 200 || response.status >= 300) {
-    throw new Error(`Prerender returned HTTP ${response.status} for public URL ${urlString}`);
+    throw new Error(`SSR returned HTTP ${response.status} for public URL ${urlString}`);
   }
 
   let finalHtml = injectClientAssets(html, assets);
   finalHtml = injectAdSense(finalHtml);
+  finalHtml = injectGoogleAnalytics(finalHtml);
   assertPublicHtml(finalHtml, urlString);
 
   const output = outputPathFor(urlString);
@@ -199,7 +218,7 @@ async function main() {
   for (const url of urls) {
     const result = await writeRoute(url, entryModule.render, assets);
     results.push(result);
-    console.log(`✓ ${url} -> ${path.relative(ROOT, result.output)} (${result.bytes} bytes, AdSense ✓)`);
+    console.log(`✓ ${url} -> ${path.relative(ROOT, result.output)} (${result.bytes} bytes, AdSense ✓, GA ✓)`);
   }
 
   const notFound = await entryModule.render({
@@ -219,22 +238,27 @@ async function main() {
   const notFoundHtml = await notFound.text();
   let final404 = injectClientAssets(notFoundHtml, assets);
   final404 = injectAdSense(final404);
+  final404 = injectGoogleAnalytics(final404);
   if (!final404.match(/<h1\b[^>]*>/i)) {
     throw new Error("404 verification failed: 404 page has no H1");
+  }
+  if (!final404.includes(GA_MEASUREMENT_ID) || !final404.includes("googletagmanager.com/gtag/js")) {
+    throw new Error(`404 verification failed: missing Google Analytics tag ${GA_MEASUREMENT_ID}`);
   }
   await fs.writeFile(path.join(DIST, "404.html"), final404, "utf8");
 
   await fs.rm(SERVER_DIR, { recursive: true, force: true });
 
   const rootHtml = await fs.readFile(path.join(DIST, "index.html"), "utf8");
-  const rootWithAdSense = injectAdSense(rootHtml);
-  if (rootWithAdSense !== rootHtml) {
-    await fs.writeFile(path.join(DIST, "index.html"), rootWithAdSense, "utf8");
+  let rootFinal = injectAdSense(rootHtml);
+  rootFinal = injectGoogleAnalytics(rootFinal);
+  assertPublicHtml(rootFinal, SITE_URL);
+  if (rootFinal !== rootHtml) {
+    await fs.writeFile(path.join(DIST, "index.html"), rootFinal, "utf8");
   }
-  assertPublicHtml(rootWithAdSense, SITE_URL);
 
   console.log(`\n✓ Prerender complete: ${results.length} HTML routes + 404.html`);
-  console.log("✓ Initial HTML, metadata, canonical, H1, assets and AdSense verification passed");
+  console.log("✓ Initial HTML, metadata, canonical, H1, assets, AdSense and Google Analytics verification passed");
   console.log("✓ Unknown-route verification passed with HTTP 404");
 }
 
