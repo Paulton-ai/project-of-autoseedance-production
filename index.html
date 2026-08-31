@@ -44,7 +44,7 @@
     <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.gstatic.com" />
     <link rel="preconnect" href="https://vcercajwtbjbvjhzivjb.supabase.co" />
     <link rel="preconnect" href="https://lhvzukqwbhbjbqzqbxva.supabase.co" />
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
@@ -62,8 +62,17 @@
       #tools .lg\:grid-cols-3 > div:nth-child(3) .mt-10.flex.items-end.justify-between > div:last-child::before { -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m14.5 4 5.5 5.5-11 11H3v-6Z'/%3E%3Cpath d='m12 6 6 6'/%3E%3Cpath d='m16 2 6 6'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m14.5 4 5.5 5.5-11 11H3v-6Z'/%3E%3Cpath d='m12 6 6 6'/%3E%3Cpath d='m16 2 6 6'/%3E%3C/svg%3E"); }
     </style>
 
-    <!-- Google AdSense: site-wide Auto ads script. Place once in the global <head>. -->
+    <!-- Google AdSense: site-wide Auto ads script. -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2817573116229045" crossorigin="anonymous"></script>
+
+    <!-- Google Analytics 4: site-wide measurement. -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-KFFD4XT5W6"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-KFFD4XT5W6');
+    </script>
 
     <script type="application/ld+json">
       {
@@ -83,20 +92,11 @@
         "@type": "WebSite",
         "name": "Auto Seedance",
         "url": "https://www.autoseedance.site/",
-        "description": "AI Image & Video Generation Platform"
-      }
-    </script>
-
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "SoftwareApplication",
-        "name": "Auto Seedance",
-        "applicationCategory": "MultimediaApplication",
-        "description": "Professional AI image and video generation platform. Create stunning visuals with Seedream and Seedance AI.",
-        "operatingSystem": "Web Browser",
-        "url": "https://www.autoseedance.site/",
-        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://www.autoseedance.site/blog?search={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
       }
     </script>
   </head>
