@@ -6,12 +6,10 @@ import { headingId } from "./BlogTableOfContents";
 
 /**
  * Some existing Sanity posts contain HTML markup as plain text inside a
- * Portable Text paragraph (for example: <div class="key-takeaway-box").
- * Without handling that case, browsers display the tags literally.
- *
- * The article body is trusted editorial content, but we still strip executable
- * or unsafe HTML before injecting it into the page. This keeps existing and
- * future posts working without exposing script/event-handler HTML to readers.
+ * Portable Text paragraph (for example: <div class="cta-banner">...</div>).
+ * Render those snippets as real HTML instead of exposing the source code to
+ * readers. The sanitizer keeps the supported editorial markup while removing
+ * executable or unsafe HTML.
  */
 function sanitizeArticleHtml(html: string): string {
   let safe = html
@@ -77,6 +75,7 @@ function getPlainBlockText(value: PortableTextBlock): string {
   return value.children?.map((child) => child.text || "").join("") || "";
 }
 
+/** Decode only the entities commonly introduced when HTML is stored as text. */
 function decodeEmbeddedHtml(value: string): string {
   return value
     .replace(/&lt;/gi, "<")
@@ -86,12 +85,35 @@ function decodeEmbeddedHtml(value: string): string {
     .replace(/&#x27;/gi, "'");
 }
 
+/**
+ * Any embedded top-level <div> in article copy is treated as a visual CTA
+ * banner. This makes both old posts and newly created posts work without
+ * requiring authors to remember a special CSS class.
+ */
+function promoteDivsToCtaBanners(html: string): string {
+  return html.replace(/<div\b([^>]*)>/gi, (full, attrs: string) => {
+    if (/\bclass\s*=\s*["'][^"']*\bcta-banner\b[^"']*["']/i.test(attrs)) return full;
+
+    const classMatch = attrs.match(/\bclass\s*=\s*(["'])(.*?)\1/i);
+    if (classMatch) {
+      const classValue = classMatch[2];
+      const updated = attrs.replace(classMatch[0], `class=${classMatch[1]}${classValue} cta-banner${classMatch[1]}`);
+      return `<div${updated}>`;
+    }
+
+    return `<div class="cta-banner"${attrs}>`;
+  });
+}
+
 function renderMaybeHtml(value: PortableTextBlock, children: ReactNode) {
   const rawText = getPlainBlockText(value);
-  const text = /cta-banner/i.test(rawText) ? decodeEmbeddedHtml(rawText) : rawText;
-  if (!/<\/?[a-z][^>]*>/i.test(text)) return <p className="mb-5 leading-[1.8] text-[17px]">{children}</p>;
+  const text = decodeEmbeddedHtml(rawText);
 
-  const html = sanitizeArticleHtml(text);
+  if (!/<\/?[a-z][^>]*>/i.test(text)) {
+    return <p className="mb-5 leading-[1.8] text-[17px]">{children}</p>;
+  }
+
+  const html = promoteDivsToCtaBanners(sanitizeArticleHtml(text));
   return <div className="portable-html-block" dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
