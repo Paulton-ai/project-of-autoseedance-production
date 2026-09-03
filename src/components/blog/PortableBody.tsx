@@ -6,7 +6,7 @@ import { headingId } from "./BlogTableOfContents";
 
 /**
  * Some existing Sanity posts contain HTML markup as plain text inside a
- * Portable Text paragraph (for example: <div class="key-takeaway-box">).
+ * Portable Text paragraph (for example: <div class="key-takeaway-box").
  * Without handling that case, browsers display the tags literally.
  *
  * The article body is trusted editorial content, but we still strip executable
@@ -77,8 +77,18 @@ function getPlainBlockText(value: PortableTextBlock): string {
   return value.children?.map((child) => child.text || "").join("") || "";
 }
 
+function decodeEmbeddedHtml(value: string): string {
+  return value
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/&#x27;/gi, "'");
+}
+
 function renderMaybeHtml(value: PortableTextBlock, children: ReactNode) {
-  const text = getPlainBlockText(value);
+  const rawText = getPlainBlockText(value);
+  const text = /cta-banner/i.test(rawText) ? decodeEmbeddedHtml(rawText) : rawText;
   if (!/<\/?[a-z][^>]*>/i.test(text)) return <p className="mb-5 leading-[1.8] text-[17px]">{children}</p>;
 
   const html = sanitizeArticleHtml(text);
