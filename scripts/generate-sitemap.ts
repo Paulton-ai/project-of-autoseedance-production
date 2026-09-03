@@ -13,6 +13,7 @@ const STATIC_PAGES = [
   { path: "/tools/reel-studio", title: "AI Reel Studio", description: "Turn an idea into a short-form video with scenes, voiceover, captions, and export." },
   { path: "/pricing", title: "Pricing", description: "Credit-based pricing for Auto Seedance generation tools." },
   { path: "/blog", title: "Auto Seedance Blog", description: "AI image and video tutorials, prompt guides, tool explainers, and case studies." },
+  { path: "/about", title: "About Auto Seedance", description: "Learn about Auto Seedance, the team behind the platform, and our mission." },
   { path: "/contact", title: "Contact", description: "Support, feedback, bug reports, and partnership inquiries." },
   { path: "/privacy", title: "Privacy Policy", description: "How Auto Seedance handles information and privacy." },
   { path: "/terms", title: "Terms of Service", description: "Terms governing use of Auto Seedance services." },
