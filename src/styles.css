@@ -43,7 +43,7 @@
   --color-sidebar-accent: var(--sidebar-accent);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-ring: var(--ring);
   --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 }
@@ -51,23 +51,23 @@
 :root {
   /* Light modern SaaS theme — warm cream + amber/rose accents */
   --radius: 1rem;
-  --background: oklch(0.98 0.01 80);          /* #FAF8F5 */
-  --foreground: oklch(0.27 0.03 260);         /* #1F2937 */
-  --card: oklch(1 0 0);                        /* #FFFFFF */
+  --background: oklch(0.98 0.01 80);
+  --foreground: oklch(0.27 0.03 260);
+  --card: oklch(1 0 0);
   --card-foreground: oklch(0.27 0.03 260);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.27 0.03 260);
-  --primary: oklch(0.78 0.17 70);              /* #F59E0B amber */
+  --primary: oklch(0.78 0.17 70);
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.72 0.17 18);            /* #FB7185 rose */
+  --secondary: oklch(0.72 0.17 18);
   --secondary-foreground: oklch(1 0 0);
   --muted: oklch(0.96 0.005 80);
-  --muted-foreground: oklch(0.55 0.02 260);    /* #6B7280 */
+  --muted-foreground: oklch(0.55 0.02 260);
   --accent: oklch(0.96 0.02 70);
   --accent-foreground: oklch(0.27 0.03 260);
   --destructive: oklch(0.62 0.22 25);
   --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.92 0.005 260);             /* #E5E7EB */
+  --border: oklch(0.92 0.005 260);
   --input: oklch(0.92 0.005 260);
   --ring: oklch(0.78 0.17 70);
   --chart-1: oklch(0.78 0.17 70);
@@ -135,6 +135,93 @@
   .btn-gradient:hover { filter: brightness(1.05); }
   .soft-shadow { box-shadow: var(--shadow-soft); }
   .elevated-shadow { box-shadow: var(--shadow-elevated); }
+}
+
+/*
+ * Blog CTA blocks
+ *
+ * Sanity articles can contain a complete <div class="cta-banner">...</div>
+ * snippet as plain text. PortableBody now turns that embedded HTML into real
+ * markup, while this CSS gives the banner the same premium two-column treatment
+ * as the supplied reference: rounded gradient panel + white CTA button.
+ */
+.prose-blog .portable-html-block .cta-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  width: 100%;
+  margin: 2rem 0;
+  padding: 1.5rem 1.75rem;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  position: relative;
+  isolation: isolate;
+  background-color: #a9bd35;
+  background-image:
+    linear-gradient(135deg, rgba(91, 108, 24, 0.25), rgba(205, 222, 72, 0.35)),
+    linear-gradient(to right, rgba(255, 255, 255, 0.09) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.09) 1px, transparent 1px);
+  background-size: auto, 48px 48px, 48px 48px;
+  box-shadow: 0 14px 30px -20px rgba(31, 41, 55, 0.45);
+  color: #fff;
+  font-size: 1rem;
+  line-height: 1.25;
+  font-weight: 800;
+}
+
+.prose-blog .portable-html-block .cta-banner > a,
+.prose-blog .portable-html-block .cta-banner > p > a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-height: 2.75rem;
+  padding: 0.7rem 1.05rem;
+  border-radius: 0.75rem;
+  background: #fff;
+  color: #252525;
+  text-decoration: none;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.2;
+  box-shadow: 0 8px 14px -7px rgba(0, 0, 0, 0.55);
+  transition: transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+.prose-blog .portable-html-block .cta-banner > a::after,
+.prose-blog .portable-html-block .cta-banner > p > a::after {
+  content: "↗";
+  margin-left: 0.45rem;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.prose-blog .portable-html-block .cta-banner > a:hover,
+.prose-blog .portable-html-block .cta-banner > p > a:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 18px -7px rgba(0, 0, 0, 0.6);
+  background: #f8f8f8;
+}
+
+.prose-blog .portable-html-block .cta-banner > a:focus-visible,
+.prose-blog .portable-html-block .cta-banner > p > a:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.9);
+  outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .prose-blog .portable-html-block .cta-banner {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.25rem;
+  }
+
+  .prose-blog .portable-html-block .cta-banner > a,
+  .prose-blog .portable-html-block .cta-banner > p > a {
+    width: 100%;
+  }
 }
 
 @font-face {
