@@ -27,7 +27,7 @@ export function Breadcrumb({ items, className = "" }: BreadcrumbProps) {
       name: item.name,
       item: item.url.startsWith("http")
         ? item.url
-        : `https://autoseedance.site${item.url}`,
+        : `https://www.autoseedance.site${item.url}`,
     })),
   };
 
