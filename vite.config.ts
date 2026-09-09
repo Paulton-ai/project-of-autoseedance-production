@@ -23,6 +23,22 @@ const rootToolEducationFix: Plugin = {
   },
 };
 
+const seoIntegrityFix: Plugin = {
+  name: "seo-integrity-fix",
+  enforce: "pre",
+  transform(code, id) {
+    if (!id.includes("/src/routes/") || !id.endsWith(".tsx")) return null;
+
+    let output = code.replaceAll("https://autoseedance.site", "https://www.autoseedance.site");
+
+    // Do not publish unsupported/fabricated aggregate ratings. Google requires
+    // marked-up ratings to be visible to users and based on genuine evaluations.
+    output = output.replace(/\s*aggregateRating:\s*\{\s*"@type":\s*"AggregateRating",\s*ratingValue:\s*"[^"]+",\s*ratingCount:\s*"[^"]+",\s*\},?/g, "");
+
+    return output === code ? null : output;
+  },
+};
+
 export default defineConfig(({ isSsrBuild }) => ({
   plugins: [
     tsconfigPaths(),
@@ -42,6 +58,7 @@ export default defineConfig(({ isSsrBuild }) => ({
     }),
     reelCreditPolicy,
     rootToolEducationFix,
+    seoIntegrityFix,
     react(),
     tailwindcss(),
   ],
