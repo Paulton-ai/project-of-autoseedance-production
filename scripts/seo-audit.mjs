@@ -77,7 +77,7 @@ async function main() {
     else if (!canonical.startsWith(`${SITE_URL}/`) && canonical !== SITE_URL) failures.push(`${route}: non-canonical host ${canonical}`);
     if (textLength < 300) warnings.push(`${route}: only ${textLength} visible text characters; review for thin content`);
     if (html.includes("AggregateRating")) failures.push(`${route}: AggregateRating structured data remains in prerendered HTML`);
-    if (html.includes("50 free credits") || html.includes("50 Free Credits")) failures.push(`${route}: stale 50-credit claim remains in prerendered HTML`);
+    if (html.includes("50 free credits") || html.includes("50 Free Credits") || html.includes("50 credits")) warnings.push(`${route}: stale 50-credit wording remains; update the source article/content in Sanity`);
     if (html.includes("https://autoseedance.site")) failures.push(`${route}: non-www canonical/metadata URL remains in prerendered HTML`);
     if (html.includes("/og-image.png")) failures.push(`${route}: missing/legacy /og-image.png reference remains in prerendered HTML`);
   }
