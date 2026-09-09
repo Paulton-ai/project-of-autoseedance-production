@@ -11,12 +11,17 @@ const STATIC_PAGES = [
   { path: "/tools/image", title: "AI Image Generator", description: "Generate AI images from text prompts and reference images." },
   { path: "/tools/video", title: "AI Video Generator", description: "Generate AI video clips from text prompts with supported models and output settings." },
   { path: "/tools/reel-studio", title: "AI Reel Studio", description: "Turn an idea into a short-form video with scenes, voiceover, captions, and export." },
+  { path: "/ai-image-generator", title: "AI Image Generator Guide", description: "Practical guidance for prompting, styles, references, and output choices." },
+  { path: "/ai-video-generator", title: "AI Video Generator Guide", description: "Practical guidance for text-to-video prompts, output settings, references, and review." },
+  { path: "/ai-reel-generator", title: "AI Reel Generator Guide", description: "A complete short-form workflow from idea and script to scenes, voiceover, captions, and export." },
+  { path: "/how-we-test-ai-video-tools", title: "How We Test AI Video Tools", description: "The evaluation framework used for transparent AI video testing and comparisons." },
   { path: "/pricing", title: "Pricing", description: "Credit-based pricing for Auto Seedance generation tools." },
   { path: "/blog", title: "Auto Seedance Blog", description: "AI image and video tutorials, prompt guides, tool explainers, and case studies." },
   { path: "/about", title: "About Auto Seedance", description: "Learn about Auto Seedance, its mission, and the team behind the platform." },
   { path: "/contact", title: "Contact", description: "Support, feedback, bug reports, and partnership inquiries." },
   { path: "/privacy", title: "Privacy Policy", description: "How Auto Seedance handles information and privacy." },
   { path: "/terms", title: "Terms of Service", description: "Terms governing use of Auto Seedance services." },
+  { path: "/refund-policy", title: "Refund Policy", description: "Refund and cancellation terms for Auto Seedance purchases." },
 ];
 
 interface PortableTextSpan {
