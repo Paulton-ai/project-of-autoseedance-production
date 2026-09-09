@@ -14,6 +14,15 @@ const reelCreditPolicy: Plugin = {
   },
 };
 
+const rootToolEducationFix: Plugin = {
+  name: "root-tool-education-fix",
+  enforce: "pre",
+  transform(code, id) {
+    if (!id.endsWith("/src/routes/__root.tsx")) return null;
+    return code.replace("const { location } = useRouter();", "const location = useLocation();");
+  },
+};
+
 export default defineConfig(({ isSsrBuild }) => ({
   plugins: [
     tsconfigPaths(),
@@ -21,9 +30,6 @@ export default defineConfig(({ isSsrBuild }) => ({
       target: "react",
       autoCodeSplitting: true,
       codeSplittingOptions: {
-        // The app has several route loaders that pull in large SDKs such as
-        // Supabase and Sanity. Keep those out of the universal entry chunk;
-        // the active route loads its own loader when it is actually needed.
         defaultBehavior: [
           ["loader"],
           ["component"],
@@ -35,6 +41,7 @@ export default defineConfig(({ isSsrBuild }) => ({
       generatedRouteTree: "src/routeTree.gen.ts",
     }),
     reelCreditPolicy,
+    rootToolEducationFix,
     react(),
     tailwindcss(),
   ],
