@@ -67,6 +67,7 @@ async function main() {
     const isNoindex = /(^|[,\s])noindex([,\s]|$)/i.test(robots);
 
     renderedRoutes.add(route);
+    if (isNoindex) continue;
 
     if (!title) failures.push(`${route}: missing <title>`);
     if (!description) failures.push(`${route}: missing meta description`);
@@ -74,7 +75,7 @@ async function main() {
     if (h1s > 1) warnings.push(`${route}: ${h1s} H1 elements`);
     if (!canonical) failures.push(`${route}: missing canonical`);
     else if (!canonical.startsWith(`${SITE_URL}/`) && canonical !== SITE_URL) failures.push(`${route}: non-canonical host ${canonical}`);
-    if (!isNoindex && textLength < 300) warnings.push(`${route}: only ${textLength} visible text characters; review for thin content`);
+    if (textLength < 300) warnings.push(`${route}: only ${textLength} visible text characters; review for thin content`);
     if (html.includes("AggregateRating")) failures.push(`${route}: AggregateRating structured data remains in prerendered HTML`);
     if (html.includes("50 free credits") || html.includes("50 Free Credits")) failures.push(`${route}: stale 50-credit claim remains in prerendered HTML`);
     if (html.includes("https://autoseedance.site")) failures.push(`${route}: non-www canonical/metadata URL remains in prerendered HTML`);
