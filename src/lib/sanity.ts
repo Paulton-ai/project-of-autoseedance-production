@@ -160,20 +160,19 @@ export async function fetchRelatedPosts(
   manualRelatedPosts?: PostListItem[],
 ): Promise<PostListItem[]> {
   const manual = (manualRelatedPosts || []).filter((post) => post?.slug?.current && post.slug.current !== slug);
-  const manualIds = new Set(manual.map((post) => post._id));
 
-  if (manual.length >= 4) return manual.slice(0, 4);
+  // When the editor selects related articles in Sanity, preserve that exact editorial selection.
+  if (manual.length > 0) return manual.slice(0, 4);
 
   const automatic = category
     ? await sanityClient.fetch<PostListItem[]>(RELATED_POSTS_QUERY, { slug, category })
     : await sanityClient.fetch<PostListItem[]>(RECENT_POSTS_QUERY, { slug });
 
-  const combined = [...manual, ...automatic.filter((post) => !manualIds.has(post._id) && post.slug.current !== slug)];
-  if (combined.length >= 4) return combined.slice(0, 4);
+  if (automatic.length >= 4) return automatic.slice(0, 4);
 
+  const existing = new Set(automatic.map((post) => post._id));
   const recent = await sanityClient.fetch<PostListItem[]>(RECENT_POSTS_QUERY, { slug });
-  const existing = new Set(combined.map((post) => post._id));
-  return [...combined, ...recent.filter((post) => !existing.has(post._id) && post.slug.current !== slug)].slice(0, 4);
+  return [...automatic, ...recent.filter((post) => !existing.has(post._id) && post.slug.current !== slug)].slice(0, 4);
 }
 
 export async function fetchPostsCount(): Promise<number> {
