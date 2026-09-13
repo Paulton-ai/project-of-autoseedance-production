@@ -47,6 +47,7 @@ export interface PostListItem {
   author?: string;
   authorImage?: SanityImage;
   authorBio?: string;
+  tags?: string[];
 }
 
 export interface PostDetail {
@@ -66,10 +67,11 @@ export interface PostDetail {
   authorImage?: SanityImage;
   authorBio?: string;
   faqs?: FaqItem[];
+  tags?: string[];
+  relatedPosts?: PostListItem[];
 }
 
-export const POSTS_LIST_QUERY = /* groq */ `
-*[_type == "post" && defined(slug.current)] | order(publishedAt desc){
+const POST_CARD_FIELDS = `
   _id,
   title,
   slug,
@@ -81,7 +83,13 @@ export const POSTS_LIST_QUERY = /* groq */ `
   "category": category->title,
   "author": author->name,
   "authorImage": coalesce(author->image, author->profileImage),
-  "authorBio": coalesce(author->bio, author->shortBio, author->description)
+  "authorBio": coalesce(author->bio, author->shortBio, author->description),
+  tags
+`;
+
+export const POSTS_LIST_QUERY = /* groq */ `
+*[_type == "post" && defined(slug.current)] | order(publishedAt desc){
+  ${POST_CARD_FIELDS}
 }
 `;
 
@@ -102,43 +110,23 @@ export const POST_DETAIL_QUERY = /* groq */ `
   "author": author->name,
   "authorImage": coalesce(author->image, author->profileImage),
   "authorBio": coalesce(author->bio, author->shortBio, author->description),
-  faqs
+  faqs,
+  tags,
+  "relatedPosts": relatedPosts[defined(@->slug.current)]->{${POST_CARD_FIELDS}}
 }
 `;
 
 export const RELATED_POSTS_QUERY = /* groq */ `
 *[_type == "post" && defined(slug.current) && slug.current != $slug && category->title == $category]
   | order(publishedAt desc)[0...4]{
-    _id,
-    title,
-    slug,
-    excerpt,
-    mainImage,
-    publishedAt,
-    "updatedAt": _updatedAt,
-    readingMinutes,
-    "category": category->title,
-    "author": author->name,
-    "authorImage": coalesce(author->image, author->profileImage),
-    "authorBio": coalesce(author->bio, author->shortBio, author->description)
+    ${POST_CARD_FIELDS}
   }
 `;
 
 export const RECENT_POSTS_QUERY = /* groq */ `
 *[_type == "post" && defined(slug.current) && slug.current != $slug]
   | order(publishedAt desc)[0...4]{
-    _id,
-    title,
-    slug,
-    excerpt,
-    mainImage,
-    publishedAt,
-    "updatedAt": _updatedAt,
-    readingMinutes,
-    "category": category->title,
-    "author": author->name,
-    "authorImage": coalesce(author->image, author->profileImage),
-    "authorBio": coalesce(author->bio, author->shortBio, author->description)
+    ${POST_CARD_FIELDS}
   }
 `;
 
@@ -155,21 +143,23 @@ export async function fetchPostBySlug(slug: string): Promise<PostDetail | null> 
 export async function fetchRelatedPosts(
   slug: string,
   category?: string,
+  manualRelatedPosts?: PostListItem[],
 ): Promise<PostListItem[]> {
-  if (!category) {
-    return sanityClient.fetch<PostListItem[]>(RECENT_POSTS_QUERY, { slug });
-  }
+  const manual = (manualRelatedPosts || []).filter((post) => post?.slug?.current && post.slug.current !== slug);
+  const manualIds = new Set(manual.map((post) => post._id));
 
-  const related = await sanityClient.fetch<PostListItem[]>(RELATED_POSTS_QUERY, {
-    slug,
-    category,
-  });
+  if (manual.length >= 4) return manual.slice(0, 4);
 
-  if (related.length >= 4) return related;
+  const automatic = category
+    ? await sanityClient.fetch<PostListItem[]>(RELATED_POSTS_QUERY, { slug, category })
+    : await sanityClient.fetch<PostListItem[]>(RECENT_POSTS_QUERY, { slug });
+
+  const combined = [...manual, ...automatic.filter((post) => !manualIds.has(post._id) && post.slug.current !== slug)];
+  if (combined.length >= 4) return combined.slice(0, 4);
 
   const recent = await sanityClient.fetch<PostListItem[]>(RECENT_POSTS_QUERY, { slug });
-  const existing = new Set(related.map((post) => post._id));
-  return [...related, ...recent.filter((post) => !existing.has(post._id))].slice(0, 4);
+  const existing = new Set(combined.map((post) => post._id));
+  return [...combined, ...recent.filter((post) => !existing.has(post._id) && post.slug.current !== slug)].slice(0, 4);
 }
 
 export async function fetchPostsCount(): Promise<number> {
