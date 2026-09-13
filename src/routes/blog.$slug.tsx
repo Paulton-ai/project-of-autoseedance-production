@@ -15,13 +15,13 @@ import {
 } from "@/lib/sanity";
 import { Twitter, Link2, MessageCircle, Check, User, Calendar, Clock } from "lucide-react";
 
-const SITE_URL = "https://autoseedance.site";
+const SITE_URL = "https://www.autoseedance.site";
 
 export const Route = createFileRoute("/blog/$slug")({
   loader: async ({ params }) => {
     const post = await fetchPostBySlug(params.slug);
     if (!post) throw notFound();
-    const relatedPosts = await fetchRelatedPosts(params.slug, post.category);
+    const relatedPosts = await fetchRelatedPosts(params.slug, post.category, post.relatedPosts);
     return { post, relatedPosts };
   },
   head: ({ loaderData, params }) => {
@@ -231,9 +231,12 @@ function PostPage() {
             )}
 
             {relatedPosts.length > 0 && (
-              <section className="mt-12 border-t border-border pt-8 lg:hidden" aria-labelledby="related-heading">
+              <section className="mt-12 border-t border-border pt-8" aria-labelledby="related-heading">
                 <div className="flex items-end justify-between gap-4 mb-5">
-                  <div><p className="text-xs font-semibold uppercase tracking-wider text-primary">Keep reading</p><h2 id="related-heading" className="mt-1 font-display text-2xl font-bold">Related Articles</h2></div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-primary">Keep reading</p>
+                    <h2 id="related-heading" className="mt-1 font-display text-2xl font-bold">Suggested Related Articles</h2>
+                  </div>
                   <Link to="/blog" className="text-sm text-primary hover:underline underline-offset-2">View all</Link>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -260,6 +263,18 @@ function PostPage() {
               <a href={`https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrl}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-md border border-border px-3 py-1.5 text-sm hover:bg-muted"><Twitter className="size-4" /> Twitter</a>
               <button onClick={handleCopy} className="inline-flex items-center gap-1 rounded-md border border-border px-3 py-1.5 text-sm hover:bg-muted">{copied ? <Check className="size-4" /> : <Link2 className="size-4" />}{copied ? "Copied!" : "Copy Link"}</button>
             </div>
+
+            {active.tags && active.tags.length > 0 && (
+              <section className="mt-8" aria-labelledby="article-tags-heading">
+                <h2 id="article-tags-heading" className="text-sm font-semibold">Tags</h2>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {active.tags.map((tag) => (
+                    <span key={tag} className="rounded-full border border-border bg-muted/50 px-3 py-1.5 text-xs text-muted-foreground">{tag}</span>
+                  ))}
+                </div>
+              </section>
+            )}
+
             <div className="mt-10"><Link to="/blog" className="text-primary underline-offset-2 hover:underline">← Back to all posts</Link></div>
           </article>
 
