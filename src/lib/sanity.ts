@@ -112,7 +112,21 @@ export const POST_DETAIL_QUERY = /* groq */ `
   "authorBio": coalesce(author->bio, author->shortBio, author->description),
   faqs,
   tags,
-  "relatedPosts": relatedPosts[defined(@->slug.current)]->{${POST_CARD_FIELDS}}
+  "relatedPosts": relatedPosts[]->{
+    _id,
+    title,
+    slug,
+    excerpt,
+    mainImage,
+    publishedAt,
+    "updatedAt": _updatedAt,
+    readingMinutes,
+    "category": category->title,
+    "author": author->name,
+    "authorImage": coalesce(author->image, author->profileImage),
+    "authorBio": coalesce(author->bio, author->shortBio, author->description),
+    tags
+  }
 }
 `;
 
