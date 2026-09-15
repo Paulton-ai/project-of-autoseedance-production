@@ -39,10 +39,6 @@ for (const filePath of seoFiles) {
   if (normalized !== text) await fs.writeFile(filePath, normalized, "utf8");
 }
 
-// The public landing page does not need Framer Motion to be interactive. Keep
-// the same semantic elements and styling while replacing the animation layer
-// with tiny static wrappers. This prevents the animation library from being
-// pulled into the initial homepage bundle.
 const landingPath = path.join(routeDir, "index.tsx");
 let landingSource = await fs.readFile(landingPath, "utf8");
 landingSource = landingSource.replace('import { motion } from "framer-motion";\n', `
@@ -55,9 +51,6 @@ const motion = {
 `);
 await fs.writeFile(landingPath, landingSource, "utf8");
 
-// Keep the public navbar animation-free as well. Authentication is already
-// dynamically imported in Navbar.tsx, so Supabase stays out of the common
-// initial public bundle until an authenticated navbar actually needs it.
 const navbarPath = path.join(root, "src/components/site/Navbar.tsx");
 let navbarSource = await fs.readFile(navbarPath, "utf8");
 navbarSource = navbarSource
@@ -66,7 +59,6 @@ navbarSource = navbarSource
   .replace('</motion.header>', '</header>');
 await fs.writeFile(navbarPath, navbarSource, "utf8");
 
-// Give Reel Studio a complete crawlable head and schema in the initial HTML.
 const reelPath = path.join(routeDir, "tools.reel-studio.tsx");
 let reelSource = await fs.readFile(reelPath, "utf8");
 const minimalReelHead = `  head: () => ({
@@ -136,9 +128,9 @@ if (reelSource.includes(minimalReelHead)) {
   await fs.writeFile(reelPath, reelSource, "utf8");
 }
 
-// Apply the GPT Image 2.5 model integration as the final build-time transform.
-// The source route stays intact so this does not require rewriting the working
-// Text-to-Image page while the production build still receives the new model UI.
+// Apply GPT Image 2.5 model UI and then remove the legacy client-side credit
+// debit so the new secure server-side billing path is the only charge path.
 await import("./prepare-gpt-image-25.mjs");
+await import("./prepare-gpt-image-25-finalize.mjs");
 
-console.log("✓ Prepared SEO-safe prerendered HTML, 30-credit messaging, valid assets, fixed Features anchor, a lighter public JS entry, and GPT Image 2.5 model integration.");
+console.log("✓ Prepared SEO-safe prerendered HTML, 30-credit messaging, valid assets, lighter public JS, and GPT Image 2.5 integration with server-side credit billing.");
