@@ -136,4 +136,9 @@ if (reelSource.includes(minimalReelHead)) {
   await fs.writeFile(reelPath, reelSource, "utf8");
 }
 
-console.log("✓ Prepared SEO-safe prerendered HTML, 30-credit messaging, valid assets, fixed Features anchor, and a lighter public JS entry.");
+// Apply the GPT Image 2.5 model integration as the final build-time transform.
+// The source route stays intact so this does not require rewriting the working
+// Text-to-Image page while the production build still receives the new model UI.
+await import("./prepare-gpt-image-25.mjs");
+
+console.log("✓ Prepared SEO-safe prerendered HTML, 30-credit messaging, valid assets, fixed Features anchor, a lighter public JS entry, and GPT Image 2.5 model integration.");
