@@ -1,35 +1,59 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.49.1";
-
-const cors = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "content-type, authorization, x-client-info, apikey",
-};
+import { buildImagePayload, resolveImageModel } from "../_shared/image-models.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
-function getSupabaseClient(authHeader: string) {
-  const url = Deno.env.get("SUPABASE_URL") || Deno.env.get("VITE_SUPABASE_URL")!;
-  const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("SUPABASE_ANON_KEY")!;
-  return createClient(url, key, {
+function createUserClient(authHeader: string) {
+  const url = Deno.env.get("SUPABASE_URL") || Deno.env.get("VITE_SUPABASE_URL");
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+  if (!url || !anonKey) throw new Error("Supabase authentication is unavailable");
+
+  return createClient(url, anonKey, {
     global: { headers: { Authorization: authHeader } },
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+}
+
+function createAdminClient() {
+  const url = Deno.env.get("SUPABASE_URL") || Deno.env.get("VITE_SUPABASE_URL");
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!url || !serviceRoleKey) throw new Error("Supabase service configuration is unavailable");
+
+  return createClient(url, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
   });
 }
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  let userClient;
+  let adminClient;
+  let generationId: string | null = null;
+  let chargedCredits = 0;
+
   try {
     const authHeader = req.headers.get("Authorization") || "";
-    const supabase = getSupabaseClient(authHeader);
+    if (!authHeader.startsWith("Bearer ")) throw new Error("Not authenticated");
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Not authenticated");
+    userClient = createUserClient(authHeader);
+    adminClient = createAdminClient();
 
-    const { data: roleData } = await supabase
+    const { data: { user }, error: authError } = await userClient.auth.getUser();
+    if (authError || !user) throw new Error("Not authenticated");
+
+    const { data: roleData } = await adminClient
       .from("user_roles")
       .select("role")
       .eq("user_id", user.id)
@@ -37,15 +61,24 @@ Deno.serve(async (req) => {
       .maybeSingle();
     const isAdmin = !!roleData;
 
-    // Credit deduction is handled by the authenticated client flow before this
-    // function is invoked. Keeping the deduction in one place prevents a
-    // single image generation from being charged twice.
-
     const FAL_API_KEY = Deno.env.get("FAL_API_KEY");
-    if (!FAL_API_KEY) throw new Error("FAL_API_KEY missing");
+    if (!FAL_API_KEY) throw new Error("Image generation is temporarily unavailable");
+
     const body = await req.json();
-    const { prompt, image_size, style, num_images, reference_images } = body;
-    if (!prompt) throw new Error("Prompt required");
+    const { prompt, image_size, style, quality, num_images, reference_images, model } = body;
+    if (typeof prompt !== "string" || !prompt.trim()) throw new Error("Prompt required");
+
+    let modelDef;
+    try {
+      modelDef = resolveImageModel(model);
+    } catch {
+      return new Response(JSON.stringify({ error: "Unsupported model selected" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const referenceImages = Array.isArray(reference_images) ? reference_images : [];
     const STYLES: Record<string, string> = {
       realistic: "photorealistic, high quality",
       illustration: "digital illustration, vibrant",
@@ -55,34 +88,83 @@ Deno.serve(async (req) => {
       oil: "oil painting",
       watercolor: "watercolor painting",
     };
-    const finalPrompt = style && STYLES[style] ? `${prompt}, ${STYLES[style]}` : prompt;
-    const hasRef = reference_images && reference_images.length > 0;
-    let modelId: string;
+    const finalPrompt = style && STYLES[style] ? `${prompt.trim()}, ${STYLES[style]}` : prompt.trim();
+
+    let endpoint: string;
     let falBody: Record<string, unknown>;
-    if (hasRef) {
-      modelId = "fal-ai/bytedance/seedream/v4.5/edit";
-      falBody = {
+    try {
+      const built = buildImagePayload({
+        model: modelDef,
         prompt: finalPrompt,
-        image_size: image_size || "auto_4K",
-        num_images: num_images || 1,
-        max_images: 1,
-        enable_safety_checker: true,
-        image_urls: reference_images,
-      };
-    } else {
-      modelId = "fal-ai/bytedance/seedream/v4.5/text-to-image";
-      falBody = {
-        prompt: finalPrompt,
-        image_size: image_size || "auto_2K",
-        num_images: num_images || 1,
-        max_images: 1,
-        enable_safety_checker: true,
-        seed: Math.floor(Math.random() * 999999),
-      };
+        size: image_size,
+        quality,
+        numImages: num_images,
+        referenceImages,
+      });
+      endpoint = built.endpoint;
+      falBody = built.body;
+    } catch (validationError) {
+      const code = String(validationError);
+      const message = code.includes("UNSUPPORTED_REFERENCE_IMAGES")
+        ? "GPT Image 2.5 Text to Image does not use reference images. Use Seedream 4.5 for the Reference to Image tab."
+        : "Unsupported generation settings";
+      return new Response(JSON.stringify({ error: message }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
-    console.log("[generate-image] Submitting to:", modelId);
-    console.log("[generate-image] Body:", JSON.stringify(falBody));
-    const submitRes = await fetch(`https://queue.fal.run/${modelId}`, {
+
+    chargedCredits = modelDef.credits;
+
+    // Create the generation before charging so the debit can be tied to a
+    // specific generation and safely refunded if provider submission fails.
+    const { data: generation, error: generationError } = await adminClient
+      .from("generations")
+      .insert({
+        user_id: user.id,
+        tool_type: "image",
+        prompt: prompt.trim(),
+        settings: {
+          model: modelDef.id,
+          provider: modelDef.provider,
+          image_size,
+          quality: quality || "auto",
+          style,
+          num_images: Number(num_images) || 1,
+          has_reference_images: referenceImages.length > 0,
+        },
+        status: "pending",
+        credits_used: isAdmin ? 0 : chargedCredits,
+        provider: modelDef.provider,
+      })
+      .select("id")
+      .single();
+
+    if (generationError || !generation) throw new Error("Could not create generation record");
+    generationId = generation.id;
+
+    if (!isAdmin) {
+      const { data: creditData, error: creditError } = await userClient.rpc("consume_credits", {
+        _tool: "image",
+        _amount: chargedCredits,
+        _generation_id: generationId,
+      });
+      const result = creditData as { success?: boolean; error?: string; balance?: number } | null;
+      if (creditError || !result?.success) {
+        await adminClient.from("generations").update({ status: "failed", error: result?.error || creditError?.message || "Insufficient credits" }).eq("id", generationId);
+        return new Response(JSON.stringify({
+          error: result?.error || creditError?.message || "Insufficient credits",
+          balance: result?.balance,
+          required: chargedCredits,
+          generation_id: generationId,
+        }), {
+          status: 402,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    const submitRes = await fetch(`https://queue.fal.run/${endpoint}`, {
       method: "POST",
       headers: {
         "Authorization": `Key ${FAL_API_KEY}`,
@@ -91,36 +173,77 @@ Deno.serve(async (req) => {
       body: JSON.stringify(falBody),
     });
     const submitText = await submitRes.text();
-    console.log("[generate-image] Submit response:", submitRes.status, submitText);
-    if (!submitRes.ok) throw new Error(`Fal.ai submit error: ${submitRes.status} - ${submitText}`);
-    const submitData = JSON.parse(submitText);
 
-    await supabase.from("generations").insert({
-      user_id: user.id,
-      tool_type: "image",
-      prompt: prompt.trim(),
-      settings: { style, image_size, num_images, hasRef },
-      external_id: submitData.request_id,
-      status: "pending",
-      credits_used: isAdmin ? 0 : 5,
-    });
+    if (!submitRes.ok) {
+      console.error(`[generate-image] Fal submit failed [${submitRes.status}] on ${endpoint}: ${submitText}`);
+      await adminClient.from("generations").update({ status: "failed", error: "The image service rejected this request." }).eq("id", generationId);
+
+      if (!isAdmin) {
+        await userClient.rpc("refund_generation_credits", { _generation_id: generationId });
+      }
+
+      const status = submitRes.status === 429 ? 429 : 502;
+      return new Response(JSON.stringify({
+        error: status === 429
+          ? "The image service is busy right now. Your credits were refunded. Please try again in a moment."
+          : "The image service rejected this request. Your credits were refunded. Please adjust your prompt or settings and try again.",
+        generation_id: generationId,
+      }), {
+        status,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const submitData = JSON.parse(submitText);
+    if (!submitData?.request_id || !submitData?.status_url || !submitData?.response_url) {
+      await adminClient.from("generations").update({ status: "failed", error: "The image service returned an invalid queue response." }).eq("id", generationId);
+      if (!isAdmin) await userClient.rpc("refund_generation_credits", { _generation_id: generationId });
+      throw new Error("Invalid Fal queue response");
+    }
+
+    await adminClient
+      .from("generations")
+      .update({
+        status: "pending",
+        settings: {
+          ...((generation as { id: string }).id ? {} : {}),
+          model: modelDef.id,
+          provider: modelDef.provider,
+          image_size,
+          quality: quality || "auto",
+          style,
+          num_images: Number(num_images) || 1,
+          has_reference_images: referenceImages.length > 0,
+          request_id: submitData.request_id,
+        },
+      })
+      .eq("id", generationId);
 
     return new Response(JSON.stringify({
       success: true,
       request_id: submitData.request_id,
       status_url: submitData.status_url,
       response_url: submitData.response_url,
-      model_id: modelId,
+      model: modelDef.id,
+      provider: modelDef.provider,
+      credits: chargedCredits,
+      generation_id: generationId,
       status: "queued",
       is_admin: isAdmin,
     }), {
-      headers: { ...cors, "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
     console.error("[generate-image] Error:", String(err));
-    return new Response(JSON.stringify({ error: String(err) }), {
+    if (generationId && adminClient) {
+      await adminClient.from("generations").update({ status: "failed", error: "Image generation failed." }).eq("id", generationId);
+      if (userClient && chargedCredits > 0) {
+        try { await userClient.rpc("refund_generation_credits", { _generation_id: generationId }); } catch (refundError) { console.error("[generate-image] Refund failed:", String(refundError)); }
+      }
+    }
+    return new Response(JSON.stringify({ error: "Image generation failed. Please try again.", generation_id: generationId }), {
       status: 500,
-      headers: { ...cors, "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
