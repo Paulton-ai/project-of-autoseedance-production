@@ -25,7 +25,6 @@ export const Route = createFileRoute("/tools/image")({
     meta: [
       { title: "GPT Image 2.5 Free Online – Flare & Sunburst | Auto Seedance" },
       { name: "description", content: "Use GPT Image 2.5 free online with Auto Seedance. Generate high-quality AI images with GPT Image 2.5 Flare and Sunburst from simple text prompts." },
-      { name: "keywords", content: "AI Image Generator, Free AI Image Generator, AI Art Generator, AI Photo Generator, text to image, Seedream AI, ByteDance Seedream, AI Image Editor, AI Image Upscaler, realistic AI images" },
       { name: "robots", content: "index, follow, max-image-preview:large, max-video-preview:-1" },
       { property: "og:title", content: "GPT Image 2.5 Free Online – Flare & Sunburst | Auto Seedance" },
       { property: "og:description", content: "Generate AI images online with GPT Image 2.5 Flare and Sunburst on Auto Seedance." },
