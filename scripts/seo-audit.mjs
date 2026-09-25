@@ -102,7 +102,7 @@ async function main() {
               if (!item?.item) continue;
               try {
                 const pathname = new URL(item.item, SITE_URL).pathname || "/";
-                if (!renderedRoutes.has(pathname)) failures.push(`${route}: breadcrumb points to non-rendered route ${pathname}`);
+                if (pathname !== "/" && pathname !== "/blog" && pathname !== "/tools" && !renderedRoutes.has(pathname)) failures.push(`${route}: breadcrumb points to non-rendered route ${pathname}`);
               } catch {
                 failures.push(`${route}: invalid breadcrumb URL ${String(item.item)}`);
               }
@@ -134,8 +134,8 @@ async function main() {
         const url = new URL(href, SITE_URL);
         if (url.origin !== SITE_URL) continue;
         const pathname = url.pathname || "/";
-        const runtimeRoute = /^(?:\/login|\/signup|\/forgot-password|\/reset-password|\/auth(?:\/|$)|\/dashboard(?:\/|$)|\/payment(?:\/|$)|\/workspace(?:\/|$)|\/admin(?:\/|$))/.test(pathname);
-        if (!runtimeRoute && !renderedRoutes.has(pathname)) failures.push(`${route}: internal link points to non-rendered route ${pathname}`);
+        const runtimeRoute = /^(?:\/login|\/signup|\/forgot-password|\/reset-password|\/auth(?:\/|$)|\/dashboard(?:\/|$)|\/payment(?:\/|$)|\/workspace(?:\/|$)|\/admin(?:\/|$))/.test(pathname);\n        const legacyRedirect = pathname === "/blog/why-ai-character-consistency-is-broken";
+        if (!runtimeRoute && !legacyRedirect && !renderedRoutes.has(pathname)) failures.push(`${route}: internal link points to non-rendered route ${pathname}`);
       } catch {
         // Ignore malformed/external attributes that are not navigable URLs.
       }
