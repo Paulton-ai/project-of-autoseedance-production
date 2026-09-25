@@ -23,7 +23,7 @@ export const Route = createFileRoute("/tools/reel-studio")({
   component: ReelStudioPage,
   head: () => ({
     meta: [
-      { title: "AI Reel Studio — Generate Short Videos with Voiceover | Auto Seedance" },
+      { title: "AI Reel Studio — Create Short Videos | Auto Seedance" },
       {
         name: "description",
         content:
@@ -31,7 +31,7 @@ export const Route = createFileRoute("/tools/reel-studio")({
       },
       { name: "robots", content: "index, follow" },
     ],
-    links: [{ rel: "canonical", href: "https://autoseedance.site/tools/reel-studio" }],
+    links: [{ rel: "canonical", href: "https://www.autoseedance.site/tools/reel-studio" }],
   }),
 });
 

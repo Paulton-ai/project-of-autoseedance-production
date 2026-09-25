@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { fetchAllPosts, type PostListItem } from "@/lib/sanity";
 
-const SITE_URL = "https://autoseedance.site";
+const SITE_URL = "https://www.autoseedance.site";
 const HERO_VIDEO = "https://vcercajwtbjbvjhzivjb.supabase.co/storage/v1/object/sign/uploads/Untitled%20design.mp4?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV80ZTVlNzIxOC0yZGFlLTRhNTEtODRkNS0yN2JjNGI0MzQ5MTEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL1VudGl0bGVkIGRlc2lnbi5tcDQiLCJzY29wZSI6ImRvd25sb2FkIiwiaWF0IjoxNzgxOTM1Mzg1LCJleHAiOjIwOTcyOTUzODV9.wKr8TxfhrTfRlUzrE2FAI6K9bmmz-5I-ut6i5qVXWtg";
 
 export const Route = createFileRoute("/")({
@@ -36,14 +36,14 @@ export const Route = createFileRoute("/")({
     ];
     return {
       meta: [
-        { title: "AI Image Generator, AI Video Generator & AI Reel Studio | Auto Seedance" },
-        { name: "description", content: "Create AI images, generate AI videos, and turn ideas into finished reels with Auto Seedance. Write an idea, generate scenes, add voiceover and captions, edit, and export social-ready content from one creator platform." },
+        { title: "AI Image, Video & Reel Generator | Auto Seedance" },
+        { name: "description", content: "Create AI images, generate AI videos, and turn ideas into finished reels with Auto Seedance. Build social-ready content from one creator platform." },
         { name: "robots", content: "index, follow, max-image-preview:large, max-video-preview:-1" },
         { property: "og:title", content: "Auto Seedance — AI Images, AI Videos & AI Reel Studio" },
         { property: "og:description", content: "One creator platform for AI image generation, AI video generation, and idea-to-reel content creation." },
         { property: "og:url", content: `${SITE_URL}/` },
         { property: "og:type", content: "website" },
-        { property: "og:image", content: `${SITE_URL}/og-image.png` },
+        { property: "og:image", content: `${SITE_URL}/web-app-manifest-512x512.png` },
         { property: "og:image:alt", content: "Auto Seedance AI content creation platform" },
         { name: "twitter:card", content: "summary_large_image" },
         { name: "twitter:title", content: "Auto Seedance — AI Images, Videos & Reels" },
@@ -55,7 +55,6 @@ export const Route = createFileRoute("/")({
         { type: "application/ld+json", children: JSON.stringify({ "@context": "https://schema.org", "@type": "SoftwareApplication", name: "Auto Seedance", applicationCategory: "MultimediaApplication", operatingSystem: "Web Browser", url: SITE_URL, description: "AI image, video and short-form content creation tools for creators." }) },
         { type: "application/ld+json", children: JSON.stringify({ "@context": "https://schema.org", "@type": "WebSite", name: "Auto Seedance", url: SITE_URL, description: "AI image generator, AI video generator and AI Reel Studio for content creators." }) },
         { type: "application/ld+json", children: JSON.stringify({ "@context": "https://schema.org", "@type": "ItemList", name: "Latest Auto Seedance guides", itemListElement: blogItems }) },
-        { type: "application/ld+json", children: JSON.stringify({ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faqs.map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })) }) },
       ],
     };
   },

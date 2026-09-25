@@ -45,19 +45,18 @@ export const Route = createFileRoute("/pricing")({
   component: PricingPage,
   head: () => ({
     meta: [
-      { title: "Pricing — Free AI Image & Video Generation Credits | Auto Seedance" },
-      { name: "description", content: "Simple credit-based pricing for AI image and video generation. Start free with 30 credits. Image generation 5 credits, video generation 30 credits. No credit card required. Flexible monthly plans available." },
-      { name: "keywords", content: "AI image generator pricing, AI video generator cost, free AI credits, credit-based AI generation, Auto Seedance pricing, affordable AI generation" },
+      { title: "AI Generation Pricing & Credits | Auto Seedance" },
+      { name: "description", content: "See Auto Seedance pricing for AI image, video, and reel generation. Review promotional credits, monthly plans, generation costs, and current plan features." },
       { name: "robots", content: "index, follow, max-image-preview:large" },
       { property: "og:title", content: "Pricing — Free AI Image & Video Generation Credits" },
       { property: "og:description", content: "Simple credit-based pricing. Start free with 30 credits. No credit card required." },
       { property: "og:url", content: "https://www.autoseedance.site/pricing" },
       { property: "og:type", content: "website" },
-      { property: "og:image", content: "https://www.autoseedance.site/og-image.png" },
+      { property: "og:image", content: "https://www.autoseedance.site/web-app-manifest-512x512.png" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Pricing — Auto Seedance AI" },
       { name: "twitter:description", content: "Simple credit-based pricing. Start free with 30 credits." },
-      { name: "twitter:image", content: "https://www.autoseedance.site/og-image.png" },
+      { name: "twitter:image", content: "https://www.autoseedance.site/web-app-manifest-512x512.png" },
     ],
     links: [{ rel: "canonical", href: "https://www.autoseedance.site/pricing" }],
     scripts: [
@@ -69,19 +68,6 @@ export const Route = createFileRoute("/pricing")({
           itemListElement: [
             { "@type": "ListItem", position: 1, name: "Home", item: "https://www.autoseedance.site/" },
             { "@type": "ListItem", position: 2, name: "Pricing", item: "https://www.autoseedance.site/pricing" },
-          ],
-        }),
-      },
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "FAQPage",
-          mainEntity: [
-            { "@type": "Question", name: "How much does AI image generation cost?", acceptedAnswer: { "@type": "Answer", text: "Each AI image generation costs 5 credits. You start with 30 free credits, giving you 6 free images. Paid plans offer more credits at better rates." } },
-            { "@type": "Question", name: "How much does AI video generation cost?", acceptedAnswer: { "@type": "Answer", text: "Each AI video generation costs 30 credits. Video generation is more resource-intensive, including AI audio and higher processing requirements." } },
-            { "@type": "Question", name: "Do credits expire?", acceptedAnswer: { "@type": "Answer", text: "Credits on paid plans reset monthly with your subscription. Free credits from sign-up have no expiration." } },
-            { "@type": "Question", name: "Can I use credits for both images and videos?", acceptedAnswer: { "@type": "Answer", text: "Yes, credits are flexible and can be used across all AI tools. Use them for images, videos, or a mix of both." } },
           ],
         }),
       },

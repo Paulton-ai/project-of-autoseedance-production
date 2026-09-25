@@ -14,9 +14,9 @@ interface BreadcrumbProps {
 export function Breadcrumb({ items, className = "" }: BreadcrumbProps) {
   if (items.length === 0) return null;
 
-  // Tool pages currently pass a legacy "Tools" parent, but /tools is not a real route.
-  // Keep the breadcrumb useful and clickable: Home → specific tool.
-  const visibleItems = items.filter((item) => item.name.toLowerCase() !== "tools");
+  // /tools is the canonical public tool hub, so keep it in the breadcrumb hierarchy.
+
+  const visibleItems = items;
 
   const jsonLd = {
     "@context": "https://schema.org",

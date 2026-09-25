@@ -23,15 +23,14 @@ export const Route = createFileRoute("/tools/image")({
   component: ImageToolPage,
   head: () => ({
     meta: [
-      { title: "Free AI Image Generator — Create AI Art Online | Auto Seedance" },
-      { name: "description", content: "Generate stunning AI images for free with Auto Seedance. Text to image AI generator with realistic, anime, 3D, vector, and artistic styles. Up to 4K resolution. 5 credits per image. Start with 50 free credits." },
-      { name: "keywords", content: "AI Image Generator, Free AI Image Generator, AI Art Generator, AI Photo Generator, text to image, Seedream AI, ByteDance Seedream, AI Image Editor, AI Image Upscaler, realistic AI images" },
+      { title: "GPT Image 2.5 Free Online – Flare & Sunburst | Auto Seedance" },
+      { name: "description", content: "Use GPT Image 2.5 free online with Auto Seedance. Generate high-quality AI images with GPT Image 2.5 Flare and Sunburst from simple text prompts." },
       { name: "robots", content: "index, follow, max-image-preview:large, max-video-preview:-1" },
-      { property: "og:title", content: "Free AI Image Generator — Create AI Art Online" },
-      { property: "og:description", content: "Generate stunning AI images for free. Multiple styles, up to 4K resolution. 5 credits per image." },
-      { property: "og:url", content: "https://autoseedance.site/tools/image" },
+      { property: "og:title", content: "GPT Image 2.5 Free Online – Flare & Sunburst | Auto Seedance" },
+      { property: "og:description", content: "Generate AI images online with GPT Image 2.5 Flare and Sunburst on Auto Seedance." },
+      { property: "og:url", content: "https://www.autoseedance.site/tools/image" },
       { property: "og:type", content: "website" },
-      { property: "og:image", content: "https://autoseedance.site/og-image.png" },
+      { property: "og:image", content: "https://www.autoseedance.site/web-app-manifest-512x512.png" },
       { property: "og:image:alt", content: "AI Image Generator - Create stunning visuals from text prompts" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Free AI Image Generator — Auto Seedance" },
@@ -40,19 +39,6 @@ export const Route = createFileRoute("/tools/image")({
     ],
     links: [{ rel: "canonical", href: "https://autoseedance.site/tools/image" }],
     scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Service",
-          name: "AI Image Generation",
-          description: "Generate high-quality AI images from text prompts. Choose from realistic, anime, 3D, vector, and artistic styles with resolutions up to 4K.",
-          url: "https://autoseedance.site/tools/image",
-          provider: { "@type": "Organization", name: "Auto Seedance" },
-          offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-          aggregateRating: { "@type": "AggregateRating", ratingValue: "4.9", ratingCount: "850" },
-        }),
-      },
       {
         type: "application/ld+json",
         children: JSON.stringify({
@@ -74,20 +60,6 @@ export const Route = createFileRoute("/tools/image")({
             { "@type": "ListItem", position: 1, name: "Home", item: "https://autoseedance.site/" },
             { "@type": "ListItem", position: 2, name: "Tools", item: "https://autoseedance.site/tools" },
             { "@type": "ListItem", position: 3, name: "Image Generator", item: "https://autoseedance.site/tools/image" },
-          ],
-        }),
-      },
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "FAQPage",
-          mainEntity: [
-            { "@type": "Question", name: "How does the AI image generator work?", acceptedAnswer: { "@type": "Answer", text: "Enter a text prompt describing your desired image, choose a style (realistic, anime, 3D, vector, oil painting, watercolor), select resolution (up to 4K), and click Generate. The AI creates your image in seconds using Seedream AI." } },
-            { "@type": "Question", name: "Is the AI image generator free?", acceptedAnswer: { "@type": "Answer", text: "Yes, you start with 50 free credits. Each image costs 5 credits, giving you 10 free images to start. No credit card required." } },
-            { "@type": "Question", name: "What image styles are available?", acceptedAnswer: { "@type": "Answer", text: "We offer Realistic Photo, Digital Illustration, Vector Art, 3D Render, Anime/Manga, Oil Painting, and Watercolor styles." } },
-            { "@type": "Question", name: "Can I use reference images?", acceptedAnswer: { "@type": "Answer", text: "Yes, upload up to 10 reference images to guide the AI's style and composition. This helps create images that match your creative vision." } },
-            { "@type": "Question", name: "What resolutions are supported?", acceptedAnswer: { "@type": "Answer", text: "Auto 2K, Auto 4K, Square HD, Landscape 4:3, and Portrait 4:3. Perfect for social media, print, and digital content." } },
           ],
         }),
       },

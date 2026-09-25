@@ -17,6 +17,14 @@ import { Twitter, Link2, MessageCircle, Check, User, Calendar, Clock } from "luc
 
 const SITE_URL = "https://www.autoseedance.site";
 
+function fitMeta(value: string, maxLength: number): string {
+  const normalized = value.replace(/\s+/g, " ").trim();
+  if (normalized.length <= maxLength) return normalized;
+  const cut = normalized.slice(0, maxLength - 1);
+  const boundary = cut.lastIndexOf(" ");
+  return `${(boundary > Math.floor(maxLength * 0.72) ? cut.slice(0, boundary) : cut).replace(/[|,:;\-–—]+\s*$/, "")}…`;
+}
+
 export const Route = createFileRoute("/blog/$slug")({
   loader: async ({ params }) => {
     const post = await fetchPostBySlug(params.slug);
@@ -28,8 +36,8 @@ export const Route = createFileRoute("/blog/$slug")({
     const post = loaderData?.post as PostDetail | undefined;
     if (!post) return {};
     const url = `${SITE_URL}/blog/${params.slug}`;
-    const title = post.seoTitle || `${post.title} | Auto Seedance Blog`;
-    const description = post.seoDescription || post.excerpt || `${post.title} — read on the Auto Seedance blog.`;
+    const title = fitMeta(post.seoTitle || `${post.title} | Auto Seedance Blog`, 65);
+    const description = fitMeta(post.seoDescription || post.excerpt || `${post.title} — read on the Auto Seedance blog.`, 160);
     const ogImage = post.mainImage
       ? urlFor(post.mainImage).width(1200).height(630).fit("crop").auto("format").url()
       : `${SITE_URL}/og-image.png`;
@@ -92,14 +100,6 @@ export const Route = createFileRoute("/blog/$slug")({
             ],
           }),
         },
-        ...(post.faqs && post.faqs.length > 0 ? [{
-          type: "application/ld+json",
-          children: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "FAQPage",
-            mainEntity: post.faqs.map((f) => ({ "@type": "Question", name: f.question, acceptedAnswer: { "@type": "Answer", text: f.answer } })),
-          }),
-        }] : []),
       ],
     };
   },
@@ -145,7 +145,7 @@ function PostPage() {
     } catch { /* noop */ }
   };
 
-  const cover = active.mainImage ? urlFor(active.mainImage).width(1600).height(900).fit("crop").auto("format").url() : null;
+  const cover = active.mainImage ? urlFor(active.mainImage).width(1200).height(675).fit("crop").quality(72).auto("format").url() : null;
   const coverAlt = active.mainImage?.alt || active.title;
   const authorImage = active.authorImage ? urlFor(active.authorImage).width(160).height(160).fit("crop").auto("format").url() : null;
   const dateModified = active.updatedAt || active.publishedAt;
@@ -173,7 +173,7 @@ function PostPage() {
 
             {cover && (
               <figure className="aspect-[16/9] overflow-hidden rounded-2xl bg-muted mb-6">
-                <img src={cover} alt={coverAlt} width={1600} height={900} fetchPriority="high" decoding="async" className="h-full w-full object-cover" />
+                <img src={cover} alt={coverAlt} width={1200} height={675} fetchPriority="high" decoding="async" className="h-full w-full object-cover" />
               </figure>
             )}
 
@@ -241,10 +241,10 @@ function PostPage() {
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   {relatedPosts.map((related) => {
-                    const image = related.mainImage ? urlFor(related.mainImage).width(640).height(360).fit("crop").auto("format").url() : null;
+                    const image = related.mainImage ? urlFor(related.mainImage).width(480).height(270).fit("crop").quality(72).auto("format").url() : null;
                     return (
                       <Link key={related._id} to="/blog/$slug" params={{ slug: related.slug.current }} className="group overflow-hidden rounded-2xl border border-border bg-card transition-colors hover:border-primary/40">
-                        {image && <img src={image} alt={related.mainImage?.alt || related.title} width={640} height={360} loading="lazy" decoding="async" className="aspect-[16/9] w-full object-cover" />}
+                        {image && <img src={image} alt={related.mainImage?.alt || related.title} width={480} height={270} loading="lazy" decoding="async" className="aspect-[16/9] w-full object-cover" />}
                         <div className="p-4">
                           {related.category && <span className="text-[11px] font-semibold uppercase tracking-wider text-primary">{related.category}</span>}
                           <h3 className="mt-1 font-semibold leading-snug group-hover:text-primary">{related.title}</h3>

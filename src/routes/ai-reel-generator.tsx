@@ -8,7 +8,7 @@ export const Route = createFileRoute("/ai-reel-generator")({
   component: AIReelGeneratorPage,
   head: () => ({
     meta: [
-      { title: "AI Reel Generator — Create Short Videos From Ideas | Auto Seedance" },
+      { title: "AI Reel Generator — Create Short Videos | Auto Seedance" },
       {
         name: "description",
         content:
