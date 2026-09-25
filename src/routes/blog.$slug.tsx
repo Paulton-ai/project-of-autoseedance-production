@@ -137,7 +137,7 @@ function PostPage() {
     } catch { /* noop */ }
   };
 
-  const cover = active.mainImage ? urlFor(active.mainImage).width(1200).height(675).fit("crop").auto("format").url() : null;
+  const cover = active.mainImage ? urlFor(active.mainImage).width(1200).height(675).fit("crop").quality(72).auto("format").url() : null;
   const coverAlt = active.mainImage?.alt || active.title;
   const authorImage = active.authorImage ? urlFor(active.authorImage).width(160).height(160).fit("crop").auto("format").url() : null;
   const dateModified = active.updatedAt || active.publishedAt;
@@ -233,7 +233,7 @@ function PostPage() {
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   {relatedPosts.map((related) => {
-                    const image = related.mainImage ? urlFor(related.mainImage).width(480).height(270).fit("crop").auto("format").url() : null;
+                    const image = related.mainImage ? urlFor(related.mainImage).width(480).height(270).fit("crop").quality(72).auto("format").url() : null;
                     return (
                       <Link key={related._id} to="/blog/$slug" params={{ slug: related.slug.current }} className="group overflow-hidden rounded-2xl border border-border bg-card transition-colors hover:border-primary/40">
                         {image && <img src={image} alt={related.mainImage?.alt || related.title} width={480} height={270} loading="lazy" decoding="async" className="aspect-[16/9] w-full object-cover" />}
