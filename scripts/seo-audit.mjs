@@ -127,7 +127,7 @@ async function main() {
   // Validate same-site crawlable hrefs in prerendered HTML so future broken internal
   // links are caught during the build instead of being discovered later by crawlers.
   for (const [route, html] of routeHtml) {
-    const hrefs = [...html.matchAll(/\bhref=["']([^"']+)["']/gi)].map((m) => m[1]);
+    const hrefs = [...html.matchAll(/<a\b[^>]*\bhref=["']([^"']+)["']/gi)].map((m) => m[1]);
     for (const href of hrefs) {
       if (!href || /^(?:#|mailto:|tel:|javascript:|data:)/i.test(href)) continue;
       try {
