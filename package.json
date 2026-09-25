@@ -5,12 +5,13 @@
   "packageManager": "npm@10.9.2",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/prepare-build.mjs && node scripts/prepare-gpt-image-25-ui.mjs && node scripts/prepare-gpt-image-25-seo.mjs && npm run sitemap && vite build && vite build --ssr src/entry-server.tsx --outDir dist/server && node scripts/prerender.mjs && node scripts/seo-audit.mjs",
+    "build": "npm run generate:routes && node scripts/prepare-build.mjs && node scripts/prepare-gpt-image-25-ui.mjs && node scripts/prepare-gpt-image-25-seo.mjs && npm run sitemap && vite build && vite build --ssr src/entry-server.tsx --outDir dist/server && node scripts/prerender.mjs && node scripts/seo-audit.mjs",
     "build:dev": "npm run sitemap && vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
     "sitemap": "npx tsx scripts/generate-sitemap.ts",
-    "seo:audit": "node scripts/seo-audit.mjs"
+    "seo:audit": "node scripts/seo-audit.mjs",
+    "generate:routes": "tsr generate"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -83,6 +84,7 @@
     "@vitejs/plugin-react": "^5.0.4",
     "typescript": "^5.8.3",
     "vite": "^7.3.1",
-    "vite-tsconfig-paths": "^6.0.2"
+    "vite-tsconfig-paths": "^6.0.2",
+    "@tanstack/router-cli": "1.168.10"
   }
 }
