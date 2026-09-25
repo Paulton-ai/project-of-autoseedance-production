@@ -44,18 +44,6 @@ export const Route = createFileRoute("/tools/image")({
         type: "application/ld+json",
         children: JSON.stringify({
           "@context": "https://schema.org",
-          "@type": "Service",
-          name: "AI Image Generation",
-          description: "Generate high-quality AI images from text prompts. Choose from realistic, anime, 3D, vector, and artistic styles with resolutions up to 4K.",
-          url: "https://autoseedance.site/tools/image",
-          provider: { "@type": "Organization", name: "Auto Seedance" },
-          offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-        }),
-      },
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
           "@type": "SoftwareApplication",
           name: "Auto Seedance Image Generator",
           applicationCategory: "DesignApplication",
