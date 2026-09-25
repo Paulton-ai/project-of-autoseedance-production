@@ -17,7 +17,7 @@ export function categoryBadgeClass(category?: string) {
 
 export function PostCard({ post, priority = false }: { post: PostListItem; priority?: boolean }) {
   const cover = post.mainImage
-    ? urlFor(post.mainImage).width(800).height(450).fit("crop").auto("format").url()
+    ? urlFor(post.mainImage).width(640).height(360).fit("crop").quality(72).auto("format").url()
     : null;
   const coverAlt = post.mainImage?.alt?.trim() || post.title;
 
