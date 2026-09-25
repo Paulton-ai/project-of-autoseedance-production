@@ -5,7 +5,7 @@ const file = path.resolve("src/routes/tools.image.tsx");
 let source = fs.readFileSync(file, "utf8");
 
 source = source
-  .replace(/\{ title: "[^"]*" \},/, '{ title: "GPT Image 2.5 Free Online – Flare & Sunburst AI Image Generator | Auto Seedance" },')
+  .replace(/\{ title: "[^"]*" \},/, '{ title: "GPT Image 2.5 Free Online – Flare & Sunburst | Auto Seedance" },')
   .replace(/\{ name: "description", content: "[^"]*" \},/, '{ name: "description", content: "Use GPT Image 2.5 free online with Auto Seedance. Generate high-quality AI images with GPT Image 2.5 Flare and Sunburst from simple text prompts." },')
   .replace(/\n\s*\{ name: "keywords", content: "[^"]*" \},/, "")
   .replace(/\{ property: "og:title", content: "[^"]*" \},/, '{ property: "og:title", content: "GPT Image 2.5 Free Online – Flare & Sunburst | Auto Seedance" },')
