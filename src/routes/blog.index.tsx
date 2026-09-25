@@ -26,7 +26,7 @@ export const Route = createFileRoute("/blog/")({
         {
           name: "description",
           content:
-            "Read practical AI image and video tutorials, prompt guides, tool explainers, and case studies for creators.",
+            "Read practical AI image and video tutorials, prompt guides, tool explainers, and creator-focused case studies from Auto Seedance.",
         },
         { name: "robots", content: "index, follow, max-image-preview:large" },
         { property: "og:title", content: "Auto Seedance Blog" },
