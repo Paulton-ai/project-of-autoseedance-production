@@ -8,6 +8,7 @@ const SANITY_API_VERSION = "2024-01-01";
 
 const STATIC_PAGES = [
   { path: "/", title: "Auto Seedance", description: "AI image, video, and short-form content creation platform." },
+  { path: "/tools", title: "AI Tools", description: "AI image, video, and reel creation tools from Auto Seedance." },
   { path: "/tools/image", title: "AI Image Generator", description: "Generate AI images from text prompts and reference images." },
   { path: "/tools/video", title: "AI Video Generator", description: "Generate AI video clips from text prompts with supported models and output settings." },
   { path: "/tools/reel-studio", title: "AI Reel Studio", description: "Turn an idea into a short-form video with scenes, voiceover, captions, and export." },
