@@ -12,7 +12,7 @@ export const Route = createFileRoute("/how-we-test-ai-video-tools")({
       {
         name: "description",
         content:
-          "Learn the evaluation framework Auto Seedance uses when publishing AI video tool tests and comparisons, including prompt adherence, motion, consistency, audio, speed, cost, and usability.",
+          "Learn how Auto Seedance documents AI video tests, including prompts, motion, consistency, audio, speed, cost, usability, and limitations.",
       },
       { name: "robots", content: "index, follow, max-image-preview:large, max-snippet:-1" },
       { property: "og:title", content: "How We Test AI Video Tools — Auto Seedance" },
