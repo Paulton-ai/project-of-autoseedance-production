@@ -91,6 +91,43 @@ function injectGoogleAnalytics(html) {
   return html.replace("</head>", `\n    <!-- Google Analytics 4: site-wide measurement -->\n    ${GA_SCRIPT}\n  </head>`);
 }
 
+function fitMetaText(value, maxLength) {
+  const normalized = value.replace(/\s+/g, " ").trim();
+  if (normalized.length <= maxLength) return normalized;
+  const cut = normalized.slice(0, maxLength - 1);
+  const boundary = cut.lastIndexOf(" ");
+  const safe = boundary > Math.floor(maxLength * 0.72) ? cut.slice(0, boundary) : cut;
+  return safe.replace(/[|,:;\-–—]+\s*$/, "") + "…";
+}
+
+function normalizePrerenderedSeo(html) {
+  let output = html;
+
+  const titleMatch = output.match(/<title>([^<]*)<\/title>/i);
+  if (titleMatch) {
+    const title = fitMetaText(titleMatch[1], 65);
+    output = output.replace(titleMatch[0], `<title>${title}</title>`);
+    output = output.replace(/(<meta[^>]+property=["']og:title["'][^>]+content=["'])([^"']*)(["'][^>]*>)/i, `$1${title}$3`);
+    output = output.replace(/(<meta[^>]+name=["']twitter:title["'][^>]+content=["'])([^"']*)(["'][^>]*>)/i, `$1${title}$3`);
+  }
+
+  const descriptionMatch = output.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["'][^>]*>/i);
+  if (descriptionMatch) {
+    const description = fitMetaText(descriptionMatch[1], 160);
+    output = output.replace(descriptionMatch[0], descriptionMatch[0].replace(descriptionMatch[1], description));
+    output = output.replace(/(<meta[^>]+property=["']og:description["'][^>]+content=["'])([^"']*)(["'][^>]*>)/i, `$1${description}$3`);
+    output = output.replace(/(<meta[^>]+name=["']twitter:description["'][^>]+content=["'])([^"']*)(["'][^>]*>)/i, `$1${description}$3`);
+  }
+
+  // Two legacy CMS articles still contain the old promotional credit wording.
+  // Normalize the published HTML until those Sanity records are edited at the source.
+  output = output
+    .replaceAll("50 free credits", "30 free credits")
+    .replaceAll("50 Free Credits", "30 Free Credits");
+
+  return output;
+}
+
 function extractUrls(xml) {
   return [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) =>
     m[1]
@@ -186,6 +223,7 @@ async function writeRoute(urlString, render, assets) {
   let finalHtml = injectClientAssets(html, assets);
   finalHtml = injectAdSense(finalHtml);
   finalHtml = injectGoogleAnalytics(finalHtml);
+  finalHtml = normalizePrerenderedSeo(finalHtml);
   assertPublicHtml(finalHtml, urlString);
 
   const output = outputPathFor(urlString);
@@ -252,6 +290,7 @@ async function main() {
   const rootHtml = await fs.readFile(path.join(DIST, "index.html"), "utf8");
   let rootFinal = injectAdSense(rootHtml);
   rootFinal = injectGoogleAnalytics(rootFinal);
+  rootFinal = normalizePrerenderedSeo(rootFinal);
   assertPublicHtml(rootFinal, SITE_URL);
   if (rootFinal !== rootHtml) {
     await fs.writeFile(path.join(DIST, "index.html"), rootFinal, "utf8");
