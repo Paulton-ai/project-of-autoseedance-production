@@ -31,7 +31,7 @@ export const Route = createFileRoute("/tools/reel-studio")({
       },
       { name: "robots", content: "index, follow" },
     ],
-    links: [{ rel: "canonical", href: "https://autoseedance.site/tools/reel-studio" }],
+    links: [{ rel: "canonical", href: "https://www.autoseedance.site/tools/reel-studio" }],
   }),
 });
 
