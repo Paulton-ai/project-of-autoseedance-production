@@ -23,7 +23,7 @@ export const Route = createFileRoute("/tools/reel-studio")({
   component: ReelStudioPage,
   head: () => ({
     meta: [
-      { title: "AI Reel Studio — Generate Short Videos with Voiceover | Auto Seedance" },
+      { title: "AI Reel Studio — Create Short Videos | Auto Seedance" },
       {
         name: "description",
         content:
