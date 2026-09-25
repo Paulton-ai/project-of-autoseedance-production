@@ -54,6 +54,7 @@ async function main() {
   const failures = [];
   const warnings = [];
   const renderedRoutes = new Set();
+  const routeHtml = new Map();
 
   for (const file of htmlFiles) {
     const route = routeFromFile(file);
@@ -67,6 +68,7 @@ async function main() {
     const isNoindex = /(^|[,\s])noindex([,\s]|$)/i.test(robots);
 
     renderedRoutes.add(route);
+    routeHtml.set(route, html);
     if (isNoindex) continue;
 
     if (!title) failures.push(`${route}: missing <title>`);
@@ -76,10 +78,41 @@ async function main() {
     if (!canonical) failures.push(`${route}: missing canonical`);
     else if (!canonical.startsWith(`${SITE_URL}/`) && canonical !== SITE_URL) failures.push(`${route}: non-canonical host ${canonical}`);
     if (textLength < 300) warnings.push(`${route}: only ${textLength} visible text characters; review for thin content`);
+    if (title.length > 65) failures.push(`${route}: title is ${title.length} characters; shorten to 65 or fewer`);
+    if (description.length > 160) failures.push(`${route}: meta description is ${description.length} characters; shorten to 160 or fewer`);
+    if (description.length > 0 && description.length < 120) warnings.push(`${route}: meta description is only ${description.length} characters; consider expanding toward 120-160`);
     if (html.includes("AggregateRating")) failures.push(`${route}: AggregateRating structured data remains in prerendered HTML`);
     if (html.includes("50 free credits") || html.includes("50 Free Credits") || html.includes("50 credits")) warnings.push(`${route}: stale 50-credit wording remains; update the source article/content in Sanity`);
     if (html.includes("https://autoseedance.site")) failures.push(`${route}: non-www canonical/metadata URL remains in prerendered HTML`);
     if (html.includes("/og-image.png")) failures.push(`${route}: missing/legacy /og-image.png reference remains in prerendered HTML`);
+    
+    const ldJsonBlocks = [...html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1].trim());
+    for (const block of ldJsonBlocks) {
+      try {
+        const data = JSON.parse(block);
+        const nodes = Array.isArray(data) ? data : [data];
+        for (const node of nodes) {
+          if (!node || typeof node !== "object") continue;
+          const type = node["@type"];
+          if (type === "FAQPage") failures.push(`${route}: FAQPage structured data should not be emitted for this site`);
+          if (type === "VideoApplication") failures.push(`${route}: unsupported VideoApplication schema category remains`);
+          if (node.aggregateRating || type === "AggregateRating") failures.push(`${route}: unsupported/fabricated rating structured data remains`);
+          if (type === "BreadcrumbList" && Array.isArray(node.itemListElement)) {
+            for (const item of node.itemListElement) {
+              if (!item?.item) continue;
+              try {
+                const pathname = new URL(item.item, SITE_URL).pathname || "/";
+                if (!renderedRoutes.has(pathname)) failures.push(`${route}: breadcrumb points to non-rendered route ${pathname}`);
+              } catch {
+                failures.push(`${route}: invalid breadcrumb URL ${String(item.item)}`);
+              }
+            }
+          }
+        }
+      } catch (error) {
+        failures.push(`${route}: invalid JSON-LD block (${error instanceof Error ? error.message : "parse error"})`);
+      }
+    }
   }
 
   for (const url of sitemapUrls) {
@@ -89,6 +122,23 @@ async function main() {
       continue;
     }
     if (!renderedRoutes.has(pathname)) failures.push(`sitemap: ${pathname} has no prerendered HTML`);
+  }
+
+  // Validate same-site crawlable hrefs in prerendered HTML so future broken internal
+  // links are caught during the build instead of being discovered later by crawlers.
+  for (const [route, html] of routeHtml) {
+    const hrefs = [...html.matchAll(/\bhref=["']([^"']+)["']/gi)].map((m) => m[1]);
+    for (const href of hrefs) {
+      if (!href || /^(?:#|mailto:|tel:|javascript:|data:)/i.test(href)) continue;
+      try {
+        const url = new URL(href, SITE_URL);
+        if (url.origin !== SITE_URL) continue;
+        const pathname = url.pathname || "/";
+        if (!renderedRoutes.has(pathname)) failures.push(`${route}: internal link points to non-rendered route ${pathname}`);
+      } catch {
+        // Ignore malformed/external attributes that are not navigable URLs.
+      }
+    }
   }
 
   const sitemapSet = new Set(sitemapUrls.map((url) => new URL(url).pathname || "/"));
