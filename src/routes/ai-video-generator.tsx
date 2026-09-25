@@ -8,7 +8,7 @@ export const Route = createFileRoute("/ai-video-generator")({
   component: AIVideoGeneratorPage,
   head: () => ({
     meta: [
-      { title: "AI Video Generator — Create Text-to-Video Clips | Auto Seedance" },
+      { title: "AI Video Generator — Create Videos Online | Auto Seedance" },
       {
         name: "description",
         content:
