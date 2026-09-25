@@ -39,9 +39,9 @@ export const Route = createFileRoute("/tools")({
           mainEntity: {
             "@type": "ItemList",
             itemListElement: [
-              { "@type": "ListItem", position: 1, name: "AI Image Generator", url: `${SITE_URL}/tools/image` },
-              { "@type": "ListItem", position: 2, name: "AI Video Generator", url: `${SITE_URL}/tools/video` },
-              { "@type": "ListItem", position: 3, name: "AI Reel Studio", url: `${SITE_URL}/tools/reel-studio` },
+              { "@type": "ListItem", position: 1, name: "AI Image Generator", url: `${SITE_URL}/ai-image-generator` },
+              { "@type": "ListItem", position: 2, name: "AI Video Generator", url: `${SITE_URL}/ai-video-generator` },
+              { "@type": "ListItem", position: 3, name: "AI Reel Studio", url: `${SITE_URL}/ai-reel-generator` },
             ],
           },
         }),
@@ -66,19 +66,19 @@ const tools = [
     icon: ImageIcon,
     title: "AI Image Generator",
     text: "Create images from text prompts with supported styles, reference inputs, and output settings.",
-    href: "/tools/image" as const,
+    href: "/ai-image-generator" as const,
   },
   {
     icon: Video,
     title: "AI Video Generator",
     text: "Turn scene descriptions into short AI video clips with supported resolution, aspect ratio, and reference controls.",
-    href: "/tools/video" as const,
+    href: "/ai-video-generator" as const,
   },
   {
     icon: Clapperboard,
     title: "AI Reel Studio",
     text: "Move from an idea to a structured short-form video workflow with scenes, voiceover, captions, assembly, and export.",
-    href: "/tools/reel-studio" as const,
+    href: "/ai-reel-generator" as const,
   },
 ];
 
