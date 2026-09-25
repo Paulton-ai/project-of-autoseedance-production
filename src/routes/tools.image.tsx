@@ -50,7 +50,6 @@ export const Route = createFileRoute("/tools/image")({
           url: "https://autoseedance.site/tools/image",
           provider: { "@type": "Organization", name: "Auto Seedance" },
           offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-          aggregateRating: { "@type": "AggregateRating", ratingValue: "4.9", ratingCount: "850" },
         }),
       },
       {
@@ -74,20 +73,6 @@ export const Route = createFileRoute("/tools/image")({
             { "@type": "ListItem", position: 1, name: "Home", item: "https://autoseedance.site/" },
             { "@type": "ListItem", position: 2, name: "Tools", item: "https://autoseedance.site/tools" },
             { "@type": "ListItem", position: 3, name: "Image Generator", item: "https://autoseedance.site/tools/image" },
-          ],
-        }),
-      },
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "FAQPage",
-          mainEntity: [
-            { "@type": "Question", name: "How does the AI image generator work?", acceptedAnswer: { "@type": "Answer", text: "Enter a text prompt describing your desired image, choose a style (realistic, anime, 3D, vector, oil painting, watercolor), select resolution (up to 4K), and click Generate. The AI creates your image in seconds using Seedream AI." } },
-            { "@type": "Question", name: "Is the AI image generator free?", acceptedAnswer: { "@type": "Answer", text: "Yes, you start with 50 free credits. Each image costs 5 credits, giving you 10 free images to start. No credit card required." } },
-            { "@type": "Question", name: "What image styles are available?", acceptedAnswer: { "@type": "Answer", text: "We offer Realistic Photo, Digital Illustration, Vector Art, 3D Render, Anime/Manga, Oil Painting, and Watercolor styles." } },
-            { "@type": "Question", name: "Can I use reference images?", acceptedAnswer: { "@type": "Answer", text: "Yes, upload up to 10 reference images to guide the AI's style and composition. This helps create images that match your creative vision." } },
-            { "@type": "Question", name: "What resolutions are supported?", acceptedAnswer: { "@type": "Answer", text: "Auto 2K, Auto 4K, Square HD, Landscape 4:3, and Portrait 4:3. Perfect for social media, print, and digital content." } },
           ],
         }),
       },
