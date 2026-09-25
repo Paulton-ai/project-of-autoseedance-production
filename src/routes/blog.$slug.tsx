@@ -22,7 +22,7 @@ function fitMeta(value: string, maxLength: number): string {
   if (normalized.length <= maxLength) return normalized;
   const cut = normalized.slice(0, maxLength - 1);
   const boundary = cut.lastIndexOf(" ");
-  return `${(boundary > Math.floor(maxLength * 0.72) ? cut.slice(0, boundary) : cut).replace(/[|,:;\-–—]+\\s*$/, "")}…`;
+  return `${(boundary > Math.floor(maxLength * 0.72) ? cut.slice(0, boundary) : cut).replace(/[|,:;\-–—]+\s*$/, "")}…`;
 }
 
 export const Route = createFileRoute("/blog/$slug")({
