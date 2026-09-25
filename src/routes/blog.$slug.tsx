@@ -17,6 +17,14 @@ import { Twitter, Link2, MessageCircle, Check, User, Calendar, Clock } from "luc
 
 const SITE_URL = "https://www.autoseedance.site";
 
+function fitMeta(value: string, maxLength: number): string {
+  const normalized = value.replace(/\s+/g, " ").trim();
+  if (normalized.length <= maxLength) return normalized;
+  const cut = normalized.slice(0, maxLength - 1);
+  const boundary = cut.lastIndexOf(" ");
+  return `${(boundary > Math.floor(maxLength * 0.72) ? cut.slice(0, boundary) : cut).replace(/[|,:;\-–—]+\\s*$/, "")}…`;
+}
+
 export const Route = createFileRoute("/blog/$slug")({
   loader: async ({ params }) => {
     const post = await fetchPostBySlug(params.slug);
@@ -28,8 +36,8 @@ export const Route = createFileRoute("/blog/$slug")({
     const post = loaderData?.post as PostDetail | undefined;
     if (!post) return {};
     const url = `${SITE_URL}/blog/${params.slug}`;
-    const title = post.seoTitle || `${post.title} | Auto Seedance Blog`;
-    const description = post.seoDescription || post.excerpt || `${post.title} — read on the Auto Seedance blog.`;
+    const title = fitMeta(post.seoTitle || `${post.title} | Auto Seedance Blog`, 65);
+    const description = fitMeta(post.seoDescription || post.excerpt || `${post.title} — read on the Auto Seedance blog.`, 160);
     const ogImage = post.mainImage
       ? urlFor(post.mainImage).width(1200).height(630).fit("crop").auto("format").url()
       : `${SITE_URL}/og-image.png`;
