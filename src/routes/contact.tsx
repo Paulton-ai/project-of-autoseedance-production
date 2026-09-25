@@ -11,7 +11,6 @@ export const Route = createFileRoute("/contact")({
     meta: [
       { title: "Contact Auto Seedance — Support & Partnerships" },
       { name: "description", content: "Get in touch with the Auto Seedance team for support, feedback, bug reports, or partnership inquiries about AI image, video, and reel creation." },
-      { name: "keywords", content: "contact Auto Seedance, AI generation support, AI tool feedback, AI partnership, AI tool help" },
       { name: "robots", content: "index, follow" },
       { property: "og:title", content: "Contact Us — Auto Seedance" },
       { property: "og:description", content: "Get in touch with the Auto Seedance team for support, feedback, or partnership inquiries." },
