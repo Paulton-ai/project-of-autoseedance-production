@@ -51,7 +51,6 @@ export const Route = createFileRoute("/tools/video")({
           url: "https://autoseedance.site/tools/video",
           provider: { "@type": "Organization", name: "Auto Seedance" },
           offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-          aggregateRating: { "@type": "AggregateRating", ratingValue: "4.7", ratingCount: "420" },
         }),
       },
       {
@@ -60,7 +59,7 @@ export const Route = createFileRoute("/tools/video")({
           "@context": "https://schema.org",
           "@type": "SoftwareApplication",
           name: "Auto Seedance Video Generator",
-          applicationCategory: "VideoApplication",
+          applicationCategory: "MultimediaApplication",
           description: "AI-powered video generation tool for creating cinematic content from text descriptions.",
           operatingSystem: "Web Browser",
           offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
@@ -75,20 +74,6 @@ export const Route = createFileRoute("/tools/video")({
             { "@type": "ListItem", position: 1, name: "Home", item: "https://autoseedance.site/" },
             { "@type": "ListItem", position: 2, name: "Tools", item: "https://autoseedance.site/tools" },
             { "@type": "ListItem", position: 3, name: "Video Generator", item: "https://autoseedance.site/tools/video" },
-          ],
-        }),
-      },
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "FAQPage",
-          mainEntity: [
-            { "@type": "Question", name: "How does the AI video generator work?", acceptedAnswer: { "@type": "Answer", text: "Describe your video scene with a text prompt, set duration (1-10 seconds), resolution (720p HD or 1080p Full HD), and aspect ratio (16:9, 9:16 for shorts, or 1:1 square). The AI creates a cinematic video in 2-3 minutes." } },
-            { "@type": "Question", name: "Is the AI video generator free?", acceptedAnswer: { "@type": "Answer", text: "Yes, you start with 50 free credits. Each video costs 30 credits, giving you 1 free video to start. No credit card required." } },
-            { "@type": "Question", name: "Can I add audio to my AI videos?", acceptedAnswer: { "@type": "Answer", text: "Yes, we offer AI-generated background audio that automatically matches your video's mood and content. You can also upload custom audio tracks." } },
-            { "@type": "Question", name: "What video resolutions are supported?", acceptedAnswer: { "@type": "Answer", text: "We support 720p HD and 1080p Full HD resolutions. Aspect ratios include 16:9 (landscape), 9:16 (portrait/shorts), and 1:1 (square)." } },
-            { "@type": "Question", name: "Can I use reference images or videos?", acceptedAnswer: { "@type": "Answer", text: "Yes, upload up to 9 reference images, 3 reference videos, and 3 audio tracks to guide the AI in creating your video." } },
           ],
         }),
       },
