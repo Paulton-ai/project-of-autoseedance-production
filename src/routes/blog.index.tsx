@@ -6,7 +6,7 @@ import { PostCard } from "@/components/blog/PostCard";
 import { fetchAllPosts } from "@/lib/sanity";
 import { Sparkles } from "lucide-react";
 
-const SITE_URL = "https://autoseedance.site";
+const SITE_URL = "https://www.autoseedance.site";
 const BLOG_URL = `${SITE_URL}/blog`;
 
 export const Route = createFileRoute("/blog/")({
@@ -22,23 +22,23 @@ export const Route = createFileRoute("/blog/")({
 
     return {
       meta: [
-        { title: "Blog — AI Image & Video Generation Tutorials | Auto Seedance" },
+        { title: "AI Image & Video Tutorials | Auto Seedance Blog" },
         {
           name: "description",
           content:
-            "Tutorials, prompt guides, and case studies for AI image and video generation.",
+            "Read practical AI image and video tutorials, prompt guides, tool explainers, and case studies for creators.",
         },
         { name: "robots", content: "index, follow, max-image-preview:large" },
         { property: "og:title", content: "Auto Seedance Blog" },
         { property: "og:description", content: "Tutorials and guides for AI image and video generation." },
         { property: "og:url", content: BLOG_URL },
         { property: "og:type", content: "website" },
-        { property: "og:image", content: `${SITE_URL}/og-image.png` },
+        { property: "og:image", content: `${SITE_URL}/web-app-manifest-512x512.png` },
         { property: "og:image:alt", content: "Auto Seedance blog — AI image and video generation tutorials" },
         { name: "twitter:card", content: "summary_large_image" },
         { name: "twitter:title", content: "Auto Seedance Blog" },
         { name: "twitter:description", content: "Tutorials and guides for AI image and video generation." },
-        { name: "twitter:image", content: `${SITE_URL}/og-image.png` },
+        { name: "twitter:image", content: `${SITE_URL}/web-app-manifest-512x512.png` },
         { name: "twitter:image:alt", content: "Auto Seedance blog — AI image and video generation tutorials" },
       ],
       links: [{ rel: "canonical", href: BLOG_URL }],
