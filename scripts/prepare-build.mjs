@@ -3,7 +3,19 @@ import path from "node:path";
 
 const root = process.cwd();
 const routeDir = path.join(root, "src/routes");
-const routeFiles = (await fs.readdir(routeDir)).filter((file) => file.endsWith(".tsx"));
+
+async function collectTextFiles(dir) {
+  const entries = await fs.readdir(dir, { withFileTypes: true });
+  const files = [];
+  for (const entry of entries) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) files.push(...(await collectTextFiles(full)));
+    else if (entry.isFile() && /\.(tsx?|mjs|json|txt)$/.test(entry.name)) files.push(full);
+  }
+  return files;
+}
+
+const sourceFiles = await collectTextFiles(path.join(root, "src"));
 
 // Normalize public SEO metadata at build time so the prerendered HTML always
 // uses one canonical host, one valid image asset, and one free-credit value.
@@ -12,7 +24,7 @@ const seoFiles = [
   path.join(root, "src/lib/seo.ts"),
   path.join(root, "scripts/generate-sitemap.ts"),
   path.join(root, "public/robots.txt"),
-  ...routeFiles.map((file) => path.join(routeDir, file)),
+  ...sourceFiles,
 ];
 
 const fakeRatingPattern = /\s*aggregateRating:\s*\{\s*["']@type["']:\s*["']AggregateRating["'],\s*ratingValue:\s*["'][^"']+["'],\s*ratingCount:\s*["'][^"']+["'],?\s*\},?/g;
