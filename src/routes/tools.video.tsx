@@ -45,18 +45,6 @@ export const Route = createFileRoute("/tools/video")({
         type: "application/ld+json",
         children: JSON.stringify({
           "@context": "https://schema.org",
-          "@type": "Service",
-          name: "AI Video Generation",
-          description: "Create cinematic AI videos from text prompts with 720p-1080p resolution and AI-generated audio.",
-          url: "https://autoseedance.site/tools/video",
-          provider: { "@type": "Organization", name: "Auto Seedance" },
-          offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-        }),
-      },
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
           "@type": "SoftwareApplication",
           name: "Auto Seedance Video Generator",
           applicationCategory: "MultimediaApplication",
