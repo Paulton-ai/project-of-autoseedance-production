@@ -134,7 +134,8 @@ async function main() {
         const url = new URL(href, SITE_URL);
         if (url.origin !== SITE_URL) continue;
         const pathname = url.pathname || "/";
-        if (!renderedRoutes.has(pathname)) failures.push(`${route}: internal link points to non-rendered route ${pathname}`);
+        const runtimeRoute = /^(?:\/login|\/signup|\/forgot-password|\/reset-password|\/auth(?:\/|$)|\/dashboard(?:\/|$)|\/payment(?:\/|$)|\/workspace(?:\/|$)|\/admin(?:\/|$))/.test(pathname);
+        if (!runtimeRoute && !renderedRoutes.has(pathname)) failures.push(`${route}: internal link points to non-rendered route ${pathname}`);
       } catch {
         // Ignore malformed/external attributes that are not navigable URLs.
       }
