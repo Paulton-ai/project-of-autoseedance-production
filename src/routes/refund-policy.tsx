@@ -12,7 +12,7 @@ export const Route = createFileRoute("/refund-policy")({
       {
         name: "description",
         content:
-          "Review Auto Seedance refund and cancellation terms for credit-based AI image, video, and reel generation purchases.",
+          "Review Auto Seedance refund and cancellation terms for credit-based AI image, video, and reel generation purchases, including used credits and incorrect charges.",
       },
       { name: "robots", content: "index, follow" },
       { property: "og:title", content: "Refund Policy | Auto Seedance" },
