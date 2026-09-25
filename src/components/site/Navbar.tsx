@@ -121,7 +121,7 @@ export function Navbar() {
             <a href="/#tools" className="hover:text-foreground transition">Features</a>
             <Link to="/pricing" className="hover:text-foreground transition">Pricing</Link>
             <div className="relative group">
-              <button className="hover:text-foreground transition flex items-center gap-1.5 py-2">Tools <ChevronDown className="size-3.5" /></button>
+              <Link to="/tools" className="hover:text-foreground transition flex items-center gap-1.5 py-2">Tools <ChevronDown className="size-3.5" /></Link>
               <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible focus-within:opacity-100 focus-within:visible transition">
                 <div className="w-56 rounded-xl border border-border bg-background/95 backdrop-blur shadow-lg overflow-hidden">
                   <Link to="/tools/image" className="flex items-center gap-2 px-4 py-3 hover:bg-muted transition"><ImageIcon className="size-4 text-muted-foreground" /> Image Generation</Link>
