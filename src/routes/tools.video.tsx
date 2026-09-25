@@ -24,8 +24,8 @@ export const Route = createFileRoute("/tools/video")({
   component: VideoToolPage,
   head: () => ({
     meta: [
-      { title: "Free AI Video Generator — Create AI Videos Online | Auto Seedance" },
-      { name: "description", content: "Generate cinematic AI videos for free with Auto Seedance. Text to video AI generator with 720p-1080p resolution, AI-generated audio, and multiple aspect ratios. 30 credits per video. Start with 50 free credits." },
+      { title: "AI Video Generator — Create Videos Online | Auto Seedance" },
+      { name: "description", content: "Generate AI videos online with Auto Seedance. Create short clips from text prompts with flexible resolution, aspect ratios, audio, and reference inputs." },
       { name: "keywords", content: "AI Video Generator, Free AI Video Generator, AI Video Creator, AI Video Maker, text to video, Veo 3, Google Veo, AI Video Generator Online, AI Video Generator Free, cinematic AI videos" },
       { name: "robots", content: "index, follow, max-image-preview:large, max-video-preview:-1" },
       { property: "og:title", content: "Free AI Video Generator — Create AI Videos Online" },
