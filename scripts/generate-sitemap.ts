@@ -89,9 +89,19 @@ async function fetchSanityPosts(): Promise<SanityPost[]> {
 }
 
 function buildUrlset(urls: Array<{ loc: string; lastmod?: string }>): string {
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `  <url>\n    <loc>${escapeXml(u.loc)}</loc>${u.lastmod ? `\n    <lastmod>${escapeXml(u.lastmod)}</lastmod>` : ""}\n  </url>`).join("\n")}\n</urlset>\n`;
+  const body = urls.map((u) => {
+    const lastmod = u.lastmod ? `\\n    <lastmod>${escapeXml(u.lastmod)}</lastmod>` : "";
+    return `  <url>\\n    <loc>${escapeXml(u.loc)}</loc>${lastmod}\\n  </url>`;
+  }).join("\\n");
+  return `<?xml version="1.0" encoding="UTF-8"?>\\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\\n${body}\\n</urlset>\\n`;
 }
 
+function assertValidSitemapXml(xml: string): void {
+  if (!xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>')) throw new Error("Sitemap is missing the XML declaration");
+  if (!xml.includes('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')) throw new Error("Sitemap is missing the required <urlset> wrapper");
+  if (!xml.trimEnd().endsWith("</urlset>")) throw new Error("Sitemap is missing the closing </urlset> wrapper");
+  if (!xml.includes("<url>") || !xml.includes("<loc>")) throw new Error("Sitemap contains no valid URL entries");
+}
 function buildLlmsIndex(posts: SanityPost[]): string {
   const lines: string[] = [
     "# Auto Seedance",
@@ -180,7 +190,9 @@ async function main() {
 
   const publicDir = path.join(process.cwd(), "public");
   if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir, { recursive: true });
-  fs.writeFileSync(path.join(publicDir, "sitemap.xml"), buildUrlset(allUrls), "utf-8");
+  const sitemapXml = buildUrlset(allUrls);
+  assertValidSitemapXml(sitemapXml);
+  fs.writeFileSync(path.join(publicDir, "sitemap.xml"), sitemapXml, "utf-8");
   fs.writeFileSync(path.join(publicDir, "llms.txt"), buildLlmsIndex(publishedPosts), "utf-8");
   fs.writeFileSync(path.join(publicDir, "llms-full.txt"), buildLlmsFull(publishedPosts), "utf-8");
 
