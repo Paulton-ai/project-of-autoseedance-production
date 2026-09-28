@@ -90,10 +90,10 @@ async function fetchSanityPosts(): Promise<SanityPost[]> {
 
 function buildUrlset(urls: Array<{ loc: string; lastmod?: string }>): string {
   const body = urls.map((u) => {
-    const lastmod = u.lastmod ? `\\n    <lastmod>${escapeXml(u.lastmod)}</lastmod>` : "";
-    return `  <url>\\n    <loc>${escapeXml(u.loc)}</loc>${lastmod}\\n  </url>`;
-  }).join("\\n");
-  return `<?xml version="1.0" encoding="UTF-8"?>\\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\\n${body}\\n</urlset>\\n`;
+    const lastmod = u.lastmod ? `\n    <lastmod>${escapeXml(u.lastmod)}</lastmod>` : "";
+    return `  <url>\n    <loc>${escapeXml(u.loc)}</loc>${lastmod}\n  </url>`;
+  }).join("\n");
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>\n`;
 }
 
 function assertValidSitemapXml(xml: string): void {
