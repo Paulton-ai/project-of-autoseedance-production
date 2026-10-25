@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Upload, Captions, WandSparkles, Download, Loader2, Play, Pause, RotateCcw, FileText, CheckCircle2, AlertCircle, Languages, Sparkles } from "lucide-react";
+import { Upload, Captions, WandSparkles, Download, FileText, CheckCircle2, AlertCircle, Languages, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/tools/captions")({
   component: AutoCaptionsPage,
