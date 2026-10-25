@@ -85,8 +85,8 @@ function AutoCaptionsPage() {
       toast.error("Please select a video file.");
       return;
     }
-    if (picked.size > 1024 * 1024 * 1024) {
-      toast.error("Please choose a video smaller than 1 GB for browser processing.");
+    if (picked.size > 500 * 1024 * 1024) {
+      toast.error("Maximum upload size is 500 MB. Please choose a smaller video.");
       return;
     }
     if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
@@ -303,7 +303,7 @@ function AutoCaptionsPage() {
                   <button type="button" onClick={() => inputRef.current?.click()} onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); onFile(e.dataTransfer.files[0]); }} className="flex min-h-56 w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-muted/20 px-5 text-center transition hover:border-primary/60 hover:bg-primary/5">
                     <span className="mb-3 grid size-14 place-items-center rounded-2xl bg-primary/10 text-primary"><Upload className="size-6" /></span>
                     <span className="font-semibold">Drop your video here or browse files</span>
-                    <span className="mt-1 text-sm text-muted-foreground">MP4, MOV, WebM · Up to 1 GB · Processed on your device</span>
+                    <span className="mt-1 text-sm text-muted-foreground">MP4, MOV, WebM · Maximum 500 MB</span>
                   </button>
                 ) : (
                   <div className="space-y-3">
