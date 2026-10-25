@@ -24,6 +24,7 @@ import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as AuthIndexRouteImport } from './routes/auth.index'
 import { Route as ToolsVideoRouteImport } from './routes/tools.video'
+import { Route as ToolsCaptionsRouteImport } from './routes/tools.captions'
 import { Route as ToolsReelStudioRouteImport } from './routes/tools.reel-studio'
 import { Route as ToolsImageRouteImport } from './routes/tools.image'
 import { Route as PaymentSuccessRouteImport } from './routes/payment.success'
@@ -197,7 +198,7 @@ export interface FileRoutesByFullPath {
   '/payment/success': typeof PaymentSuccessRoute
   '/tools/image': typeof ToolsImageRoute
   '/tools/reel-studio': typeof ToolsReelStudioRoute
-  '/tools/video': typeof ToolsVideoRoute
+  '/tools/video': typeof ToolsVideoRoute\n  '/tools/captions': typeof ToolsCaptionsRoute
   '/auth/': typeof AuthIndexRoute
   '/blog/': typeof BlogIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -285,7 +286,7 @@ export interface FileRouteTypes {
     | '/payment/success'
     | '/tools/image'
     | '/tools/reel-studio'
-    | '/tools/video'
+    | '/tools/video'\n    | '/tools/captions'
     | '/auth/'
     | '/blog/'
     | '/dashboard/'
@@ -364,7 +365,7 @@ export interface RootRouteChildren {
   PaymentSuccessRoute: typeof PaymentSuccessRoute
   ToolsImageRoute: typeof ToolsImageRoute
   ToolsReelStudioRoute: typeof ToolsReelStudioRoute
-  ToolsVideoRoute: typeof ToolsVideoRoute
+  ToolsVideoRoute: typeof ToolsVideoRoute\n  ToolsCaptionsRoute: typeof ToolsCaptionsRoute
   BlogIndexRoute: typeof BlogIndexRoute
 }
 
@@ -615,7 +616,7 @@ const rootRouteChildren: RootRouteChildren = {
   PaymentSuccessRoute: PaymentSuccessRoute,
   ToolsImageRoute: ToolsImageRoute,
   ToolsReelStudioRoute: ToolsReelStudioRoute,
-  ToolsVideoRoute: ToolsVideoRoute,
+  ToolsVideoRoute: ToolsVideoRoute,\n  ToolsCaptionsRoute: ToolsCaptionsRoute,
   BlogIndexRoute: BlogIndexRoute,
 }
 export const routeTree = rootRouteImport
