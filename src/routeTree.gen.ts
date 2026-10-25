@@ -203,7 +203,8 @@ export interface FileRoutesByFullPath {
   '/payment/success': typeof PaymentSuccessRoute
   '/tools/image': typeof ToolsImageRoute
   '/tools/reel-studio': typeof ToolsReelStudioRoute
-  '/tools/video': typeof ToolsVideoRoute\n  '/tools/captions': typeof ToolsCaptionsRoute
+  '/tools/video': typeof ToolsVideoRoute
+  '/tools/captions': typeof ToolsCaptionsRoute
   '/auth/': typeof AuthIndexRoute
   '/blog/': typeof BlogIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -291,7 +292,8 @@ export interface FileRouteTypes {
     | '/payment/success'
     | '/tools/image'
     | '/tools/reel-studio'
-    | '/tools/video'\n    | '/tools/captions'
+    | '/tools/video'
+    | '/tools/captions'
     | '/auth/'
     | '/blog/'
     | '/dashboard/'
@@ -370,7 +372,8 @@ export interface RootRouteChildren {
   PaymentSuccessRoute: typeof PaymentSuccessRoute
   ToolsImageRoute: typeof ToolsImageRoute
   ToolsReelStudioRoute: typeof ToolsReelStudioRoute
-  ToolsVideoRoute: typeof ToolsVideoRoute\n  ToolsCaptionsRoute: typeof ToolsCaptionsRoute
+  ToolsVideoRoute: typeof ToolsVideoRoute
+  ToolsCaptionsRoute: typeof ToolsCaptionsRoute
   BlogIndexRoute: typeof BlogIndexRoute
 }
 
@@ -628,7 +631,8 @@ const rootRouteChildren: RootRouteChildren = {
   PaymentSuccessRoute: PaymentSuccessRoute,
   ToolsImageRoute: ToolsImageRoute,
   ToolsReelStudioRoute: ToolsReelStudioRoute,
-  ToolsVideoRoute: ToolsVideoRoute,\n  ToolsCaptionsRoute: ToolsCaptionsRoute,
+  ToolsVideoRoute: ToolsVideoRoute,
+  ToolsCaptionsRoute: ToolsCaptionsRoute,
   BlogIndexRoute: BlogIndexRoute,
 }
 export const routeTree = rootRouteImport
