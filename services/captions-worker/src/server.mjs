@@ -58,7 +58,7 @@ app.get("/health", async (_req, res) => {
 app.get("/jobs/:id", (req, res) => {
   const job = jobs.get(req.params.id);
   if (!job) return res.status(404).json({ error: "Job not found." });
-  res.json({ id: job.id, status: job.status, progress: job.progress, error: job.error || null });
+  res.json({ id: job.id, status: job.status, progress: job.progress, error: job.error || null, media: job.media || null, transcription: job.captions || null });
 });
 
 // Phase 2 validates and stores uploads and probes media metadata. Captioning/render
@@ -75,7 +75,7 @@ app.post("/jobs", (req, res) => {
     if (!req.file) return res.status(400).json({ error: "Upload a video in the 'video' field." });
 
     const id = randomUUID();
-    const job = { id, status: "validating", progress: 5, filePath: req.file.path, originalName: req.file.originalname, createdAt: new Date().toISOString() };
+    const job = { id, status: "validating", progress: 5, filePath: req.file.path, originalName: req.file.originalname, createdAt: new Date().toISOString(), captions: null };
     jobs.set(id, job);
     try {
       const { stdout } = await run("ffprobe", [
@@ -91,7 +91,7 @@ app.post("/jobs", (req, res) => {
         id,
         status: job.status,
         progress: job.progress,
-        message: "Video uploaded and validated. Caption transcription and MP4 rendering will be enabled by the next worker phases.",
+        message: "Video uploaded and validated. Start transcription using POST /jobs/:id/transcribe.",
         media,
       });
     } catch (probeError) {
@@ -100,6 +100,37 @@ app.post("/jobs", (req, res) => {
       return res.status(422).json({ error: "The uploaded file could not be read as a valid video.", detail: probeError.message });
     }
   });
+});
+
+app.post("/jobs/:id/transcribe", express.json(), async (req, res) => {
+  const job = jobs.get(req.params.id);
+  if (!job) return res.status(404).json({ error: "Job not found." });
+  if (job.status === "transcribing") return res.status(409).json({ error: "Transcription is already running." });
+  if (job.status !== "uploaded" && job.status !== "transcribed") return res.status(409).json({ error: "Upload a valid video before transcription.", status: job.status });
+  const requestedLanguage = typeof req.body?.language === "string" ? req.body.language.trim() : "auto";
+  if (requestedLanguage !== "auto" && !/^[a-z]{2,3}$/i.test(requestedLanguage)) {
+    return res.status(400).json({ error: "Language must be 'auto' or a two/three-letter language code." });
+  }
+  job.status = "transcribing";
+  job.progress = 15;
+  job.error = null;
+  res.status(202).json({ id: job.id, status: job.status, progress: job.progress, message: "Whisper transcription started. Poll GET /jobs/:id for completion." });
+  try {
+    const { stdout } = await run(process.env.PYTHON_BIN || "/app/.venv/bin/python", [
+      "/app/src/transcribe.py",
+      job.filePath,
+      requestedLanguage || "auto",
+    ]);
+    const transcript = JSON.parse(stdout);
+    job.captions = transcript;
+    job.status = "transcribed";
+    job.progress = 55;
+  } catch (error) {
+    console.error("Whisper transcription failed for job", job.id, error);
+    job.status = "failed";
+    job.error = "Transcription failed. Check worker model download, memory, and logs, then retry.";
+    job.progress = 0;
+  }
 });
 
 app.use((error, _req, res, _next) => {
