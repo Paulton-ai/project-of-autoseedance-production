@@ -113,6 +113,11 @@ const ToolsVideoRoute = ToolsVideoRouteImport.update({
   path: '/tools/video',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ToolsCaptionsRoute = ToolsCaptionsRouteImport.update({
+  id: '/tools/captions',
+  path: '/tools/captions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ToolsReelStudioRoute = ToolsReelStudioRouteImport.update({
   id: '/tools/reel-studio',
   path: '/tools/reel-studio',
@@ -474,6 +479,13 @@ declare module '@tanstack/react-router' {
       path: '/tools/video'
       fullPath: '/tools/video'
       preLoaderRoute: typeof ToolsVideoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tools/captions': {
+      id: '/tools/captions'
+      path: '/tools/captions'
+      fullPath: '/tools/captions'
+      preLoaderRoute: typeof ToolsCaptionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tools/reel-studio': {
