@@ -127,7 +127,7 @@ export function Navbar() {
                   <Link to="/tools/image" className="flex items-center gap-2 px-4 py-3 hover:bg-muted transition"><ImageIcon className="size-4 text-muted-foreground" /> Image Generation</Link>
                   <Link to="/tools/video" className="flex items-center gap-2 px-4 py-3 hover:bg-muted transition"><Video className="size-4 text-muted-foreground" /> Video Generation</Link>
                   <Link to="/tools/reel-studio" className="flex items-center gap-2 px-4 py-3 hover:bg-muted transition"><Film className="size-4 text-muted-foreground" /> Reel Generator</Link>
-                  <Link to="/feature/ai-auto-captions-generator" className="flex items-center gap-2 px-4 py-3 hover:bg-muted transition"><Captions className="size-4 text-muted-foreground" /> AI Auto Captions</Link>
+                  <Link to="/tools/ai-auto-captions-generator" className="flex items-center gap-2 px-4 py-3 hover:bg-muted transition"><Captions className="size-4 text-muted-foreground" /> AI Auto Captions</Link>
                 </div>
               </div>
             </div>
