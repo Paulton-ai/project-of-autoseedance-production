@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Install FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -25,6 +27,6 @@ jobs:
       - name: Compile worker Python modules
         working-directory: services/captions-worker
         run: python -m py_compile src/transcribe.py src/render.py test_render.py
-      - name: Run ASS renderer unit tests
+      - name: Run ASS renderer and FFmpeg integration tests
         working-directory: services/captions-worker
         run: python -m unittest test_render.py -v
