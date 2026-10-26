@@ -748,7 +748,7 @@ function AutoCaptionsPage() {
     setProgressLabel("Rendering captioned MP4 with FFmpeg…");
     try {
       await renderCaptionsMp4(workerJobId, selectedTemplate, captions);
-      const completed = await waitForCaptionsJob(workerJobId, (job) => {
+      await waitForCaptionsJob(workerJobId, (job) => {
         setProgress(Math.max(60, Math.min(99, job.progress || 60)));
         setProgressLabel(job.status === "rendering" ? "Rendering MP4 with your selected caption style…" : "Preparing MP4 download…");
       }, "completed");
