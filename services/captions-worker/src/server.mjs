@@ -58,7 +58,7 @@ app.get("/health", async (_req, res) => {
 app.get("/jobs/:id", (req, res) => {
   const job = jobs.get(req.params.id);
   if (!job) return res.status(404).json({ error: "Job not found." });
-  res.json({ id: job.id, status: job.status, progress: job.progress, error: job.error || null, media: job.media || null, transcription: job.captions || null, render: job.render || null, downloadPath: job.status === "completed" ? `/jobs/${job.id}/download` : null });
+  res.json({ id: job.id, status: job.status, progress: job.progress, error: job.error || null, media: job.media || null, transcript: job.captions || null, transcription: job.captions || null, render: job.render || null, downloadPath: job.status === "completed" ? `/jobs/${job.id}/download` : null });
 });
 
 // Phase 2 validates and stores uploads and probes media metadata. Captioning/render
