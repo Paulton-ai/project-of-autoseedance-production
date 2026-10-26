@@ -18,7 +18,7 @@ class RenderTests(unittest.TestCase):
 
     def test_escape_filter_path(self):
         self.assertEqual(render.escape_filter_path("/tmp/captions.ass"), "/tmp/captions.ass")
-        self.assertEqual(render.escape_filter_path("C:\\\\video files\\\\captions.ass"), "C\\\\:video files/captions.ass")
+        self.assertEqual(render.escape_filter_path(r"C:\video files\captions.ass"), r"C\:/video files/captions.ass")
 
     def test_ass_color(self):
         self.assertEqual(render.ass_color("#12ABEF"), "&H00EFAB12")
