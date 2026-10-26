@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { pipeline } from "@huggingface/transformers";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ToolNavbar } from "@/components/tools/ToolNavbar";
 import { Button } from "@/components/ui/button";
@@ -10,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { uploadCaptionsVideo, startCaptionsTranscription, waitForCaptionsJob, renderCaptionsMp4, downloadCaptionsMp4 } from "@/lib/captions-worker";
 import { Upload, Captions, WandSparkles, Download, FileText, CheckCircle2, AlertCircle, Languages, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/tools/captions")({
@@ -645,8 +645,6 @@ function toSrt(captions: Caption[]) {
 function AutoCaptionsPage() {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const animationRef = useRef<number | null>(null);
   const objectUrlRef = useRef<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [videoUrl, setVideoUrl] = useState("");
@@ -659,6 +657,7 @@ function AutoCaptionsPage() {
   const [currentTime, setCurrentTime] = useState(0);
   const [exportUrl, setExportUrl] = useState("");
   const [language, setLanguage] = useState("auto");
+  const [workerJobId, setWorkerJobId] = useState<string | null>(null);
   const [showTranscript, setShowTranscript] = useState(false);
 
   const template = useMemo(() => TEMPLATES.find((item) => item.id === selectedTemplate) ?? TEMPLATES[0], [selectedTemplate]);
@@ -667,7 +666,6 @@ function AutoCaptionsPage() {
   useEffect(() => () => {
     if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
     if (exportUrl) URL.revokeObjectURL(exportUrl);
-    if (animationRef.current) cancelAnimationFrame(animationRef.current);
   }, [exportUrl]);
 
   const onFile = useCallback((picked?: File) => {
@@ -687,6 +685,7 @@ function AutoCaptionsPage() {
     setFile(picked);
     setVideoUrl(url);
     setCaptions([]);
+    setWorkerJobId(null);
     setError("");
     setExportUrl("");
     setProgress(0);
@@ -694,72 +693,39 @@ function AutoCaptionsPage() {
   }, [exportUrl]);
 
   const transcribe = useCallback(async () => {
-    if (!file || !videoRef.current) return;
+    if (!file) return;
     setError("");
     setStatus("loading-model");
-    setProgress(5);
-    setProgressLabel("Loading the open-source Whisper model…");
+    setProgress(3);
+    setProgressLabel("Uploading video to the captions worker…");
     try {
-      // Whisper runs in the user's browser. Audio is not uploaded to our server.
-      const transcriber = await pipeline("automatic-speech-recognition", "onnx-community/whisper-tiny", {
-        dtype: "q4",
-        device: "wasm",
-        progress_callback: (event: { status?: string; progress?: number; file?: string }) => {
-          if (typeof event.progress === "number") setProgress(Math.min(35, 5 + event.progress * 0.3));
-          if (event.status === "progress" && event.file) setProgressLabel(`Downloading model: ${event.file.split("/").pop()}`);
-        },
-      });
+      const uploaded = await uploadCaptionsVideo(file);
+      setWorkerJobId(uploaded.id);
+      setProgress(12);
+      setProgressLabel("Starting Whisper speech recognition…");
+      await startCaptionsTranscription(uploaded.id, language);
       setStatus("transcribing");
-      setProgress(38);
-      setProgressLabel("Reading audio and detecting spoken language…");
-      const audioContext = new AudioContext({ sampleRate: 16000 });
-      const arrayBuffer = await file.arrayBuffer();
-      const decoded = await audioContext.decodeAudioData(arrayBuffer.slice(0));
-      const source = decoded.getChannelData(0);
-      const inputRate = decoded.sampleRate;
-      const targetLength = Math.ceil(source.length * 16000 / inputRate);
-      const mono = new Float32Array(targetLength);
-      if (inputRate === 16000) mono.set(source);
-      else {
-        for (let i = 0; i < targetLength; i++) {
-          const pos = i * inputRate / 16000;
-          const left = Math.floor(pos);
-          const right = Math.min(source.length - 1, left + 1);
-          const fraction = pos - left;
-          mono[i] = source[left] * (1 - fraction) + source[right] * fraction;
-        }
-      }
-      await audioContext.close();
-      setProgress(55);
-      setProgressLabel("Transcribing locally in your browser. Longer videos may take a while…");
-      const options: Record<string, unknown> = { return_timestamps: "word", chunk_length_s: 30, stride_length_s: 5 };
-      if (language !== "auto") options.language = language;
-      const result = await (transcriber as (audio: Float32Array, options: Record<string, unknown>) => Promise<{ text?: string; chunks?: { text?: string; timestamp?: [number | null, number | null] }[] }>)(mono, options);
-      const chunks = (result.chunks ?? []).map((chunk) => ({
-        start: Number(chunk.timestamp?.[0] ?? 0),
-        end: Number(chunk.timestamp?.[1] ?? (Number(chunk.timestamp?.[0] ?? 0) + 1)),
-        text: (chunk.text ?? "").trim(),
-      })).filter((chunk) => chunk.text && Number.isFinite(chunk.start) && Number.isFinite(chunk.end) && chunk.end > chunk.start);
-      if (!chunks.length && result.text?.trim()) {
-        setCaptions([{ start: 0, end: Math.min(4, decoded.duration || 4), text: result.text.trim() }]);
-      } else {
-        setCaptions(chunks);
-      }
+      const completed = await waitForCaptionsJob(uploaded.id, (job) => {
+        setProgress(Math.max(12, Math.min(70, job.progress || 12)));
+        setProgressLabel(job.status === "transcribing" ? "Transcribing audio and detecting spoken language…" : "Preparing transcript…");
+      }, "transcribed");
+      const segments = completed.transcript?.segments ?? [];
+      if (!segments.length) throw new Error("No speech was detected. Try a clearer video or choose its spoken language.");
+      setCaptions(segments);
       setProgress(100);
       setProgressLabel("Captions generated. Select a style and review the transcript.");
       setStatus("ready");
       setShowTranscript(true);
-      toast.success("Captions generated on your device.");
+      toast.success("Captions generated.");
     } catch (e) {
       console.error("[auto-captions] transcription failed", e);
       const message = e instanceof Error ? e.message : "Unknown error";
-      setError(message.includes("decodeAudioData") ? "This video’s audio could not be decoded by your browser. Try MP4 with AAC audio." : `Could not generate captions: ${message}. Try a supported browser or a smaller video.`);
+      setError(message);
       setStatus("idle");
       setProgress(0);
       setProgressLabel("");
     }
   }, [file, language]);
-
   const updateCaption = (index: number, text: string) => setCaptions((old) => old.map((c, i) => i === index ? { ...c, text } : c));
 
   const downloadText = (name: string, text: string, type: string) => {
@@ -772,105 +738,37 @@ function AutoCaptionsPage() {
   };
 
   const exportVideo = useCallback(async () => {
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    if (!video || !canvas || !captions.length) return;
-    if (!("MediaRecorder" in window) || !canvas.captureStream) {
-      toast.error("Video export is not supported in this browser. Download the SRT file instead.");
+    if (!workerJobId || !captions.length) {
+      toast.error("Generate captions first, then export the MP4.");
       return;
     }
+    setError("");
     setStatus("exporting");
-    setProgress(0);
-    setProgressLabel("Preparing captioned video…");
-    const width = video.videoWidth || 1280;
-    const height = video.videoHeight || 720;
-    const scale = Math.min(1, 1920 / width, 1920 / height);
-    canvas.width = Math.max(2, Math.round(width * scale));
-    canvas.height = Math.max(2, Math.round(height * scale));
-    const ctx = canvas.getContext("2d");
-    if (!ctx) { setStatus("ready"); return; }
-    const videoStream = (video as HTMLVideoElement & { captureStream?: () => MediaStream }).captureStream?.();
-    if (!videoStream) {
+    setProgress(60);
+    setProgressLabel("Rendering captioned MP4 with FFmpeg…");
+    try {
+      await renderCaptionsMp4(workerJobId, selectedTemplate, captions);
+      const completed = await waitForCaptionsJob(workerJobId, (job) => {
+        setProgress(Math.max(60, Math.min(99, job.progress || 60)));
+        setProgressLabel(job.status === "rendering" ? "Rendering MP4 with your selected caption style…" : "Preparing MP4 download…");
+      }, "completed");
+      const blob = await downloadCaptionsMp4(workerJobId);
+      if (exportUrl) URL.revokeObjectURL(exportUrl);
+      const url = URL.createObjectURL(blob);
+      setExportUrl(url);
+      setProgress(100);
+      setProgressLabel("MP4 export complete. Download your captioned video below.");
       setStatus("ready");
-      toast.error("Your browser cannot capture video audio. Try Chrome or download SRT.");
-      return;
+      toast.success("Captioned MP4 is ready.");
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "MP4 rendering failed.";
+      setError(message);
+      setStatus("ready");
+      setProgress(0);
+      setProgressLabel("");
+      toast.error(message);
     }
-    const outputStream = canvas.captureStream(30);
-    videoStream.getAudioTracks().forEach((track) => outputStream.addTrack(track));
-    const mime = MediaRecorder.isTypeSupported("video/webm;codecs=vp9,opus") ? "video/webm;codecs=vp9,opus" : "video/webm";
-    const recorder = new MediaRecorder(outputStream, { mimeType: mime });
-    const parts: BlobPart[] = [];
-    recorder.ondataavailable = (event) => { if (event.data.size) parts.push(event.data); };
-    const recorded = new Promise<Blob>((resolve, reject) => {
-      recorder.onerror = () => reject(new Error("The browser failed while exporting the video."));
-      recorder.onstop = () => resolve(new Blob(parts, { type: mime }));
-    });
-    const draw = () => {
-      if (!ctx || !video) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const current = video.currentTime;
-      const active = captions.find((c) => current >= c.start && current <= c.end);
-      if (active) {
-        const fontSize = Math.max(22, Math.round(canvas.width * (template.effect === "minimal" ? 0.035 : 0.052)));
-        const words = (template.casing === "upper" ? active.text.toUpperCase() : active.text).split(/\s+/);
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.font = `900 ${fontSize}px ${template.font}, sans-serif`;
-        const maxWidth = canvas.width * 0.86;
-        const lines: string[] = [];
-        let line = "";
-        for (const word of words) {
-          const test = line ? `${line} ${word}` : word;
-          if (ctx.measureText(test).width > maxWidth && line) { lines.push(line); line = word; } else line = test;
-        }
-        if (line) lines.push(line);
-        const lineHeight = fontSize * 1.22;
-        const yStart = canvas.height * 0.78 - (lines.length - 1) * lineHeight / 2;
-        lines.forEach((lineText, i) => {
-          const y = yStart + i * lineHeight;
-          if (selectedTemplate === "boxed") {
-            const textWidth = Math.min(maxWidth, ctx.measureText(lineText).width + fontSize * 0.7);
-            ctx.fillStyle = "rgba(0,0,0,.72)";
-            ctx.fillRect((canvas.width - textWidth) / 2, y - lineHeight / 2, textWidth, lineHeight);
-          }
-          ctx.lineJoin = "round";
-          ctx.lineWidth = Math.max(3, fontSize * 0.16);
-          ctx.strokeStyle = selectedTemplate === "minimal" || selectedTemplate === "classic" ? "rgba(0,0,0,.7)" : "#09090b";
-          ctx.strokeText(lineText, canvas.width / 2, y, maxWidth);
-          ctx.shadowColor = template.effect === "glow" ? template.highlight : "transparent";
-          ctx.shadowBlur = template.effect === "glow" ? 18 : 0;
-          ctx.fillStyle = template.color;
-          ctx.fillText(lineText, canvas.width / 2, y, maxWidth);
-          ctx.shadowBlur = 0;
-        });
-      }
-      setProgress(Math.min(98, Math.round(video.currentTime / Math.max(1, video.duration) * 100)));
-      if (!video.paused && !video.ended) animationRef.current = requestAnimationFrame(draw);
-    };
-    video.currentTime = 0;
-    await new Promise<void>((resolve) => {
-      if (video.readyState >= 2) resolve();
-      else video.onloadeddata = () => resolve();
-    });
-    await new Promise<void>((resolve) => { video.onseeked = () => resolve(); if (video.currentTime === 0) resolve(); });
-    recorder.start(250);
-    video.muted = false;
-    await video.play();
-    draw();
-    await new Promise<void>((resolve) => { video.onended = () => resolve(); });
-    recorder.stop();
-    const blob = await recorded;
-    if (animationRef.current) cancelAnimationFrame(animationRef.current);
-    outputStream.getTracks().forEach((track) => track.stop());
-    videoStream.getTracks().forEach((track) => track.stop());
-    const url = URL.createObjectURL(blob);
-    setExportUrl(url);
-    setProgress(100);
-    setProgressLabel("Export complete. Download your captioned video below.");
-    setStatus("ready");
-    toast.success("Captioned video is ready to download.");
-  }, [captions, selectedTemplate, template]);
+  }, [workerJobId, captions, selectedTemplate, exportUrl]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -921,7 +819,7 @@ function AutoCaptionsPage() {
                 </div>
                 {(status === "loading-model" || status === "transcribing" || status === "exporting") && <div className="space-y-2"><div className="flex justify-between text-xs text-muted-foreground"><span>{progressLabel}</span><span>{progress}%</span></div><Progress value={progress} /></div>}
                 {error && <div className="flex gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive"><AlertCircle className="mt-0.5 size-4 shrink-0" /><span>{error}</span></div>}
-                <p className="text-xs leading-5 text-muted-foreground">The first run downloads a small open-source speech model and may take a few minutes. Audio is processed locally in your browser; longer videos need more memory and processing time.</p>
+                <p className="text-xs leading-5 text-muted-foreground">The first run downloads a small open-source speech model and may take a few minutes. Your video is processed by the configured captions worker. Uploads are limited to 500 MB.</p>
               </div>
             </Card>
 
@@ -937,7 +835,7 @@ function AutoCaptionsPage() {
                 <Button variant="outline" onClick={() => downloadText("captions.srt", toSrt(captions), "text/plain;charset=utf-8")}><Download className="mr-2 size-4" /> Download SRT</Button>
                 <Button onClick={exportVideo} disabled={status === "exporting"}><Download className="mr-2 size-4" />{status === "exporting" ? "Exporting…" : "Export captioned video"}</Button>
               </div>
-              {exportUrl && <div className="flex items-center justify-between gap-3 border-t border-border bg-primary/5 p-5"><div className="flex items-center gap-2 text-sm"><CheckCircle2 className="size-4 text-primary" /><span>Captioned video ready</span></div><a href={exportUrl} download={`${file?.name.replace(/\.[^.]+$/, "") || "captioned-video"}-captions.webm`} className="inline-flex h-9 items-center rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground">Download video</a></div>}
+              {exportUrl && <div className="flex items-center justify-between gap-3 border-t border-border bg-primary/5 p-5"><div className="flex items-center gap-2 text-sm"><CheckCircle2 className="size-4 text-primary" /><span>Captioned video ready</span></div><a href={exportUrl} download={`${file?.name.replace(/\.[^.]+$/, "") || "captioned-video"}-captions.mp4`} className="inline-flex h-9 items-center rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground">Download MP4</a></div>}
             </Card>}
           </div>
 
@@ -965,11 +863,10 @@ function AutoCaptionsPage() {
             </Card>
             <Card className="border-border/80 p-5">
               <div className="flex items-center gap-2 font-semibold"><Sparkles className="size-4 text-primary" /> Free by design</div>
-              <ul className="mt-3 space-y-2 text-sm text-muted-foreground"><li>• No paid caption API</li><li>• Speech recognition runs on your device</li><li>• Editable transcript and SRT download</li><li>• Styled WebM video export supported by your browser</li></ul>
+              <ul className="mt-3 space-y-2 text-sm text-muted-foreground"><li>• No paid caption API</li><li>• Speech recognition runs on your device</li><li>• Editable transcript and SRT download</li><li>• MP4 video export rendered by FFmpeg</li></ul>
             </Card>
           </div>
         </div>
-        <canvas ref={canvasRef} className="pointer-events-none fixed -left-[9999px] top-0" aria-hidden="true" />
       </main>
     </div>
   );
