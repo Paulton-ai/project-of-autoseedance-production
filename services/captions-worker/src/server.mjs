@@ -58,7 +58,7 @@ app.get("/health", async (_req, res) => {
 app.get("/jobs/:id", (req, res) => {
   const job = jobs.get(req.params.id);
   if (!job) return res.status(404).json({ error: "Job not found." });
-  res.json({ id: job.id, status: job.status, progress: job.progress, error: job.error || null, media: job.media || null, transcription: job.captions || null });
+  res.json({ id: job.id, status: job.status, progress: job.progress, error: job.error || null, media: job.media || null, transcription: job.captions || null, render: job.render || null, downloadPath: job.status === "completed" ? `/jobs/${job.id}/download` : null });
 });
 
 // Phase 2 validates and stores uploads and probes media metadata. Captioning/render
@@ -131,6 +131,64 @@ app.post("/jobs/:id/transcribe", express.json(), async (req, res) => {
     job.error = "Transcription failed. Check worker model download, memory, and logs, then retry.";
     job.progress = 0;
   }
+});
+
+app.post("/jobs/:id/render", express.json(), async (req, res) => {
+  const job = jobs.get(req.params.id);
+  if (!job) return res.status(404).json({ error: "Job not found." });
+  if (job.status !== "transcribed" || !job.captions) {
+    return res.status(409).json({ error: "Complete transcription before rendering.", status: job.status });
+  }
+  const styleId = typeof req.body?.styleId === "string" ? req.body.styleId : "style-01";
+  let availableStyles;
+  try {
+    availableStyles = JSON.parse(await fs.promises.readFile("/app/src/styles.json", "utf8"));
+  } catch {
+    return res.status(503).json({ error: "Caption style catalog is unavailable." });
+  }
+  if (!availableStyles.some((style) => style.id === styleId)) {
+    return res.status(400).json({ error: "Unknown caption style.", availableStyles: availableStyles.length });
+  }
+  if (job.status === "rendering") return res.status(409).json({ error: "Render already running." });
+  job.status = "rendering";
+  job.progress = 60;
+  job.error = null;
+  job.styleId = styleId;
+  job.outputPath = path.join(renderDir, job.id + ".mp4");
+  const transcriptPath = path.join(renderDir, job.id + ".transcript.json");
+  try {
+    await fs.promises.writeFile(transcriptPath, JSON.stringify(job.captions), "utf8");
+  } catch (error) {
+    job.status = "failed";
+    job.error = "Could not prepare transcript for rendering.";
+    return res.status(500).json({ error: job.error });
+  }
+  res.status(202).json({ id: job.id, status: job.status, progress: job.progress, styleId, message: "MP4 render started. Poll GET /jobs/:id; download when status is completed." });
+  try {
+    const { stdout } = await run(process.env.PYTHON_BIN || "/app/.venv/bin/python", [
+      "/app/src/render.py", job.filePath, transcriptPath, styleId, job.outputPath,
+    ]);
+    job.render = JSON.parse(stdout);
+    job.status = "completed";
+    job.progress = 100;
+  } catch (error) {
+    console.error("MP4 render failed for job", job.id, error);
+    job.status = "failed";
+    job.error = "MP4 rendering failed. Check FFmpeg logs and worker capacity.";
+    job.progress = 0;
+    fs.promises.unlink(job.outputPath).catch(() => {});
+  } finally {
+    fs.promises.unlink(transcriptPath).catch(() => {});
+  }
+});
+
+app.get("/jobs/:id/download", (req, res) => {
+  const job = jobs.get(req.params.id);
+  if (!job) return res.status(404).json({ error: "Job not found." });
+  if (job.status !== "completed" || !job.outputPath || !fs.existsSync(job.outputPath)) {
+    return res.status(409).json({ error: "MP4 is not ready yet.", status: job.status });
+  }
+  res.download(job.outputPath, "captioned-video.mp4");
 });
 
 app.use((error, _req, res, _next) => {
