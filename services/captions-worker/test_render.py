@@ -1,4 +1,7 @@
 import importlib.util
+import json
+import shutil
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -43,6 +46,43 @@ class RenderTests(unittest.TestCase):
                 ass = output.read_text(encoding="utf-8-sig")
                 self.assertIn("Dialogue:", ass, style_id)
                 self.assertIn("quality check", ass, style_id)
+
+    def test_styles_have_visibly_distinct_ass_definitions(self):
+        outputs = set()
+        with tempfile.TemporaryDirectory() as directory:
+            for style_id, style in render.STYLES.items():
+                output = Path(directory) / f"{style_id}.ass"
+                render.make_ass({"segments": [{"start": 0, "end": 1, "text": "style check"}]}, style, output)
+                ass = output.read_text(encoding="utf-8-sig")
+                outputs.add(ass.split("[Events]", 1)[0])
+        self.assertGreaterEqual(len(outputs), 20, "Catalog styles should not all render identically")
+
+    @unittest.skipUnless(shutil.which("ffmpeg") and shutil.which("ffprobe"), "FFmpeg/ffprobe are required for integration test")
+    def test_ffmpeg_exports_valid_h264_aac_mp4(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "source.mp4"
+            transcript = root / "transcript.json"
+            output = root / "captioned.mp4"
+            subprocess.run([
+                "ffmpeg", "-v", "error", "-y",
+                "-f", "lavfi", "-i", "color=c=black:s=640x360:d=2:r=24",
+                "-f", "lavfi", "-i", "sine=frequency=440:duration=2",
+                "-shortest", "-c:v", "libx264", "-pix_fmt", "yuv420p",
+                "-c:a", "aac", str(source),
+            ], check=True, capture_output=True, text=True)
+            transcript.write_text(json.dumps({"segments": [{"start": 0.2, "end": 1.5, "text": "quality check"}]}), encoding="utf-8")
+            subprocess.run([
+                "python", str(RENDER_PATH), str(source), str(transcript), "style-04", str(output)
+            ], check=True, capture_output=True, text=True, timeout=90)
+            probe = subprocess.run([
+                "ffprobe", "-v", "error", "-show_entries", "stream=codec_name,codec_type",
+                "-of", "json", str(output)
+            ], check=True, capture_output=True, text=True)
+            streams = json.loads(probe.stdout)["streams"]
+            self.assertTrue(output.exists() and output.stat().st_size > 0)
+            self.assertIn({"codec_name": "h264", "codec_type": "video"}, streams)
+            self.assertIn({"codec_name": "aac", "codec_type": "audio"}, streams)
 
     def test_empty_transcript(self):
         with tempfile.TemporaryDirectory() as directory:
