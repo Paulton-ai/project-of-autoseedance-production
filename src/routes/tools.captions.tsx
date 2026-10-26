@@ -775,9 +775,9 @@ function AutoCaptionsPage() {
       <ToolNavbar title="AI Auto Captions Studio" />
       <main className="mx-auto max-w-7xl px-4 pb-16 pt-24">
         <div className="mx-auto mb-8 max-w-3xl text-center">
-          <Badge variant="outline" className="mb-4 gap-1.5"><Sparkles className="size-3.5" /> Free · Runs in your browser</Badge>
+          <Badge variant="outline" className="mb-4 gap-1.5"><Sparkles className="size-3.5" /> Free · Whisper AI + FFmpeg</Badge>
           <h1 className="font-display text-3xl font-bold tracking-tight sm:text-5xl">Make every word stand out.</h1>
-          <p className="mt-4 text-muted-foreground sm:text-lg">Upload a video, automatically transcribe speech, choose a creator-style caption template, and export your captioned video. No caption API credits.</p>
+          <p className="mt-4 text-muted-foreground sm:text-lg">Upload a video up to 500 MB, transcribe speech with Whisper, edit timed captions, choose from 60 styles, and export a captioned MP4. No paid caption API credits.</p>
         </div>
 
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,.85fr)]">
@@ -819,7 +819,7 @@ function AutoCaptionsPage() {
                 </div>
                 {(status === "loading-model" || status === "transcribing" || status === "exporting") && <div className="space-y-2"><div className="flex justify-between text-xs text-muted-foreground"><span>{progressLabel}</span><span>{progress}%</span></div><Progress value={progress} /></div>}
                 {error && <div className="flex gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive"><AlertCircle className="mt-0.5 size-4 shrink-0" /><span>{error}</span></div>}
-                <p className="text-xs leading-5 text-muted-foreground">The first run downloads a small open-source speech model and may take a few minutes. Your video is processed by the configured captions worker. Uploads are limited to 500 MB.</p>
+                <p className="text-xs leading-5 text-muted-foreground">Your video is uploaded to the configured captions worker for Whisper transcription and FFmpeg MP4 rendering. Upload limit: 500 MB.</p>
               </div>
             </Card>
 
@@ -863,7 +863,7 @@ function AutoCaptionsPage() {
             </Card>
             <Card className="border-border/80 p-5">
               <div className="flex items-center gap-2 font-semibold"><Sparkles className="size-4 text-primary" /> Free by design</div>
-              <ul className="mt-3 space-y-2 text-sm text-muted-foreground"><li>• No paid caption API</li><li>• Speech recognition runs on your device</li><li>• Editable transcript and SRT download</li><li>• MP4 video export rendered by FFmpeg</li></ul>
+              <ul className="mt-3 space-y-2 text-sm text-muted-foreground"><li>• No paid caption API</li><li>• Whisper speech recognition</li><li>• Editable transcript and SRT download</li><li>• MP4 video export rendered by FFmpeg</li></ul>
             </Card>
           </div>
         </div>
