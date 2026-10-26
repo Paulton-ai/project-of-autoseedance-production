@@ -68,3 +68,12 @@ test("job creation rejects unsupported upload MIME types", async () => {
   assert.match(body.error, /Unsupported video type/);
   assert.equal(body.maxUploadBytes, 524288000);
 });
+
+test("job creation rejects a corrupt file even when its MIME type is allowed", async () => {
+  const form = new FormData();
+  form.append("video", new Blob(["this is not a valid video"], { type: "video/mp4" }), "broken.mp4");
+  const response = await fetch(baseUrl + "/jobs", { method: "POST", body: form });
+  assert.equal(response.status, 422);
+  const body = await response.json();
+  assert.match(body.error, /could not be read as a valid video/);
+});
