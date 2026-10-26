@@ -1,0 +1,482 @@
+[
+  {
+    "id": "style-01",
+    "name": "Bold Brush Combo",
+    "primary": "#FFFFFF",
+    "accent": "#A3FF12",
+    "weight": "bold",
+    "effect": "brush"
+  },
+  {
+    "id": "style-02",
+    "name": "Gradient Modern",
+    "primary": "#58C8FF",
+    "accent": "#A855F7",
+    "weight": "bold",
+    "effect": "gradient"
+  },
+  {
+    "id": "style-03",
+    "name": "Stacked Card Style",
+    "primary": "#FFFFFF",
+    "accent": "#FACC15",
+    "weight": "bold",
+    "effect": "box"
+  },
+  {
+    "id": "style-04",
+    "name": "Kinetic Glitch Style",
+    "primary": "#FFFFFF",
+    "accent": "#22D3EE",
+    "weight": "bold",
+    "effect": "glitch"
+  },
+  {
+    "id": "style-05",
+    "name": "Minimal Frame",
+    "primary": "#FACC15",
+    "accent": "#FFFFFF",
+    "weight": "regular",
+    "effect": "frame"
+  },
+  {
+    "id": "style-06",
+    "name": "Handwritten Impact",
+    "primary": "#FF7A18",
+    "accent": "#FF7A18",
+    "weight": "bold",
+    "effect": "brush"
+  },
+  {
+    "id": "style-07",
+    "name": "Icon + Text Combo",
+    "primary": "#FFFFFF",
+    "accent": "#FACC15",
+    "weight": "bold",
+    "effect": "icon"
+  },
+  {
+    "id": "style-08",
+    "name": "Gradient + Arrow",
+    "primary": "#A855F7",
+    "accent": "#22D3EE",
+    "weight": "bold",
+    "effect": "arrow"
+  },
+  {
+    "id": "style-09",
+    "name": "Paint Stroke Banner",
+    "primary": "#FFFFFF",
+    "accent": "#FF1744",
+    "weight": "bold",
+    "effect": "paint"
+  },
+  {
+    "id": "style-10",
+    "name": "Text Split Effect",
+    "primary": "#FFFFFF",
+    "accent": "#34D399",
+    "weight": "bold",
+    "effect": "split"
+  },
+  {
+    "id": "style-11",
+    "name": "Slanted Panel",
+    "primary": "#FFFFFF",
+    "accent": "#4ADE80",
+    "weight": "bold",
+    "effect": "slant"
+  },
+  {
+    "id": "style-12",
+    "name": "Motion Lines",
+    "primary": "#FFFFFF",
+    "accent": "#0EA5E9",
+    "weight": "regular",
+    "effect": "motion"
+  },
+  {
+    "id": "style-13",
+    "name": "Outline + Fill Mix",
+    "primary": "#FFFFFF",
+    "accent": "#FACC15",
+    "weight": "regular",
+    "effect": "outline"
+  },
+  {
+    "id": "style-14",
+    "name": "Triple Stack",
+    "primary": "#22D3EE",
+    "accent": "#FFFFFF",
+    "weight": "bold",
+    "effect": "stack"
+  },
+  {
+    "id": "style-15",
+    "name": "Gradient Banner",
+    "primary": "#FFFFFF",
+    "accent": "#A855F7",
+    "weight": "bold",
+    "effect": "banner"
+  },
+  {
+    "id": "style-16",
+    "name": "Clean Minimal",
+    "primary": "#FFFFFF",
+    "accent": "#22D3EE",
+    "weight": "regular",
+    "effect": "minimal"
+  },
+  {
+    "id": "style-17",
+    "name": "Highlight Brush",
+    "primary": "#111111",
+    "accent": "#D9FF00",
+    "weight": "bold",
+    "effect": "highlight"
+  },
+  {
+    "id": "style-18",
+    "name": "Button Style",
+    "primary": "#FFFFFF",
+    "accent": "#168CFF",
+    "weight": "bold",
+    "effect": "button"
+  },
+  {
+    "id": "style-19",
+    "name": "Gradient Warm",
+    "primary": "#FB7185",
+    "accent": "#FB923C",
+    "weight": "bold",
+    "effect": "warm"
+  },
+  {
+    "id": "style-20",
+    "name": "Circle Scribble",
+    "primary": "#A3FF12",
+    "accent": "#A3FF12",
+    "weight": "bold",
+    "effect": "circle"
+  },
+  {
+    "id": "style-21",
+    "name": "Gradient Step",
+    "primary": "#A855F7",
+    "accent": "#22D3EE",
+    "weight": "bold",
+    "effect": "arrow"
+  },
+  {
+    "id": "style-22",
+    "name": "Icon + Contrast",
+    "primary": "#FFFFFF",
+    "accent": "#FACC15",
+    "weight": "bold",
+    "effect": "icon"
+  },
+  {
+    "id": "style-23",
+    "name": "Brush Emphasis",
+    "primary": "#FFFFFF",
+    "accent": "#EC4899",
+    "weight": "bold",
+    "effect": "brush"
+  },
+  {
+    "id": "style-24",
+    "name": "Speed Effect",
+    "primary": "#22D3EE",
+    "accent": "#06B6D4",
+    "weight": "bold",
+    "effect": "motion"
+  },
+  {
+    "id": "style-25",
+    "name": "Handwritten + Clean",
+    "primary": "#A3FF12",
+    "accent": "#FFFFFF",
+    "weight": "bold",
+    "effect": "brush"
+  },
+  {
+    "id": "style-26",
+    "name": "Bubble Style",
+    "primary": "#FFFFFF",
+    "accent": "#D946EF",
+    "weight": "bold",
+    "effect": "bubble"
+  },
+  {
+    "id": "style-27",
+    "name": "Icon Chain",
+    "primary": "#34D399",
+    "accent": "#22D3EE",
+    "weight": "bold",
+    "effect": "icon"
+  },
+  {
+    "id": "style-28",
+    "name": "Highlight Play",
+    "primary": "#111111",
+    "accent": "#FACC15",
+    "weight": "bold",
+    "effect": "highlight"
+  },
+  {
+    "id": "style-29",
+    "name": "Gradient + Underline",
+    "primary": "#A855F7",
+    "accent": "#22D3EE",
+    "weight": "bold",
+    "effect": "underline"
+  },
+  {
+    "id": "style-30",
+    "name": "Brush + Rough Paint",
+    "primary": "#111111",
+    "accent": "#A3FF12",
+    "weight": "bold",
+    "effect": "paint"
+  },
+  {
+    "id": "style-31",
+    "name": "Bold Emotion",
+    "primary": "#FFFFFF",
+    "accent": "#A3FF12",
+    "weight": "bold",
+    "effect": "brush"
+  },
+  {
+    "id": "style-32",
+    "name": "Minimal & Clean",
+    "primary": "#111111",
+    "accent": "#FACC15",
+    "weight": "regular",
+    "effect": "minimal"
+  },
+  {
+    "id": "style-33",
+    "name": "Neon Glow",
+    "primary": "#22D3EE",
+    "accent": "#A855F7",
+    "weight": "regular",
+    "effect": "glow"
+  },
+  {
+    "id": "style-34",
+    "name": "Stacked Words",
+    "primary": "#FFFFFF",
+    "accent": "#39FF14",
+    "weight": "bold",
+    "effect": "stack"
+  },
+  {
+    "id": "style-35",
+    "name": "Handwritten Style",
+    "primary": "#FACC15",
+    "accent": "#FFFFFF",
+    "weight": "regular",
+    "effect": "brush"
+  },
+  {
+    "id": "style-36",
+    "name": "Neon Button Style",
+    "primary": "#FFFFFF",
+    "accent": "#7C3AED",
+    "weight": "bold",
+    "effect": "button"
+  },
+  {
+    "id": "style-37",
+    "name": "Icon Integrated",
+    "primary": "#111111",
+    "accent": "#FACC15",
+    "weight": "bold",
+    "effect": "icon"
+  },
+  {
+    "id": "style-38",
+    "name": "Gradient Emoji",
+    "primary": "#EC4899",
+    "accent": "#FACC15",
+    "weight": "bold",
+    "effect": "emoji"
+  },
+  {
+    "id": "style-39",
+    "name": "Thin Modern",
+    "primary": "#FFFFFF",
+    "accent": "#22D3EE",
+    "weight": "regular",
+    "effect": "minimal"
+  },
+  {
+    "id": "style-40",
+    "name": "Sticker Style",
+    "primary": "#111111",
+    "accent": "#0EA5E9",
+    "weight": "bold",
+    "effect": "bubble"
+  },
+  {
+    "id": "style-41",
+    "name": "Glow Text",
+    "primary": "#34D399",
+    "accent": "#22D3EE",
+    "weight": "bold",
+    "effect": "glow"
+  },
+  {
+    "id": "style-42",
+    "name": "Highlight Block",
+    "primary": "#111111",
+    "accent": "#FACC15",
+    "weight": "bold",
+    "effect": "highlight"
+  },
+  {
+    "id": "style-43",
+    "name": "Emoji Trio",
+    "primary": "#FFFFFF",
+    "accent": "#A3FF12",
+    "weight": "bold",
+    "effect": "emoji"
+  },
+  {
+    "id": "style-44",
+    "name": "Dynamic Slant",
+    "primary": "#A855F7",
+    "accent": "#22D3EE",
+    "weight": "bold",
+    "effect": "slant"
+  },
+  {
+    "id": "style-45",
+    "name": "Neon Outline",
+    "primary": "#F0ABFC",
+    "accent": "#D946EF",
+    "weight": "regular",
+    "effect": "glow"
+  },
+  {
+    "id": "style-46",
+    "name": "Speech Bubble",
+    "primary": "#FFFFFF",
+    "accent": "#FACC15",
+    "weight": "bold",
+    "effect": "bubble"
+  },
+  {
+    "id": "style-47",
+    "name": "Brush Stroke",
+    "primary": "#FFFFFF",
+    "accent": "#00E676",
+    "weight": "bold",
+    "effect": "paint"
+  },
+  {
+    "id": "style-48",
+    "name": "Clean & Modern",
+    "primary": "#111111",
+    "accent": "#FACC15",
+    "weight": "bold",
+    "effect": "minimal"
+  },
+  {
+    "id": "style-49",
+    "name": "Color Blocks",
+    "primary": "#111111",
+    "accent": "#EC4899",
+    "weight": "bold",
+    "effect": "blocks"
+  },
+  {
+    "id": "style-50",
+    "name": "Emoji + Text",
+    "primary": "#FFFFFF",
+    "accent": "#22D3EE",
+    "weight": "bold",
+    "effect": "emoji"
+  },
+  {
+    "id": "style-51",
+    "name": "Minimal Typography",
+    "primary": "#FFFFFF",
+    "accent": "#22D3EE",
+    "weight": "regular",
+    "effect": "minimal"
+  },
+  {
+    "id": "style-52",
+    "name": "Gradient Fill",
+    "primary": "#FFFFFF",
+    "accent": "#A855F7",
+    "weight": "bold",
+    "effect": "gradient"
+  },
+  {
+    "id": "style-53",
+    "name": "Vertical Layout",
+    "primary": "#A3FF12",
+    "accent": "#22D3EE",
+    "weight": "bold",
+    "effect": "stack"
+  },
+  {
+    "id": "style-54",
+    "name": "Handwritten + Highlight",
+    "primary": "#111111",
+    "accent": "#FACC15",
+    "weight": "regular",
+    "effect": "brush"
+  },
+  {
+    "id": "style-55",
+    "name": "Icon + Word",
+    "primary": "#FFFFFF",
+    "accent": "#34D399",
+    "weight": "bold",
+    "effect": "icon"
+  },
+  {
+    "id": "style-56",
+    "name": "Gradient Brush",
+    "primary": "#EC4899",
+    "accent": "#22D3EE",
+    "weight": "bold",
+    "effect": "brush"
+  },
+  {
+    "id": "style-57",
+    "name": "Minimal + Icon",
+    "primary": "#111111",
+    "accent": "#FACC15",
+    "weight": "regular",
+    "effect": "icon"
+  },
+  {
+    "id": "style-58",
+    "name": "Button Minimal",
+    "primary": "#FFFFFF",
+    "accent": "#34D399",
+    "weight": "regular",
+    "effect": "button"
+  },
+  {
+    "id": "style-59",
+    "name": "Contrast & Emphasis",
+    "primary": "#FFFFFF",
+    "accent": "#EC4899",
+    "weight": "bold",
+    "effect": "highlight"
+  },
+  {
+    "id": "style-60",
+    "name": "Simple & Personal",
+    "primary": "#111111",
+    "accent": "#FACC15",
+    "weight": "regular",
+    "effect": "bubble"
+  }
+]
