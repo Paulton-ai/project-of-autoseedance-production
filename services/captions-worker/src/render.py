@@ -26,7 +26,7 @@ def ass_escape(text):
 
 def escape_filter_path(path):
     """Escape a filesystem path for FFmpeg's subtitles filter argument."""
-    return str(path).replace("\\\\", "/").replace(":", r"\\:")
+    return str(path).replace("\\", "/").replace(":", r"\:")
 
 def make_ass(transcript, style, output_path):
     primary = ass_color(style["primary"])
@@ -100,7 +100,7 @@ def main():
     ass_path = str(Path(output).with_suffix(".ass"))
     make_ass(transcript, STYLES[style_id], ass_path)
     # Burn captions into the video and preserve source audio. Output is H.264/AAC MP4.
-    escaped_ass = ass_path.replace("\\", "/").replace(":", r"\\:")
+    escaped_ass = escape_filter_path(ass_path)
     command = [
         "ffmpeg", "-y", "-i", video, "-vf", f"subtitles='{escaped_ass}'",
         "-map", "0:v:0", "-map", "0:a?", "-c:v", "libx264", "-preset", os.getenv("FFMPEG_PRESET", "veryfast"),
