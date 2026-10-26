@@ -67,14 +67,13 @@ app.get("/jobs/:id", (req, res) => {
   res.json({ id: job.id, status: job.status, progress: job.progress, error: job.error || null, media: job.media || null, transcript: job.captions || null, transcription: job.captions || null, render: job.render || null, downloadPath: job.status === "completed" ? `/jobs/${job.id}/download` : null });
 });
 
-// Phase 2 validates and stores uploads and probes media metadata. Captioning/render
-// execution is intentionally added in later phases before this endpoint is exposed to users.
+// Validate uploaded media before transcription and rendering jobs are accepted.
 app.post("/jobs", (req, res) => {
   upload.single("video")(req, res, async (error) => {
     if (error) {
       const tooLarge = error instanceof multer.MulterError && error.code === "LIMIT_FILE_SIZE";
       return res.status(tooLarge ? 413 : 400).json({
-        error: tooLarge ? "Maximum video upload size is 500 MB. Please choose a smaller video." : error.message,
+        error: tooLarge ? "Maximum upload size is 500 MB. Please choose a smaller video." : error.message,
         maxUploadBytes,
       });
     }
