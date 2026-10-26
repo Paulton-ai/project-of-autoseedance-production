@@ -23,7 +23,7 @@ async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 export async function uploadCaptionsVideo(file: File): Promise<WorkerJob> {
-  if (file.size > 500 * 1024 * 1024) throw new Error("Maximum video upload size is 500 MB. Please choose a smaller video.");
+  if (file.size > 500 * 1024 * 1024) throw new Error("Maximum upload size is 500 MB. Please choose a smaller video.");
   const form = new FormData();
   form.append("video", file);
   return requestJson<WorkerJob>(`${getBase()}/jobs`, { method: "POST", body: form });
