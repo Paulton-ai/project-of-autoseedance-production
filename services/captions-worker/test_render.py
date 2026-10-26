@@ -30,6 +30,20 @@ class RenderTests(unittest.TestCase):
         self.assertIn(r"{\rCaption}", ass)
         self.assertNotIn(r"{\\rCaption}", ass)
 
+    def test_all_60_catalog_styles_render_a_caption(self):
+        self.assertEqual(len(render.STYLES), 60)
+        with tempfile.TemporaryDirectory() as directory:
+            for style_id, style in render.STYLES.items():
+                output = Path(directory) / f"{style_id}.ass"
+                render.make_ass(
+                    {"segments": [{"start": 0.25, "end": 1.5, "text": "quality check"}]},
+                    style,
+                    output,
+                )
+                ass = output.read_text(encoding="utf-8-sig")
+                self.assertIn("Dialogue:", ass, style_id)
+                self.assertIn("quality check", ass, style_id)
+
     def test_empty_transcript(self):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "empty.ass"
