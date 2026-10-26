@@ -20,7 +20,7 @@ export const Route = createFileRoute("/tools/captions")({
       { name: "description", content: "Generate captions from your own video with multilingual AI speech recognition. Choose a caption template, preview it, edit the transcript, and export a captioned video for free." },
       { name: "robots", content: "index, follow" },
     ],
-    links: [{ rel: "canonical", href: "https://autoseedance.site/tools/captions" }],
+    links: [{ rel: "canonical", href: "https://www.autoseedance.site/feature/ai-auto-captions-generator" }],
   }),
 });
 
@@ -642,7 +642,7 @@ function toSrt(captions: Caption[]) {
   return captions.map((c, i) => `${i + 1}\n${formatTime(c.start)} --> ${formatTime(c.end)}\n${c.text}\n`).join("\n");
 }
 
-function AutoCaptionsPage() {
+export function AutoCaptionsPage() {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const objectUrlRef = useRef<string | null>(null);
