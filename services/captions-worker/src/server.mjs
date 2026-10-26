@@ -145,6 +145,25 @@ app.post("/jobs/:id/render", express.json(), async (req, res) => {
   if (job.status !== "transcribed" || !job.captions) {
     return res.status(409).json({ error: "Complete transcription before rendering.", status: job.status });
   }
+  // The UI may send edited caption text/timings. Validate it before replacing
+  // the Whisper transcript so user edits are included in the final MP4.
+  if (req.body?.captions !== undefined) {
+    const incoming = req.body.captions;
+    if (!Array.isArray(incoming) || incoming.length > 20000) {
+      return res.status(400).json({ error: "Captions must be an array with no more than 20,000 segments." });
+    }
+    const validated = [];
+    for (const segment of incoming) {
+      const start = Number(segment?.start);
+      const end = Number(segment?.end);
+      if (!Number.isFinite(start) || !Number.isFinite(end) || start < 0 || end <= start ||
+          typeof segment?.text !== "string" || segment.text.length > 2000) {
+        return res.status(400).json({ error: "Each caption needs valid start/end times and text up to 2,000 characters." });
+      }
+      validated.push({ start, end, text: segment.text });
+    }
+    job.captions = { ...job.captions, segments: validated };
+  }
   const styleId = typeof req.body?.styleId === "string" ? req.body.styleId : "style-01";
   let availableStyles;
   try {
