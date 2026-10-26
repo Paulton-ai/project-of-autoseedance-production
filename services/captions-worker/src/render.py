@@ -22,7 +22,7 @@ def ass_color(hex_color):
     return f"&H00{b:02X}{g:02X}{r:02X}"
 
 def ass_escape(text):
-    return str(text).replace("\\", r"\\").replace("{", r"\\{").replace("}", r"\\}").replace("\n", r"\\N")
+    return str(text).replace("\\", r"\\").replace("{", r"\\{").replace("}", r"\\}").replace("\n", r"\N")
 
 def make_ass(transcript, style, output_path):
     primary = ass_color(style["primary"])
@@ -65,22 +65,22 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             for index, chunk in enumerate(chunks):
                 chunk_text = " ".join(chunk)
                 if style["effect"] in ("highlight", "blocks"):
-                    chunk_text = r"{\\bord4\\3c" + accent + r"}" + ass_escape(chunk_text) + r"{\\rCaption}"
+                    chunk_text = r"{\bord4\3c" + accent + r"}" + ass_escape(chunk_text) + r"{\\rCaption}"
                 elif style["effect"] == "glitch":
-                    chunk_text = r"{\\fax0.06\\bord3\\3c" + accent + r"}" + ass_escape(chunk_text) + r"{\\rCaption}"
+                    chunk_text = r"{\fax0.06\bord3\3c" + accent + r"}" + ass_escape(chunk_text) + r"{\\rCaption}"
                 elif style["effect"] == "slant":
-                    chunk_text = r"{\\i1\\frz-3}" + ass_escape(chunk_text) + r"{\\rCaption}"
+                    chunk_text = r"{\i1\frz-3}" + ass_escape(chunk_text) + r"{\\rCaption}"
                 else:
                     chunk_text = ass_escape(chunk_text)
                 lines.append(f"Dialogue: 0,{ass_time(start+index*duration)},{ass_time(start+(index+1)*duration)},Caption,,0,0,0,,{chunk_text}\n")
         else:
             text = ass_escape(text)
             if style["effect"] == "underline":
-                text = r"{\\u1}" + text + r"{\\u0}"
+                text = r"{\u1}" + text + r"{\u0}"
             elif style["effect"] == "glow":
-                text = r"{\\bord4\\blur1\\3c" + accent + r"}" + text + r"{\\rCaption}"
+                text = r"{\bord4\blur1\3c" + accent + r"}" + text + r"{\\rCaption}"
             elif style["effect"] in ("arrow", "motion"):
-                text = r"{\\fsp2}" + text + r"{\\fsp0}"
+                text = r"{\fsp2}" + text + r"{\fsp0}"
             lines.append(f"Dialogue: 0,{ass_time(start)},{ass_time(end)},Caption,,0,0,0,,{text}\n")
     Path(output_path).write_text("".join(lines), encoding="utf-8-sig")
 
