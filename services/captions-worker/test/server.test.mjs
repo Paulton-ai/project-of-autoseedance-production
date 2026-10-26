@@ -26,7 +26,7 @@ async function waitForWorker() {
 test.before(async () => {
   tempDir = await mkdtemp(path.join(os.tmpdir(), "captions-worker-test-"));
   worker = spawn(process.execPath, ["src/server.mjs"], {
-    cwd: path.resolve("services/captions-worker"),
+    cwd: process.cwd(),
     env: {
       ...process.env,
       PORT: String(port),
