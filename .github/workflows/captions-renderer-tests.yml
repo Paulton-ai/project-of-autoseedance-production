@@ -1,0 +1,30 @@
+name: Captions Renderer Tests
+
+on:
+  pull_request:
+    paths:
+      - "services/captions-worker/**"
+      - ".github/workflows/captions-renderer-tests.yml"
+  push:
+    branches:
+      - feature/ai-auto-captions-generator
+    paths:
+      - "services/captions-worker/**"
+      - ".github/workflows/captions-renderer-tests.yml"
+
+jobs:
+  renderer-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compile worker Python modules
+        working-directory: services/captions-worker
+        run: python -m py_compile src/transcribe.py src/render.py test_render.py
+      - name: Run ASS renderer unit tests
+        working-directory: services/captions-worker
+        run: python -m unittest test_render.py -v
