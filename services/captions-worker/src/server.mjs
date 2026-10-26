@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import multer from "multer";
 import { randomUUID } from "node:crypto";
 import { spawn } from "node:child_process";
@@ -6,6 +7,11 @@ import fs from "node:fs";
 import path from "node:path";
 
 const app = express();
+const allowedOrigins = (process.env.FRONTEND_ORIGINS || "").split(",").map((origin) => origin.trim()).filter(Boolean);
+app.use(cors({ origin: (origin, callback) => {
+  if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) return callback(null, true);
+  return callback(new Error("Origin is not allowed by captions worker CORS policy."));
+} }));
 const port = Number(process.env.PORT || 8080);
 const maxUploadBytes = 500 * 1024 * 1024;
 const uploadDir = process.env.CAPTIONS_UPLOAD_DIR || "/tmp/captions-uploads";
