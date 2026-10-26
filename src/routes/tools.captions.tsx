@@ -25,17 +25,608 @@ export const Route = createFileRoute("/tools/captions")({
 });
 
 type Caption = { start: number; end: number; text: string };
-type TemplateId = "creator" | "karaoke" | "minimal" | "boxed" | "neon" | "podcast" | "classic" | "highlight";
-
-const TEMPLATES: { id: TemplateId; name: string; detail: string; color: string; highlight: string; font: string; casing: "upper" | "normal" }[] = [
-  { id: "creator", name: "Creator Bold", detail: "Bold white with dark outline", color: "#ffffff", highlight: "#facc15", font: "Arial Black", casing: "upper" },
-  { id: "karaoke", name: "Karaoke Pop", detail: "Word-by-word yellow emphasis", color: "#ffffff", highlight: "#fde047", font: "Arial Black", casing: "upper" },
-  { id: "minimal", name: "Clean Minimal", detail: "Simple, clean subtitles", color: "#ffffff", highlight: "#ffffff", font: "Arial", casing: "normal" },
-  { id: "boxed", name: "Caption Box", detail: "Readable dark translucent panel", color: "#ffffff", highlight: "#67e8f9", font: "Arial", casing: "normal" },
-  { id: "neon", name: "Neon Glow", detail: "Cyan glow with creator energy", color: "#67e8f9", highlight: "#f0abfc", font: "Arial Black", casing: "upper" },
-  { id: "podcast", name: "Podcast Clean", detail: "Strong podcast-style emphasis", color: "#ffffff", highlight: "#fb7185", font: "Arial Black", casing: "normal" },
-  { id: "classic", name: "Classic Subtitle", detail: "Traditional bottom subtitle", color: "#ffffff", highlight: "#ffffff", font: "Arial", casing: "normal" },
-  { id: "highlight", name: "Green Highlight", detail: "Bright green active words", color: "#ffffff", highlight: "#86efac", font: "Arial Black", casing: "upper" },
+type TemplateId = string;
+const TEMPLATES: { id: TemplateId; name: string; detail: string; color: string; highlight: string; font: string; casing: "upper" | "normal"; effect: string }[] = [
+  {
+    "id": "style-01",
+    "name": "Bold Brush Combo",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#a3ff12",
+    "font": "Trebuchet MS",
+    "casing": "upper",
+    "effect": "brush"
+  },
+  {
+    "id": "style-02",
+    "name": "Gradient Modern",
+    "detail": "Reference-inspired caption style",
+    "color": "#58c8ff",
+    "highlight": "#a855f7",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "gradient"
+  },
+  {
+    "id": "style-03",
+    "name": "Stacked Card Style",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#facc15",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "box"
+  },
+  {
+    "id": "style-04",
+    "name": "Kinetic Glitch Style",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#22d3ee",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "glitch"
+  },
+  {
+    "id": "style-05",
+    "name": "Minimal Frame",
+    "detail": "Reference-inspired caption style",
+    "color": "#facc15",
+    "highlight": "#ffffff",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "frame"
+  },
+  {
+    "id": "style-06",
+    "name": "Handwritten Impact",
+    "detail": "Reference-inspired caption style",
+    "color": "#ff7a18",
+    "highlight": "#ff7a18",
+    "font": "Trebuchet MS",
+    "casing": "upper",
+    "effect": "brush"
+  },
+  {
+    "id": "style-07",
+    "name": "Icon + Text Combo",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#facc15",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "icon"
+  },
+  {
+    "id": "style-08",
+    "name": "Gradient + Arrow",
+    "detail": "Reference-inspired caption style",
+    "color": "#a855f7",
+    "highlight": "#22d3ee",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "arrow"
+  },
+  {
+    "id": "style-09",
+    "name": "Paint Stroke Banner",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#ff1744",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "paint"
+  },
+  {
+    "id": "style-10",
+    "name": "Text Split Effect",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#34d399",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "split"
+  },
+  {
+    "id": "style-11",
+    "name": "Slanted Panel",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#4ade80",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "slant"
+  },
+  {
+    "id": "style-12",
+    "name": "Motion Lines",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#0ea5e9",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "motion"
+  },
+  {
+    "id": "style-13",
+    "name": "Outline + Fill Mix",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#facc15",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "outline"
+  },
+  {
+    "id": "style-14",
+    "name": "Triple Stack",
+    "detail": "Reference-inspired caption style",
+    "color": "#22d3ee",
+    "highlight": "#ffffff",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "stack"
+  },
+  {
+    "id": "style-15",
+    "name": "Gradient Banner",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#a855f7",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "banner"
+  },
+  {
+    "id": "style-16",
+    "name": "Clean Minimal",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#22d3ee",
+    "font": "Arial",
+    "casing": "normal",
+    "effect": "minimal"
+  },
+  {
+    "id": "style-17",
+    "name": "Highlight Brush",
+    "detail": "Reference-inspired caption style",
+    "color": "#111111",
+    "highlight": "#d9ff00",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "highlight"
+  },
+  {
+    "id": "style-18",
+    "name": "Button Style",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#168cff",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "button"
+  },
+  {
+    "id": "style-19",
+    "name": "Gradient Warm",
+    "detail": "Reference-inspired caption style",
+    "color": "#fb7185",
+    "highlight": "#fb923c",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "warm"
+  },
+  {
+    "id": "style-20",
+    "name": "Circle Scribble",
+    "detail": "Reference-inspired caption style",
+    "color": "#a3ff12",
+    "highlight": "#a3ff12",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "circle"
+  },
+  {
+    "id": "style-21",
+    "name": "Gradient Step",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#a3ff12",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "arrow"
+  },
+  {
+    "id": "style-22",
+    "name": "Icon + Contrast",
+    "detail": "Reference-inspired caption style",
+    "color": "#58c8ff",
+    "highlight": "#a855f7",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "icon"
+  },
+  {
+    "id": "style-23",
+    "name": "Brush Emphasis",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#facc15",
+    "font": "Trebuchet MS",
+    "casing": "upper",
+    "effect": "brush"
+  },
+  {
+    "id": "style-24",
+    "name": "Speed Effect",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#22d3ee",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "motion"
+  },
+  {
+    "id": "style-25",
+    "name": "Handwritten + Clean",
+    "detail": "Reference-inspired caption style",
+    "color": "#facc15",
+    "highlight": "#ffffff",
+    "font": "Trebuchet MS",
+    "casing": "upper",
+    "effect": "brush"
+  },
+  {
+    "id": "style-26",
+    "name": "Bubble Style",
+    "detail": "Reference-inspired caption style",
+    "color": "#ff7a18",
+    "highlight": "#ff7a18",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "bubble"
+  },
+  {
+    "id": "style-27",
+    "name": "Icon Chain",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#facc15",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "icon"
+  },
+  {
+    "id": "style-28",
+    "name": "Highlight Play",
+    "detail": "Reference-inspired caption style",
+    "color": "#a855f7",
+    "highlight": "#22d3ee",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "highlight"
+  },
+  {
+    "id": "style-29",
+    "name": "Gradient + Underline",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#ff1744",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "underline"
+  },
+  {
+    "id": "style-30",
+    "name": "Brush + Rough Paint",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#34d399",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "paint"
+  },
+  {
+    "id": "style-31",
+    "name": "Bold Emotion",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#4ade80",
+    "font": "Trebuchet MS",
+    "casing": "upper",
+    "effect": "brush"
+  },
+  {
+    "id": "style-32",
+    "name": "Minimal & Clean",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#0ea5e9",
+    "font": "Arial",
+    "casing": "normal",
+    "effect": "minimal"
+  },
+  {
+    "id": "style-33",
+    "name": "Neon Glow",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#facc15",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "glow"
+  },
+  {
+    "id": "style-34",
+    "name": "Stacked Words",
+    "detail": "Reference-inspired caption style",
+    "color": "#22d3ee",
+    "highlight": "#ffffff",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "stack"
+  },
+  {
+    "id": "style-35",
+    "name": "Handwritten Style",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#a855f7",
+    "font": "Trebuchet MS",
+    "casing": "upper",
+    "effect": "brush"
+  },
+  {
+    "id": "style-36",
+    "name": "Neon Button Style",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#22d3ee",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "button"
+  },
+  {
+    "id": "style-37",
+    "name": "Icon Integrated",
+    "detail": "Reference-inspired caption style",
+    "color": "#111111",
+    "highlight": "#d9ff00",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "icon"
+  },
+  {
+    "id": "style-38",
+    "name": "Gradient Emoji",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#168cff",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "emoji"
+  },
+  {
+    "id": "style-39",
+    "name": "Thin Modern",
+    "detail": "Reference-inspired caption style",
+    "color": "#fb7185",
+    "highlight": "#fb923c",
+    "font": "Arial",
+    "casing": "normal",
+    "effect": "minimal"
+  },
+  {
+    "id": "style-40",
+    "name": "Sticker Style",
+    "detail": "Reference-inspired caption style",
+    "color": "#a3ff12",
+    "highlight": "#a3ff12",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "bubble"
+  },
+  {
+    "id": "style-41",
+    "name": "Glow Text",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#a3ff12",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "glow"
+  },
+  {
+    "id": "style-42",
+    "name": "Highlight Block",
+    "detail": "Reference-inspired caption style",
+    "color": "#58c8ff",
+    "highlight": "#a855f7",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "highlight"
+  },
+  {
+    "id": "style-43",
+    "name": "Emoji Trio",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#facc15",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "emoji"
+  },
+  {
+    "id": "style-44",
+    "name": "Dynamic Slant",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#22d3ee",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "slant"
+  },
+  {
+    "id": "style-45",
+    "name": "Neon Outline",
+    "detail": "Reference-inspired caption style",
+    "color": "#facc15",
+    "highlight": "#ffffff",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "glow"
+  },
+  {
+    "id": "style-46",
+    "name": "Speech Bubble",
+    "detail": "Reference-inspired caption style",
+    "color": "#ff7a18",
+    "highlight": "#ff7a18",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "bubble"
+  },
+  {
+    "id": "style-47",
+    "name": "Brush Stroke",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#facc15",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "paint"
+  },
+  {
+    "id": "style-48",
+    "name": "Clean & Modern",
+    "detail": "Reference-inspired caption style",
+    "color": "#a855f7",
+    "highlight": "#22d3ee",
+    "font": "Arial",
+    "casing": "normal",
+    "effect": "minimal"
+  },
+  {
+    "id": "style-49",
+    "name": "Color Blocks",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#ff1744",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "box"
+  },
+  {
+    "id": "style-50",
+    "name": "Emoji + Text",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#34d399",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "emoji"
+  },
+  {
+    "id": "style-51",
+    "name": "Minimal Typography",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#4ade80",
+    "font": "Arial",
+    "casing": "normal",
+    "effect": "minimal"
+  },
+  {
+    "id": "style-52",
+    "name": "Gradient Fill",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#0ea5e9",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "gradient"
+  },
+  {
+    "id": "style-53",
+    "name": "Vertical Layout",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#facc15",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "stack"
+  },
+  {
+    "id": "style-54",
+    "name": "Handwritten + Highlight",
+    "detail": "Reference-inspired caption style",
+    "color": "#22d3ee",
+    "highlight": "#ffffff",
+    "font": "Trebuchet MS",
+    "casing": "upper",
+    "effect": "brush"
+  },
+  {
+    "id": "style-55",
+    "name": "Icon + Word",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#a855f7",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "icon"
+  },
+  {
+    "id": "style-56",
+    "name": "Gradient Brush",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#22d3ee",
+    "font": "Trebuchet MS",
+    "casing": "upper",
+    "effect": "brush"
+  },
+  {
+    "id": "style-57",
+    "name": "Minimal + Icon",
+    "detail": "Reference-inspired caption style",
+    "color": "#111111",
+    "highlight": "#d9ff00",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "icon"
+  },
+  {
+    "id": "style-58",
+    "name": "Button Minimal",
+    "detail": "Reference-inspired caption style",
+    "color": "#ffffff",
+    "highlight": "#168cff",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "button"
+  },
+  {
+    "id": "style-59",
+    "name": "Contrast & Emphasis",
+    "detail": "Reference-inspired caption style",
+    "color": "#fb7185",
+    "highlight": "#fb923c",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "highlight"
+  },
+  {
+    "id": "style-60",
+    "name": "Simple & Personal",
+    "detail": "Reference-inspired caption style",
+    "color": "#a3ff12",
+    "highlight": "#a3ff12",
+    "font": "Arial Black",
+    "casing": "upper",
+    "effect": "bubble"
+  }
 ];
 
 const formatTime = (seconds: number) => {
@@ -60,7 +651,7 @@ function AutoCaptionsPage() {
   const [file, setFile] = useState<File | null>(null);
   const [videoUrl, setVideoUrl] = useState("");
   const [captions, setCaptions] = useState<Caption[]>([]);
-  const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>("creator");
+  const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>("style-01");
   const [status, setStatus] = useState<"idle" | "loading-model" | "transcribing" | "ready" | "exporting">("idle");
   const [progress, setProgress] = useState(0);
   const [progressLabel, setProgressLabel] = useState("");
@@ -221,7 +812,7 @@ function AutoCaptionsPage() {
       const current = video.currentTime;
       const active = captions.find((c) => current >= c.start && current <= c.end);
       if (active) {
-        const fontSize = Math.max(22, Math.round(canvas.width * (selectedTemplate === "minimal" || selectedTemplate === "classic" ? 0.035 : 0.052)));
+        const fontSize = Math.max(22, Math.round(canvas.width * (template.effect === "minimal" ? 0.035 : 0.052)));
         const words = (template.casing === "upper" ? active.text.toUpperCase() : active.text).split(/\s+/);
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -247,9 +838,9 @@ function AutoCaptionsPage() {
           ctx.lineWidth = Math.max(3, fontSize * 0.16);
           ctx.strokeStyle = selectedTemplate === "minimal" || selectedTemplate === "classic" ? "rgba(0,0,0,.7)" : "#09090b";
           ctx.strokeText(lineText, canvas.width / 2, y, maxWidth);
-          ctx.shadowColor = selectedTemplate === "neon" ? template.highlight : "transparent";
-          ctx.shadowBlur = selectedTemplate === "neon" ? 18 : 0;
-          ctx.fillStyle = selectedTemplate === "neon" ? template.color : template.color;
+          ctx.shadowColor = template.effect === "glow" ? template.highlight : "transparent";
+          ctx.shadowBlur = template.effect === "glow" ? 18 : 0;
+          ctx.fillStyle = template.color;
           ctx.fillText(lineText, canvas.width / 2, y, maxWidth);
           ctx.shadowBlur = 0;
         });
@@ -356,7 +947,7 @@ function AutoCaptionsPage() {
               <div className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-4 lg:grid-cols-2">
                 {TEMPLATES.map((item) => <button key={item.id} type="button" onClick={() => setSelectedTemplate(item.id)} aria-pressed={selectedTemplate === item.id} className={`group rounded-xl border p-2 text-left transition ${selectedTemplate === item.id ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:border-primary/50"}`}>
                   <div className="flex h-20 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-950 p-2">
-                    <span style={{ color: item.color, fontFamily: item.font, textShadow: item.id === "neon" ? `0 0 12px ${item.highlight}` : "2px 2px 0 #000, -1px -1px 0 #000", background: item.id === "boxed" ? "rgba(0,0,0,.7)" : "transparent" }} className="text-center text-xs font-black leading-tight">{item.id === "minimal" ? "make it simple" : item.id === "classic" ? "Your subtitle here" : item.id === "podcast" ? "HERE'S THE POINT" : item.id === "neon" ? "CREATE DIFFERENT" : item.id === "highlight" ? "MAKE IT POP" : item.id === "boxed" ? "Read every word" : item.id === "karaoke" ? "ONE WORD AT A TIME" : "YOUR STORY HERE"}</span>
+                    <span style={{ color: item.color, fontFamily: item.font, textShadow: item.effect === "glow" ? `0 0 12px ${item.highlight}` : "2px 2px 0 #000, -1px -1px 0 #000", background: ["box","banner","button","bubble"].includes(item.effect) ? "rgba(0,0,0,.7)" : "transparent" }} className="text-center text-xs font-black leading-tight">{item.id === "minimal" ? "make it simple" : item.id === "classic" ? "Your subtitle here" : item.id === "podcast" ? "HERE'S THE POINT" : item.id === "neon" ? "CREATE DIFFERENT" : item.id === "highlight" ? "MAKE IT POP" : item.id === "boxed" ? "Read every word" : item.id === "karaoke" ? "ONE WORD AT A TIME" : "YOUR STORY HERE"}</span>
                   </div>
                   <div className="mt-2 flex items-center justify-between gap-1"><span className="truncate text-xs font-semibold">{item.name}</span>{selectedTemplate === item.id && <CheckCircle2 className="size-3.5 shrink-0 text-primary" />}</div>
                   <p className="mt-1 line-clamp-2 text-[11px] leading-4 text-muted-foreground">{item.detail}</p>
