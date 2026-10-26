@@ -22,7 +22,7 @@ def ass_color(hex_color):
     return f"&H00{b:02X}{g:02X}{r:02X}"
 
 def ass_escape(text):
-    return str(text).replace("\\", r"\\").replace("{", r"\\{").replace("}", r"\\}").replace("\n", r"\N")
+    return str(text).replace("\\", r"\\").replace("{", r"\{").replace("}", r"\}").replace("\n", r"\N")
 
 def make_ass(transcript, style, output_path):
     primary = ass_color(style["primary"])
