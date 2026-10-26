@@ -11,7 +11,7 @@ const STATIC_PAGES = [
   { path: "/tools/image", title: "AI Image Generator", description: "Generate AI images from text prompts and reference images." },
   { path: "/tools/video", title: "AI Video Generator", description: "Generate AI video clips from text prompts with supported models and output settings." },
   { path: "/tools/reel-studio", title: "AI Reel Studio", description: "Turn an idea into a short-form video with scenes, voiceover, captions, and export." },
-  { path: "/tools/captions", title: "Free AI Auto Captions Generator", description: "Generate, edit, style, and export captions for your videos with multilingual AI speech recognition." },
+  { path: "/feature/ai-auto-captions-generator", title: "Free AI Auto Captions Generator", description: "Generate, edit, style, and export captions for your videos with multilingual AI speech recognition." },
   { path: "/ai-image-generator", title: "AI Image Generator Guide", description: "Practical guidance for prompting, styles, references, and output choices." },
   { path: "/ai-video-generator", title: "AI Video Generator Guide", description: "Practical guidance for text-to-video prompts, output settings, references, and review." },
   { path: "/ai-reel-generator", title: "AI Reel Generator Guide", description: "A complete short-form workflow from idea and script to scenes, voiceover, captions, and export." },
