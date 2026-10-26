@@ -20,6 +20,26 @@ fs.mkdirSync(uploadDir, { recursive: true });
 fs.mkdirSync(renderDir, { recursive: true });
 
 const jobs = new Map();
+
+// Remove completed/failed or abandoned jobs after six hours so uploads and MP4s
+// do not accumulate indefinitely. Never delete files while FFmpeg/Whisper is active.
+const jobRetentionMs = 6 * 60 * 60 * 1000;
+const activeJobStatuses = new Set(["validating", "transcribing", "rendering"]);
+async function cleanupExpiredJobs(now = Date.now()) {
+  for (const [id, job] of jobs) {
+    const createdAt = Date.parse(job.createdAt || "");
+    if (!Number.isFinite(createdAt) || now - createdAt < jobRetentionMs || activeJobStatuses.has(job.status)) continue;
+    const paths = [job.filePath, job.outputPath];
+    await Promise.all(paths.filter(Boolean).map((filePath) => fs.promises.unlink(filePath).catch((error) => {
+      if (error.code !== "ENOENT") console.error("Could not clean captions job file:", error.message);
+    })));
+    jobs.delete(id);
+  }
+}
+const cleanupTimer = setInterval(() => {
+  cleanupExpiredJobs().catch((error) => console.error("Captions cleanup failed:", error));
+}, 15 * 60 * 1000);
+cleanupTimer.unref?.();
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, uploadDir),
   filename: (_req, file, cb) => {
