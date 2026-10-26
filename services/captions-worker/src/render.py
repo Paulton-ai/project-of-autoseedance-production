@@ -24,6 +24,10 @@ def ass_color(hex_color):
 def ass_escape(text):
     return str(text).replace("\\", r"\\").replace("{", r"\{").replace("}", r"\}").replace("\n", r"\N")
 
+def escape_filter_path(path):
+    """Escape a filesystem path for FFmpeg's subtitles filter argument."""
+    return str(path).replace("\\\\", "/").replace(":", r"\\:")
+
 def make_ass(transcript, style, output_path):
     primary = ass_color(style["primary"])
     accent = ass_color(style["accent"])
