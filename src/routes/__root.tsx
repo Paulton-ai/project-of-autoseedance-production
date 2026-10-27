@@ -81,7 +81,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:image:alt", content: "Auto Seedance AI image and video generation platform" },
     ],
     links: [
-      { rel: "canonical", href: SITE_URL },
       { rel: "icon", href: "/favicon.ico" },
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
       { rel: "manifest", href: "/site.webmanifest" },
@@ -157,30 +156,8 @@ function ToolEducation({ path }: { path: string }) {
           ["3. Select the output shape", "Choose an aspect ratio or resolution that matches the destination. Portrait images work well for short-form social posts, while landscape formats are useful for video thumbnails and presentations."],
           ["4. Review and iterate", "AI output can contain incorrect text, distorted objects, or details that do not match the prompt. Treat the first generation as a draft, refine the prompt, and review the final image before publishing it."],
         ],
-        useCases: "Common uses include YouTube thumbnails, social media posts, advertising concepts, product visuals, storyboards, mood boards, educational illustrations, and creative exploration. If a generated image represents a real person, brand, product, or sensitive subject, review the result carefully and make sure your intended use is lawful and appropriate.",
-        faq: [
-          ["What is an AI image generator?", "It is a generative AI tool that creates an image from a text description and, where supported, reference inputs. The model interprets the prompt and produces a new visual result."],
-          ["How can I get better AI image results?", "Give the model a clear subject, composition, environment, visual style, lighting, and output goal. Then iterate instead of relying on a single short prompt."],
-          ["Can I use generated images commercially?", "Your rights and permitted uses depend on the applicable Auto Seedance plan, the model provider's terms, and applicable law. Review the current Terms of Service and the terms of the model used before commercial publication."],
-        ],
+        useCases: "Common uses include YouTube thumbnpúÙdît.", faq: [],
       }
-    : path === "/tools/video"
-      ? {
-          title: "AI Video Generator: create short clips from text prompts",
-          intro: "The Auto Seedance AI Video Generator is built for turning a described scene into a short video clip. It is useful when you need a visual shot for a story, advertisement, explainer, social post, product concept, or larger edited video.",
-          steps: [
-            ["1. Describe the shot", "Write what should happen in the scene, including the main subject, movement, environment, time of day, camera motion, and visual style. Think of the prompt as directions for a cinematographer."],
-            ["2. Choose duration and framing", "Select the available duration, resolution, and aspect ratio for the destination. Vertical framing is useful for Shorts and Reels, while landscape is commonly used for YouTube and presentations."],
-            ["3. Add references when appropriate", "Reference images or other supported inputs can help establish appearance, composition, or creative direction. Only upload material you have the right to use."],
-            ["4. Inspect the generated clip", "AI video can introduce continuity errors, unwanted motion, incorrect objects, or audio issues. Review every clip before using it in a public or commercial project."],
-          ],
-          useCases: "Useful applications include social video shots, product demonstrations, advertising concepts, cinematic transitions, educational visuals, story scenes, background footage, and creative prototypes. Generated media should be reviewed for accuracy and rights issues before publication.",
-          faq: [
-            ["What makes a good text-to-video prompt?", "Describe the subject and action first, then add the environment, camera movement, lighting, visual style, and important constraints. Specific scene direction generally produces more controllable results."],
-            ["Which aspect ratio should I choose?", "Use vertical video for Shorts, TikTok, and Reels; landscape for standard YouTube and many presentations; and square when the destination specifically benefits from a 1:1 composition."],
-            ["Can AI video be used for commercial work?", "Commercial use depends on your plan, the selected model provider's terms, the rights to any references you provide, and applicable law. Review those terms before publishing paid or branded work."],
-          ],
-        }
       : {
           title: "AI Reel Studio: from an idea to a structured short-form video",
           intro: "Reel Studio is designed around the complete short-form workflow rather than a single generation step. You provide the idea, choose the creative direction, and work through script, scene generation, voiceover, captions, assembly, and export.",
