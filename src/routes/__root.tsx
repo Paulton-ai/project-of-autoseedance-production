@@ -70,116 +70,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { property: "og:url", content: SITE_URL },
       { property: "og:image", content: `${SITE_URL}/og-image.png` },
-      { property: "og:image:width", content: "1200" },
-      { property: "og:image:height", content: "630" },
-      { property: "og:image:alt", content: "Auto Seedance AI image and video generation platform" },
-      { property: "og:locale", content: "en_US" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: SITE_TITLE },
-      { name: "twitter:description", content: SITE_DESC },
-      { name: "twitter:image", content: `${SITE_URL}/og-image.png` },
-      { name: "twitter:image:alt", content: "Auto Seedance AI image and video generation platform" },
-    ],
-    links: [
-      { rel: "icon", href: "/favicon.ico" },
-      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
-      { rel: "manifest", href: "/site.webmanifest" },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
-      { rel: "preconnect", href: "https://vcercajwtbjbvjhzivjb.supabase.co" },
-      { rel: "dns-prefetch", href: "https://fonts.googleapis.com" },
-      { rel: "dns-prefetch", href: "https://fonts.gstatic.com" },
-    ],
-    scripts: [
-      {
-        src: "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2817573116229045",
-        async: true,
-        crossOrigin: "anonymous",
-      },
-      {
-        src: "https://www.googletagmanager.com/gtag/js?id=G-KFFD4XT5W6",
-        async: true,
-      },
-      {
-        children: "window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-KFFD4XT5W6');",
-      },
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "WebSite",
-          name: "Auto Seedance",
-          url: SITE_URL,
-          description: SITE_DESC,
-        }),
-      },
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Organization",
-          name: "Auto Seedance",
-          url: SITE_URL,
-          logo: `${SITE_URL}/android-chrome-512x512.png`,
-        }),
-      },
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "SoftwareApplication",
-          name: "Auto Seedance",
-          applicationCategory: "MultimediaApplication",
-          description: "Professional AI image and video generation platform powered by advanced AI models.",
-          operatingSystem: "Web Browser",
-          offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-          url: SITE_URL,
-        }),
-      },
-    ],
-  }),
-  component: RootComponent,
-  notFoundComponent: NotFoundComponent,
-  errorComponent: ErrorComponent,
-});
-
-function ToolEducation({ path }: { path: string }) {
-  if (!path.startsWith("/tools/")) return null;
-
-  const content = path === "/tools/image"
-    ? {
-        title: "AI Image Generator: how it works, what to create, and how to get better results",
-        intro: "Auto Seedance's AI Image Generator turns a written description into a visual asset. It is designed for creators who need thumbnails, social graphics, concept art, product mockups, illustrations, or visual experiments without building a separate image-generation workflow.",
-        steps: [
-          ["1. Start with a specific prompt", "Describe the subject, setting, composition, mood, lighting, camera perspective, colors, and important objects. A concrete prompt usually gives the model more useful direction than a short phrase."],
-          ["2. Choose a visual direction", "Use the available style controls when you want a particular visual language such as realistic photography, illustration, vector art, 3D, anime, oil painting, or watercolor."],
-          ["3. Select the output shape", "Choose an aspect ratio or resolution that matches the destination. Portrait images work well for short-form social posts, while landscape formats are useful for video thumbnails and presentations."],
-          ["4. Review and iterate", "AI output can contain incorrect text, distorted objects, or details that do not match the prompt. Treat the first generation as a draft, refine the prompt, and review the final image before publishing it."],
-        ],
-        useCases: "Common uses include YouTube thumbnails, social media posts, advertising concepts, product visuals, storyboards, mood boards, educational illustrations, and creative exploration. If a generated image represents a real person, brand, product, or sensitive subject, review the result carefully and make sure your intended use is lawful and appropriate.",
-        faq: [
-          ["What is an AI image generator?", "It is a generative AI tool that creates an image from a text description and, where supported, reference inputs. The model interprets the prompt and produces a new visual result."],
-          ["How can I get better AI image results?", "Give the model a clear subject, composition, environment, visual style, lighting, and output goal. Then iterate instead of relying on a single short prompt."],
-          ["Can I use generated images commercially?", "Your rights and permitted uses depend on the applicable Auto Seedance plan, the model provider's terms, and applicable law. Review the current Terms of Service and the terms of the model used before commercial publication."],
-        ],
+      { property: "og:p¥µ…”éİ¥‘Ñ ˆ°½¹Ñ•¹Ğè€ˆÄÈÀÀˆô°(€€€€€ìÁÉ½Á•ÉÑäè€‰½œé¥µ…”é¡•¥¡Ğˆ°½¹Ñ•¹Ğè€ˆØÌÀˆô°(€€€€€ìÁÉ½Á•ÉÑäè€‰½œé¥µ…”é…±Ğˆ°½¹Ñ•¹Ğè€‰ÕÑ¼M••‘…¹”$¥µ…”…¹Ù¥‘•¼•¹•É…Ñ¥½¸Á±…Ñ™½É´ˆô°(€€€€€ìÁÉ½Á•ÉÑäè€‰½œé±½…±”ˆ°½¹Ñ•¹Ğè€‰•¹}ULˆô°(€€€€€ì¹…µ”è€‰Ñİ¥ÑÑ•Èé…Éˆ°½¹Ñ•¹Ğè€‰ÍÕµµ…Éå}±…É•}¥µ…”ˆô°(€€€€€ì¹…µ”è€‰Ñİ¥ÑÑ•ÈéÑ¥Ñ±”ˆ°½¹Ñ•¹ĞèM%Q}Q%Q1ô°(€€€€€ì¹…µ”è€‰Ñİ¥ÑÑ•Èé‘•ÍÉ¥ÁÑ¥½¸ˆ°½¹Ñ•¹ĞèM%Q}Mô°(€€€€€ì¹…µ”è€‰Ñİ¥ÑÑ•Èé¥µ…”ˆ°½¹Ñ•¹Ğè€‘íM%Q}UI1ô½½œµ¥µ…”¹Á¹€ô°(€€€€€ì¹…µ”è€‰Ñİ¥ÑÑ•Èé¥µ…”é…±Ğˆ°½¹Ñ•¹Ğè€‰ÕÑ¼M••‘…¹”$¥µ…”…¹Ù¥‘•¼•¹•É…Ñ¥½¸Á±…Ñ™½É´ˆô°(€€€t°(€€€±¥¹­Ìèl(€€€€€ìÉ•°è€‰¥½¸ˆ°¡É•˜è€ˆ½™…Ù¥½¸¹¥¼ˆô°(€€€€€ìÉ•°è€‰…ÁÁ±”µÑ½Õ µ¥½¸ˆ°¡É•˜è€ˆ½…ÁÁ±”µÑ½Õ µ¥½¸¹Á¹œˆô°(€€€€€ìÉ•°è€‰µ…¹¥™•ÍĞˆ°¡É•˜è€ˆ½Í¥Ñ”¹İ•‰µ…¹¥™•ÍĞˆô°(€€€€€ìÉ•°è€‰ÁÉ•½¹¹•Ğˆ°¡É•˜è€‰¡ÑÑÁÌè¼½™½¹ÑÌ¹½½±•…Á¥Ì¹½´ˆô°(€€€€€ìÉ•°è€‰ÁÉ•½¹¹•Ğˆ°¡É•˜è€‰¡ÑÑÁÌè¼½™½¹ÑÌ¹ÍÑ…Ñ¥Œ¹½´ˆ°É½ÍÍ=É¥¥¸è€ˆˆô°(€€€€€ìÉ•°è€‰ÁÉ•½¹¹•Ğˆ°¡É•˜è€‰¡ÑÑÁÌè¼½Ù•É…©İÑ‰©‰Ù©¡é¥Ù©ˆ¹ÍÕÁ…‰…Í”¹¼ˆô°(€€€€€ìÉ•°è€‰‘¹ÌµÁÉ•™•Ñ ˆ°¡É•˜è€‰¡ÑÑÁÌè¼½™½¹ÑÌ¹½½±•…Á¥Ì¹½´ˆô°(€€€€€ìÉ•°è€‰‘¹ÌµÁÉ•™•Ñ ˆ°¡É•˜è€‰¡ÑÑÁÌè¼½™½¹ÑÌ¹ÍÑ…Ñ¥Œ¹½´ˆô°(€€€t°(€€€ÍÉ¥ÁÑÌèl(€€€€€ì(€€€€€€€ÍÉŒè€‰¡ÑÑÁÌè¼½Á…•…È¹½½±•Íå¹‘¥…Ñ¥½¸¹½´½Á…•…½©Ì½…‘Í‰å½½±”¹©Ìı±¥•¹Ğõ„µÁÕˆ´ÈàÄÜÔÜÌÄÄØÈÈäÀĞÔˆ°(€€€€€€€…Íå¹ŒèÑÉÕ”°(€€€€€€€É½ÍÍ=É¥¥¸è€‰…¹½¹åµ½ÕÌˆ°(€€€€€ô°(€€€€€ì(€€€€€€€ÍÉŒè€‰¡ÑÑÁÌè¼½İİÜ¹½½±•Ñ…µ…¹…•È¹½´½Ñ…œ½©Ìı¥õµ-ÑaPÕ\Øˆ°(€€€€€€€…Íå¹ŒèÑÉÕ”°(€€€€€ô°(€€€€€ì(€€€€€€€¡¥±‘É•¸è€‰İ¥¹‘½Ü¹‘…Ñ…1…å•È€ôİ¥¹‘½Ü¹‘…Ñ…1…å•Èñğmtì™Õ¹Ñ¥½¸Ñ…œ ¥í‘…Ñ…1…å•È¹ÁÕÍ ¡…ÉÕµ•¹ÑÌ¤íôÑ…œ ©Ìœ°¹•Ü…Ñ” ¤¤ìÑ…œ ½¹™¥œœ°€µ-ÑaPÕ\Øœ¤ìˆ°(€€€€€ô°(€€€€€ì(€€€€€€€ÑåÁ”è€‰…ÁÁ±¥…Ñ¥½¸½±­©Í½¸ˆ°(€€€€€€€¡¥±‘É•¸è)M=8¹ÍÑÉ¥¹¥™ä¡ì(€€€€€€€€€€‰½¹Ñ•áĞˆè€‰¡ÑÑÁÌè¼½Í¡•µ„¹½Éœˆ°(€€€€€€€€€€‰ÑåÁ”ˆè€‰]•‰M¥Ñ”ˆ°(€€€€€€€€€¹…µ”è€‰ÕÑ¼M••‘…¹”ˆ°(€€€€€€€€€ÕÉ°èM%Q}UI0°(€€€€€€€€€‘•ÍÉ¥ÁÑ¥½¸èM%Q}M°(€€€€€€€ô¤°(€€€€€ô°(€€€€€ì(€€€€€€€ÑåÁ”è€‰…ÁÁ±¥…Ñ¥½¸½±­©Í½¸ˆ°(€€€€€€€¡¥±‘É•¸è)M=8¹ÍÑÉ¥¹¥™ä¡ì(€€€€€€€€€€‰½¹Ñ•áĞˆè€‰¡ÑÑÁÌè¼½Í¡•µ„¹½Éœˆ°(€€€€€€€€€€‰ÑåÁ”ˆè€‰=É…¹¥é…Ñ¥½¸ˆ°(€€€€€€€€€¹…µ”è€‰ÕÑ¼M••‘…¹”ˆ°(€€€€€€€€€ÕÉ°èM%Q}UI0°(€€€€€€€€€±½¼è€‘íM%Q}UI1ô½…¹‘É½¥µ¡É½µ”´ÔÄÉàÔÄÈ¹Á¹€°(€€€€€€€ô¤°(€€€€€ô°(€€€€€ì(€€€€€€€ÑåÁ”è€‰…ÁÁ±¥…Ñ¥½¸½±­©Í½¸ˆ°(€€€€€€€¡¥±‘É•¸è)M=8¹ÍÑÉ¥¹¥™ä¡ì(€€€€€€€€€€‰½¹Ñ•áĞˆè€‰¡ÑÑÁÌè¼½Í¡•µ„¹½Éœˆ°(€€€€€€€€€€‰ÑåÁ”ˆè€‰M½™Ñİ…É•ÁÁ±¥…Ñ¥½¸ˆ°(€€€€€€€€€¹…µ”è€‰ÕÑ¼M••‘…¹”ˆ°(€€€€€€€€€…ÁÁ±¥…Ñ¥½¹…Ñ•½Éäè€‰5Õ±Ñ¥µ•‘¥…ÁÁ±¥…Ñ¥½¸ˆ°(€€€€€€€€€‘•ÍÉ¥ÁÑ¥½¸è€‰AÉ½™•ÍÍ¥½¹…°$¥µ…”…¹Ù¥‘•¼•¹•É…Ñ¥½¸Á±…Ñ™½É´Á½İ•É•‰ä…‘Ù…¹•$µ½‘•±Ì¸ˆ°(€€€€€€€€€½Á•É…Ñ¥¹MåÍÑ•´è€‰]•ˆ	É½İÍ•Èˆ°(€€€€€€€€€½™™•ÉÌèì€‰ÑåÁ”ˆè€‰=™™•Èˆ°ÁÉ¥”è€ˆÀˆ°ÁÉ¥•ÕÉÉ•¹äè€‰UMˆô°(€€€€€€€€€ÕÉ°èM%Q}UI0°(€€€€€€€ô¤°(€€€€€ô°(€€€t°(€ô¤°(€½µÁ½¹•¹ĞèI½½Ñ½µÁ½¹•¹Ğ°(€¹½Ñ½Õ¹‘½µÁ½¹•¹Ğè9½Ñ½Õ¹‘½µÁ½¹•¹Ğ°(€•ÉÉ½É½µÁ½¹•¹ĞèÉÉ½É½µÁ½¹•¹Ğ°)ô¤ì()™Õ¹Ñ¥½¸Q½½±‘Õ…Ñ¥½¸¡ìÁ…Ñ ôèìÁ…Ñ èÍÑÉ¥¹œô¤ì(€¥˜€ …Á…Ñ ¹ÍÑ…ÉÑÍ]¥Ñ  ˆ½Ñ½½±Ì¼ˆ¤¤É•ÑÕÉ¸¹Õ±°ì((€½¹ÍĞ½¹Ñ•¹Ğ€ôÁ…Ñ €ôôô€ˆ½Ñ½½±Ì½¥µ…”ˆ(€€€€üì(€€€€€€€Ñ¥Ñ±”è€‰$%µ…”•¹•É…Ñ½Èè¡½Ü¥Ğİ½É­Ì°İ¡…ĞÑ¼É•…Ñ”°…¹¡½ÜÑ¼•Ğ‰•ÑÑ•ÈÉ•ÍÕ±ÑÌˆ°(€€€€€€€¥¹ÑÉ¼è€‰ÕÑ¼M••‘…¹”Ì$%µ…”•¹•É…Ñ½ÈÑÕÉ¹Ì„İÉ¥ÑÑ•¸‘•ÍÉ¥ÁÑ¥½¸¥¹Ñ¼„Ù¥ÍÕ…°…ÍÍ•Ğ¸%Ğ¥Ì‘•Í¥¹•™½ÈÉ•…Ñ½ÉÌİ¡¼¹••Ñ¡Õµ‰¹…¥±Ì°Í½¥…°É…Á¡¥Ì°½¹•ÁĞ…ÉĞ°ÁÉ½‘ÕĞµ½­ÕÁÌ°¥±±ÕÍÑÉ…Ñ¥½¹Ì°½ÈÙ¥ÍÕ…°•áÁ•É¥µ•¹ÑÌİ¥Ñ¡½ÕĞ‰Õ¥±‘¥¹œ„Í•Á…É…Ñ”¥µ…”µ•¹•É…Ñ¥½¸İ½É­™±½Ü¸ˆ°(€€€€€€€ÍÑ•ÁÌèl(€€€€€€€€€lˆÄ¸MÑ…ÉĞİ¥Ñ „ÍÁ•¥™¥ŒÁÉ½µÁĞˆ°€‰•ÍÉ¥‰”Ñ¡”ÍÕ‰©•Ğ°Í•ÑÑ¥¹œ°½µÁ½Í¥Ñ¥½¸°µ½½°±¥¡Ñ¥¹œ°…µ•É„Á•ÉÍÁ•Ñ¥Ù”°½±½ÉÌ°…¹¥µÁ½ÉÑ…¹Ğ½‰©•ÑÌ¸½¹É•Ñ”ÁÉ½µÁĞÕÍÕ…±±ä¥Ù•ÌÑ¡”µ½‘•°µ½É”ÕÍ•™Õ°‘¥É•Ñ¥½¸Ñ¡…¸„Í¡½ÉĞÁ¡É…Í”¸‰t°(€€€€€€€€€lˆÈ¸¡½½Í”„Ù¥ÍÕ…°‘¥É•Ñ¥½¸ˆ°€‰UÍ”Ñ¡”…Ù…¥±…‰±”ÍÑå±”½¹ÑÉ½±Ìİ¡•¸å½Ôİ…¹Ğ„Á…ÉÑ¥Õ±…ÈÙ¥ÍÕ…°±…¹Õ…”ÍÕ …ÌÉ•…±¥ÍÑ¥ŒÁ¡½Ñ½É…Á¡ä°¥±±ÕÍÑÉ…Ñ¥½¸°Ù•Ñ½È…ÉĞ°€Í°…¹¥µ”°½¥°Á…¥¹Ñ¥¹œ°½Èİ…Ñ•É½±½È¸‰t°(€€€€€€€€€lˆÌ¸M•±•ĞÑ¡”½ÕÑÁÕĞÍ¡…Á”ˆ°€‰¡½½Í”…¸…ÍÁ•ĞÉ…Ñ¥¼½ÈÉ•Í½±ÕÑ¥½¸Ñ¡…Ğµ…Ñ¡•ÌÑ¡”‘•ÍÑ¥¹…Ñ¥½¸¸A½ÉÑÉ…¥Ğ¥µ…•Ìİ½É¬İ•±°™½ÈÍ¡½ÉĞµ™½É´Í½¥…°Á½ÍÑÌ°İ¡¥±”±…¹‘Í…Á”™½Éµ…ÑÌ…É”ÕÍ•™Õ°™½ÈÙ¥‘•¼Ñ¡Õµ‰¹…¥±Ì…¹ÁÉ•Í•¹Ñ…Ñ¥½¹Ì¸‰t°(€€€€€€€€€lˆĞ¸I•Ù¥•Ü…¹¥Ñ•É…Ñ”ˆ°€‰$½ÕÑÁÕĞ…¸½¹Ñ…¥¸¥¹½ÉÉ•ĞÑ•áĞ°‘¥ÍÑ½ÉÑ•½‰©•ÑÌ°½È‘•Ñ…¥±ÌÑ¡…Ğ‘¼¹½Ğµ…Ñ Ñ¡”ÁÉ½µÁĞ¸QÉ•…ĞÑ¡”™¥ÉÍĞ•¹•É…Ñ¥½¸…Ì„‘É…™Ğ°É•™¥¹”Ñ¡”ÁÉ½µÁĞ°…¹É•Ù¥•ÜÑ¡”™¥¹…°¥µ…”‰•™½É”ÁÕ‰±¥Í¡¥¹œ¥Ğ¸‰t°(€€€€€€€t°(€€€€€€€ÕÍ•…Í•Ìè€‰½µµ½¸ÕÍ•Ì¥¹±Õ‘”e½ÕQÕ‰”Ñ¡Õµ‰¹ÃÙdît.", faq: [],
       }
-    : path === "/tools/video"
-      ? {
-          title: "AI Video Generator: create short clips from text prompts",
-          intro: "The Auto Seedance AI Video Generator is built for turning a described scene into a short video clip. It is useful when you need a visual shot for a story, advertisement, explainer, social post, product concept, or larger edited video.",
-          steps: [
-            ["1. Describe the show", "Write what should happen in the scene, including the main subject, movement, environment, time of day, camera motion, and visual style. Think of the prompt as directions for a cinematographer."],
-            ["2. Choose duration and framing", "Select the available duration, resolution, and aspect ratio for the destination. Vertical framing is useful for Shorts and Reels, while landscape is commonly used for YouTube and presentations."],
-            ["3. Add references when appropriate", "Reference images or other supported inputs can help establish appearance, composition, or creative direction. Only upload material you have the right to use."],
-            ["4. Inspect the generated clip", "AI video can introduce continuity errors, unwanted motion, incorrect objects, or audio issues. Review every clip before using it in a public or commercial project."],
-          ],
-          useCases: "Useful applications include social video shots, product demonstrations, advertising concepts, cinematic transitions, educational visuals, story scenes, background footage, and creative prototypes. Generated media should be reviewed for accuracy and rights issues before publication.",
-          faq: [
-            ["What makes a good text-to-video prompt?", "Describe the subject and action first, then add the environment, camera movement, lighting, visual style, and important constraints. Specific scene direction generally produces more controllable results."],
-            ["Which aspect ratio should I choose?", "Use vertical video for Shorts, TikTok, and Reels; landscape for standard YouTube and many presentations; and square when the destination specifically benefits from a 1:1 composition."],
-            ["Can AI video be used for commercial work?", "Commercial use depends on your plan, the selected model provider's terms, the rights to any references you provide, and applicable law. Review those terms before publishing paid or branded work."],
-          ],
-        }
       : {
           title: "AI Reel Studio: from an idea to a structured short-form video",
           intro: "Reel Studio is designed around the complete short-form workflow rather than a single generation step. You provide the idea, choose the creative direction, and work through script, scene generation, voiceover, captions, assembly, and export.",
