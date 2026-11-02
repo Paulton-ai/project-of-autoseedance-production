@@ -5,7 +5,7 @@
   "packageManager": "npm@10.9.2",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/prepare-build.mjs && node scripts/prepare-gpt-image-25-ui.mjs && node scripts/prepare-gpt-image-25-seo.mjs && npm run sitemap && vite build && vite build --ssr src/entry-server.tsx --outDir dist/server && node scripts/prerender.mjs && node scripts/seo-audit.mjs",
+    "build": "node scripts/prepare-build.mjs && node scripts/prepare-fix-canonical.mjs && node scripts/prepare-gpt-image-25-ui.mjs && node scripts/prepare-gpt-image-25-seo.mjs && npm run sitemap && vite build && vite build --ssr src/entry-server.tsx --outDir dist/server && node scripts/prerender.mjs && node scripts/seo-audit.mjs",
     "build:dev": "npm run sitemap && vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
