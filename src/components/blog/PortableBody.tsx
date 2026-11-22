@@ -117,6 +117,13 @@ function renderMaybeHtml(value: PortableTextBlock, children: ReactNode) {
   return <div className="portable-html-block" dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
+interface SanityTableValue {
+  _key?: string;
+  caption?: string;
+  headers?: string[];
+  rows?: { _key?: string; cells?: string[] }[];
+}
+
 const components: PortableTextComponents = {
   types: {
     image: ({ value }) => {
@@ -139,6 +146,73 @@ const components: PortableTextComponents = {
             </figcaption>
           )}
         </figure>
+      );
+    },
+    table: ({ value }: { value: SanityTableValue }) => {
+      const headers = Array.isArray(value?.headers) ? value.headers : [];
+      const rows = Array.isArray(value?.rows) ? value.rows : [];
+      if (headers.length === 0 && rows.length === 0) return null;
+      const keyBase = value?._key || "table";
+
+      return (
+        <div
+          className="my-8 max-w-full overflow-x-auto rounded-xl border border-border"
+          role="region"
+          aria-label={value?.caption || "Comparison table"}
+          tabIndex={0}
+        >
+          <table className="w-full min-w-[640px] border-collapse text-left text-sm">
+            {value?.caption && (
+              <caption className="caption-top px-4 py-3 text-left text-sm font-semibold text-foreground">
+                {value.caption}
+              </caption>
+            )}
+            {headers.length > 0 && (
+              <thead className="bg-muted/60">
+                <tr>
+                  {headers.map((header, index) => (
+                    <th
+                      key={`${keyBase}-h-${index}`}
+                      scope="col"
+                      className="border-b border-border px-4 py-3 align-bottom font-semibold text-foreground"
+                    >
+                      {header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+            )}
+            {rows.length > 0 && (
+              <tbody>
+                {rows.map((row, rowIndex) => (
+                  <tr
+                    key={row._key || `${keyBase}-r-${rowIndex}`}
+                    className="border-b border-border last:border-0 even:bg-muted/30"
+                  >
+                    {(Array.isArray(row.cells) ? row.cells : []).map((cell, cellIndex) =>
+                      cellIndex === 0 ? (
+                        <th
+                          key={`${keyBase}-${rowIndex}-${cellIndex}`}
+                          scope="row"
+                          className="px-4 py-3 align-top font-semibold text-foreground"
+                        >
+                          {cell}
+                        </th>
+                      ) : (
+                        <td
+                          key={`${keyBase}-${rowIndex}-${cellIndex}`}
+                          className="px-4 py-3 align-top leading-relaxed text-muted-foreground"
+                        >
+                          {cell}
+                        </td>
+                      ),
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            )}
+          </table>
+        </div>
       );
     },
   },
