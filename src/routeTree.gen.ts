@@ -24,6 +24,7 @@ import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as AuthIndexRouteImport } from './routes/auth.index'
 import { Route as ToolsVideoRouteImport } from './routes/tools.video'
+import { Route as ToolsCaptionsRouteImport } from './routes/tools.captions'
 import { Route as ToolsReelStudioRouteImport } from './routes/tools.reel-studio'
 import { Route as ToolsImageRouteImport } from './routes/tools.image'
 import { Route as PaymentSuccessRouteImport } from './routes/payment.success'
@@ -112,6 +113,11 @@ const ToolsVideoRoute = ToolsVideoRouteImport.update({
   path: '/tools/video',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ToolsCaptionsRoute = ToolsCaptionsRouteImport.update({
+  id: '/tools/captions',
+  path: '/tools/captions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ToolsReelStudioRoute = ToolsReelStudioRouteImport.update({
   id: '/tools/reel-studio',
   path: '/tools/reel-studio',
@@ -198,6 +204,7 @@ export interface FileRoutesByFullPath {
   '/tools/image': typeof ToolsImageRoute
   '/tools/reel-studio': typeof ToolsReelStudioRoute
   '/tools/video': typeof ToolsVideoRoute
+  '/tools/captions': typeof ToolsCaptionsRoute
   '/auth/': typeof AuthIndexRoute
   '/blog/': typeof BlogIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -286,6 +293,7 @@ export interface FileRouteTypes {
     | '/tools/image'
     | '/tools/reel-studio'
     | '/tools/video'
+    | '/tools/captions'
     | '/auth/'
     | '/blog/'
     | '/dashboard/'
@@ -365,6 +373,7 @@ export interface RootRouteChildren {
   ToolsImageRoute: typeof ToolsImageRoute
   ToolsReelStudioRoute: typeof ToolsReelStudioRoute
   ToolsVideoRoute: typeof ToolsVideoRoute
+  ToolsCaptionsRoute: typeof ToolsCaptionsRoute
   BlogIndexRoute: typeof BlogIndexRoute
 }
 
@@ -473,6 +482,13 @@ declare module '@tanstack/react-router' {
       path: '/tools/video'
       fullPath: '/tools/video'
       preLoaderRoute: typeof ToolsVideoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tools/captions': {
+      id: '/tools/captions'
+      path: '/tools/captions'
+      fullPath: '/tools/captions'
+      preLoaderRoute: typeof ToolsCaptionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tools/reel-studio': {
@@ -616,6 +632,7 @@ const rootRouteChildren: RootRouteChildren = {
   ToolsImageRoute: ToolsImageRoute,
   ToolsReelStudioRoute: ToolsReelStudioRoute,
   ToolsVideoRoute: ToolsVideoRoute,
+  ToolsCaptionsRoute: ToolsCaptionsRoute,
   BlogIndexRoute: BlogIndexRoute,
 }
 export const routeTree = rootRouteImport

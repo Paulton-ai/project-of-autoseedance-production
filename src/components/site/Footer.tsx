@@ -16,6 +16,7 @@ export function Footer() {
             <li><Link to="/ai-video-generator" className="hover:text-foreground">AI Video Generator</Link></li>
             <li><Link to="/ai-reel-generator" className="hover:text-foreground">AI Reel Generator</Link></li>
             <li><Link to="/tools/reel-studio" className="hover:text-foreground">Open Reel Studio</Link></li>
+            <li><Link to="/tools/ai-auto-captions-generator" className="hover:text-foreground">Free AI Auto Captions</Link></li>
             <li><Link to="/pricing" className="hover:text-foreground">Pricing</Link></li>
           </ul>
         </div>
